@@ -15,8 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('parent_entry_id')->constrained('entries')->cascadeOnDelete();
             $table->foreignId('child_entry_id')->constrained('entries')->cascadeOnDelete();
-            $table->string('relation_type');
+            $table->string('relation_type')->index();
             $table->timestamps();
+
+            $table->index(['parent_entry_id', 'relation_type']);
+            $table->index(['child_entry_id', 'relation_type']);
+            $table->unique(['parent_entry_id', 'child_entry_id', 'relation_type']);
         });
     }
 

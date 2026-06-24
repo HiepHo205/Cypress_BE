@@ -14,9 +14,11 @@ return new class extends Migration
         Schema::create('entry_meta', function (Blueprint $table) {
             $table->id();
             $table->foreignId('entry_id')->constrained('entries')->cascadeOnDelete();
-            $table->string('meta_key');
+            $table->string('meta_key')->index();
             $table->text('meta_value')->nullable();
             $table->timestamps();
+
+            $table->unique(['entry_id', 'meta_key']);
         });
     }
 

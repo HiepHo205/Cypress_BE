@@ -13,14 +13,17 @@ return new class extends Migration
     {
         Schema::create('media', function (Blueprint $table) {
             $table->id();
-            $table->string('disk')->default('public');
-            $table->string('file_name');
-            $table->string('mime_type')->nullable();
+            $table->string('disk')->default('public')->index();
+            $table->string('file_name')->index();
+            $table->string('mime_type')->nullable()->index();
             $table->unsignedBigInteger('file_size')->nullable();
-            $table->string('url');
+            $table->string('url')->unique();
             $table->foreignId('entry_id')->nullable()->constrained('entries')->nullOnDelete();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
+
+            $table->index(['entry_id', 'disk']);
+            $table->index(['created_by', 'created_at']);
         });
     }
 

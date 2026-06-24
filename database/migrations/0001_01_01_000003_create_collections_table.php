@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('collections', function (Blueprint $table) {
             $table->id();
-            $table->string('collection_name');
-            $table->string('api_endpoint');
-            $table->boolean('is_system_type')->default(false);
+            $table->string('collection_name')->index();
+            $table->string('api_endpoint')->unique();
+            $table->boolean('is_system_type')->default(false)->index();
             $table->timestamps();
         });
     }
