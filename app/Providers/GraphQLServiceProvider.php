@@ -1,0 +1,44 @@
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\ServiceProvider;
+use Nuwave\Lighthouse\LighthouseServiceProvider;
+
+class GraphQLServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
+    {
+       
+    }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        $this->configureGraphQLGuard();
+    }
+
+    private function configureGraphQLGuard(): void
+    {
+        $host = request()->getHost();
+
+        if ($host === config('app.admin_url', 'admin.cypresshub.com')) {
+            config(['lighthouse.route.middleware' => [
+                'web', 
+                \Nuwave\Lighthouse\Support\Http\Middleware\AcceptJson::class,
+            ]]);
+            config(['lighthouse.guard' => 'web']);
+        } else {
+            config(['lighthouse.route.middleware' => [
+                'api', 
+                \Nuwave\Lighthouse\Support\Http\Middleware\AcceptJson::class,
+            ]]);
+            config(['lighthouse.guard' => 'api']);
+        }
+    }
+}

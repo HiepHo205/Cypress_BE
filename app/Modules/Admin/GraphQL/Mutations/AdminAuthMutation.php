@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Modules\Admin\GraphQL\Mutations;
+
+use GraphQL\Type\Definition\ResolveInfo;
+use Nuwave\Lighthouse\Support\Contracts\GraphQLContext;
+
+class AdminAuthMutation
+{
+    public function login($rootValue, array $args, GraphQLContext $context, ResolveInfo $resolveInfo)
+    {
+        return [
+            'status' => false,
+            'message' => 'This feature is currently under development.'
+        ];
+    }
+
+    public function logout($rootValue, array $args, GraphQLContext $context, ResolveInfo $resolveInfo)
+    {
+        return [
+            'status' => true,
+            'message' => 'Logged out successfully.'
+        ];
+    }
+}
