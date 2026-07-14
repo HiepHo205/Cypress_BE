@@ -6,27 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
+        if (Schema::hasTable('entries')) {
+            return;
+        }
+
         Schema::create('entries', function (Blueprint $table) {
             $table->id();
             $table->foreignId('collection_id')->constrained('collections')->cascadeOnDelete();
-            $table->string('status')->default('published')->index();
+            $table->string('title')->nullable();
+            $table->string('slug')->nullable();
+            $table->string('status')->default('draft');
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
-
-            $table->index(['collection_id', 'status']);
-            $table->index(['created_by', 'created_at']);
+            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('published_at')->nullable();
+            $table->timestamps();
+            $table->index('collection_id');
+            $table->index('slug');
+            $table->index('status');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('entries');

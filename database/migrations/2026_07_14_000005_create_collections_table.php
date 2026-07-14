@@ -6,23 +6,24 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
+        if (Schema::hasTable('collections')) {
+            return;
+        }
+
         Schema::create('collections', function (Blueprint $table) {
             $table->id();
-            $table->string('collection_name')->index();
-            $table->string('api_endpoint')->unique();
-            $table->boolean('is_system_type')->default(false)->index();
+            $table->string('collection_name')->unique();
+            $table->string('display_name')->nullable();
+            $table->string('api_endpoint')->unique()->nullable();
+            $table->text('description')->nullable();
+            $table->boolean('is_system')->default(false);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('collections');
