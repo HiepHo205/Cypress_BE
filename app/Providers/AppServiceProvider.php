@@ -20,8 +20,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-    $adminViewsPath = app_path('Modules/Admin/Views');
-        
+        $adminViewsPath = app_path('Modules/Admin/Views');
+
         if (is_dir($adminViewsPath)) {
             View::addNamespace('admin', $adminViewsPath);
         }

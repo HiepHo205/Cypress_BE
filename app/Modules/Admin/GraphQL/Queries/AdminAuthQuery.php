@@ -7,9 +7,12 @@ use Nuwave\Lighthouse\Support\Contracts\GraphQLContext;
 
 class AdminAuthQuery
 {
-   
-    public function me($rootValue, array $args, GraphQLContext $context, ResolveInfo $resolveInfo)
-    {
-        return null; 
+    public function me(
+        $rootValue,
+        array $args,
+        GraphQLContext $context,
+        ResolveInfo $resolveInfo,
+    ) {
+        return null;
     }
 }

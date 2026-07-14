@@ -10,10 +10,7 @@ class GraphQLServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      */
-    public function register(): void
-    {
-       
-    }
+    public function register(): void {}
 
     /**
      * Bootstrap any application services.
@@ -28,16 +25,20 @@ class GraphQLServiceProvider extends ServiceProvider
         $host = request()->getHost();
 
         if ($host === config('app.admin_url', 'admin.cypresshub.com')) {
-            config(['lighthouse.route.middleware' => [
-                'web', 
-                \Nuwave\Lighthouse\Support\Http\Middleware\AcceptJson::class,
-            ]]);
+            config([
+                'lighthouse.route.middleware' => [
+                    'web',
+                    \Nuwave\Lighthouse\Support\Http\Middleware\AcceptJson::class,
+                ],
+            ]);
             config(['lighthouse.guard' => 'web']);
         } else {
-            config(['lighthouse.route.middleware' => [
-                'api', 
-                \Nuwave\Lighthouse\Support\Http\Middleware\AcceptJson::class,
-            ]]);
+            config([
+                'lighthouse.route.middleware' => [
+                    'api',
+                    \Nuwave\Lighthouse\Support\Http\Middleware\AcceptJson::class,
+                ],
+            ]);
             config(['lighthouse.guard' => 'api']);
         }
     }

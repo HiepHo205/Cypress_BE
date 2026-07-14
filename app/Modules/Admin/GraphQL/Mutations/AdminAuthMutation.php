@@ -7,19 +7,27 @@ use Nuwave\Lighthouse\Support\Contracts\GraphQLContext;
 
 class AdminAuthMutation
 {
-    public function login($rootValue, array $args, GraphQLContext $context, ResolveInfo $resolveInfo)
-    {
+    public function login(
+        $rootValue,
+        array $args,
+        GraphQLContext $context,
+        ResolveInfo $resolveInfo,
+    ) {
         return [
             'status' => false,
-            'message' => 'This feature is currently under development.'
+            'message' => 'This feature is currently under development.',
         ];
     }
 
-    public function logout($rootValue, array $args, GraphQLContext $context, ResolveInfo $resolveInfo)
-    {
+    public function logout(
+        $rootValue,
+        array $args,
+        GraphQLContext $context,
+        ResolveInfo $resolveInfo,
+    ) {
         return [
             'status' => true,
-            'message' => 'Logged out successfully.'
+            'message' => 'Logged out successfully.',
         ];
     }
 }
