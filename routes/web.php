@@ -1,9 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Modules\Admin\Controllers\AdminController;
 
 Route::domain('admin.cypresshub.com')->group(function () {
-    Route::get('{any}', [\App\Modules\Admin\Controllers\AdminController::class, 'index'])
-        ->where('any', '.*')
-        ->name('admin.gateway');
+    Route::get('/', [AdminController::class, 'index'])->name('admin.home');
+
 });
