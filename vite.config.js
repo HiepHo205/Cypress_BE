@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import tailwindcss from '@tailwindcss/vite';
-
+import vue from '@vitejs/plugin-vue'; 
 export default defineConfig({
     plugins: [
         laravel({
@@ -15,8 +15,29 @@ export default defineConfig({
             ],
         }),
         tailwindcss(),
+        vue({ 
+            template: {
+                transformAssetUrls: {
+                    base: null,
+                    includeAbsolute: false,
+                },
+            },
+        }),
     ],
-    server: {
+    resolve: { 
+        alias: {
+            'vue': 'vue/dist/vue.esm-bundler.js',
+            '@': '/resources/js',
+        },
+    },
+   server: {
+        host: '0.0.0.0', 
+        port: 5173,      
+        cors: true,      
+        origin: 'http://localhost:5173',
+        hmr: {
+            host: 'admin.cypresshub.com', 
+        },
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },
