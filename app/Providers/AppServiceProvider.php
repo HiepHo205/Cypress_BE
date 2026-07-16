@@ -4,12 +4,14 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use App\Core\Repositories\Contracts\UserRepositoryInterface;
+use App\Core\Repositories\Eloquent\UserRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
     }
 
     public function boot(): void

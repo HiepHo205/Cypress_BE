@@ -1,13 +1,17 @@
 <script setup>
 import { ref } from 'vue'
-import { Mail,Lock} from "lucide-vue-next";
+import { Mail, Lock } from "lucide-vue-next";
 const email = ref('')
+const errorMessage = ref('')
+const successMessage = ref('')
 const password = ref('')
 const loading = ref(false)
 
 const handleLogin = async () => {
+    errorMessage.value = ''
+    successMessage.value = ''
     if (!email.value || !password.value) {
-        alert('Please enter your email and password.')
+        errorMessage.value = 'Please enter your email and password.';
         return
     }
 
@@ -52,34 +56,32 @@ const handleLogin = async () => {
 
         const result = await res.json()
 
-        if (result.errors) {
-            alert(result.errors[0].message)
+        if (result.errors && result.errors.length > 0) {
+            errorMessage.value = result.errors[0].message || 'Invalid email or password.';
             return
         }
 
         const login = result.data.login
 
         if (!login.status) {
-            alert(login.message)
+            errorMessage.value = login.message;
             return
         }
 
         const isAdmin = login.user.roles.some(r => r.name === 'admin')
 
         if (!isAdmin) {
-            alert('Access denied! Only Admin can login.')
+            errorMessage.value = 'Access denied! Only Admin can login.';
             return
         }
-
         localStorage.setItem('token', login.access_token)
         localStorage.setItem('user', JSON.stringify(login.user))
-
-        alert('Login successful!')
+        alert('Login successful! Redirecting to dashboard...');
         window.location.href = '/dashboard'
 
     } catch (err) {
-        console.error(err)
-        alert('Something went wrong.')
+        console.error('Login error:', err)
+        errorMessage.value = 'Something went wrong. Please try again.';
     } finally {
         loading.value = false
     }
@@ -122,28 +124,38 @@ const handleLogin = async () => {
                     Login to access Admin Portal
                 </p>
 
+                <div v-if="errorMessage"
+                    class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline">{{ errorMessage }}</span>
+                </div>
+
+                <div v-if="successMessage"
+                    class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
+                    role="alert">
+                    <span class="block sm:inline">{{ successMessage }}</span>
+                </div>
                 <form @submit.prevent="handleLogin" class="space-y-4">
 
                     <div>
-                        <label class="text-sm text-gray-600">Email</label>
+                        <label class="text-sm text-black-100 font-bold">Email</label>
 
                         <div class="relative mt-1">
                             <Mail class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
 
                             <input v-model="email" type="email"
-                                class="w-full h-11 pl-10 pr-3 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                class="w-full h-11 pl-10 pr-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                                 placeholder="Enter your email" />
                         </div>
                     </div>
 
                     <div>
-                        <label class="text-sm text-gray-600">Password</label>
+                        <label class="text-sm text-black-100 font-bold">Password</label>
 
                         <div class="relative mt-1">
                             <Lock class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
 
                             <input v-model="password" type="password"
-                                class="w-full h-11 pl-10 pr-3 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                class="w-full h-11 pl-10 pr-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                                 placeholder="••••••••" />
                         </div>
                     </div>
@@ -151,8 +163,7 @@ const handleLogin = async () => {
                     <div class="flex justify-between text-xs">
                         <label class="flex items-center gap-1">
 
-                            <input type="checkbox" />
-                            Remember me
+                            <input type="checkbox" /> Remember me
                         </label>
 
                         <a href="#" class="text-indigo-500">Forgot password?</a>
@@ -172,26 +183,19 @@ const handleLogin = async () => {
                 </div>
 
                 <div class="flex justify-center gap-3">
-                    <button class="w-10 h-10 border rounded-lg flex items-center justify-center">
+                    <button class="w-10 h-10 border border-gray-300 rounded-lg flex items-center justify-center">
                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" />
                     </button>
 
-                    <button class="w-10 h-10 border rounded-lg flex items-center justify-center">
+                    <button class="w-10 h-10 border border-gray-300 rounded-lg flex items-center justify-center">
                         <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" class="w-5 h-5" />
                     </button>
 
-                    <button class="w-10 h-10 border rounded-lg flex items-center justify-center">
+                    <button class="w-10 h-10 border border-gray-300 rounded-lg flex items-center justify-center">
                         <img src="https://images.openai.com/static-rsc-4/K7mkXKpTc7vTHCPB2ZgBxq57kq5k8Qgmfw8GxMJ4lrf43bonSfcg3rSGVOC8qtAxKtzzsP9n78lX9m1LPxZuq2a8uCuKsnc8w5GJfpXxrDjN6RA8xdtA7ZPUI7UYzThX0tvCTrxO5Ll5asgOWvyJp40SEibKZewKFZdypoEgVhc?purpose=inline"
                             class="w-5 h-5" />
                     </button>
                 </div>
-
-                <p class="text-center text-xs mt-4 text-gray-500">
-                    Don't have an account?
-                    <span class="text-indigo-500 font-semibold cursor-pointer">
-                        Create Account
-                    </span>
-                </p>
 
             </div>
 
