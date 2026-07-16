@@ -1,6 +1,6 @@
-import { createApp } from 'vue'
-import Login from './pages/Login.vue'
+import '../css/app.css';
 
-import '../css/app.css'
+import { createApp } from 'vue';
+import Login from '../../app/Modules/Admin/Views/Login.vue';
 
-createApp(Login).mount('#app')
+createApp(Login).mount('#app');
