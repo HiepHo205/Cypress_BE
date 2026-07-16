@@ -1,129 +1,182 @@
-# Cypress BE
+# Cypress Backend 
 
-A modern backend application built with Laravel 13, PHP 8.3+, and GraphQL (via Lighthouse). The project follows a Feature-Based Architecture (Domain/Module Layer) combined with Technical Layering, organizing business logic into independent modules while keeping core resources centralized. This structure improves scalability, maintainability, and code organization for large-scale applications.
+Tài liệu này hướng dẫn nhanh cho thành viên mới cách cài đặt môi trường và khởi chạy dự án **Cypress Backend** trên máy cá nhân sau khi clone source code về.
 
 ---
 
-## Getting Started
+# 1. Prerequisites
 
-Install project dependencies (PHP & Node packages):
+Trước khi bắt đầu, hãy đảm bảo máy của bạn đã cài đặt đầy đủ các thành phần sau:
+
+| Software | Requirement                      |
+| -------- | -------------------------------- |
+| PHP      | >= 8.2                           |
+| Composer | >= 2.0                           |
+| Database | PostgreSQL (Managed by Supabase) |
+
+---
+
+#  2. Cài đặt & Khởi chạy dự án
+
+Mở **Terminal** tại thư mục dự án vừa clone và thực hiện lần lượt các bước dưới đây.
+
+---
+
+## Bước 2.1 - Cài đặt các package PHP
 ```bash
 composer install
-npm install
-Run the development server:
+```
 
-Bash
+---
+
+## Bước 2.2 - Cấu hình môi trường (.env)
+Copy file mẫu:
+```bash
+cp .env.example .env
+```
+
+Sau đó mở file **.env** và đảm bảo cấu hình PostgreSQL đúng như sau:
+
+```env
+APP_NAME=Laravel
+APP_ENV=local
+APP_URL=http://localhost
+
+SESSION_DOMAIN=.cypresshub.com
+
+# PostgreSQL Connection
+DB_CONNECTION=pgsql
+DB_HOST=aws-1-ap-northeast-1.pooler.supabase.com
+DB_PORT=6543
+DB_DATABASE=postgres
+DB_USERNAME=postgres.cjmvdswpxnaeqihkbtht
+DB_PASSWORD=1qasMs0qrEL0eYQR
+
+# Local Server
+SERVER_HOST=0.0.0.0
+SERVER_PORT=80
+```
+
+
+---
+
+## Bước 2.3 - Tạo Application Key
+```bash
+php artisan key:generate
+```
+
+---
+
+## Bước 2.4 - Chạy Migration
+Tạo toàn bộ cấu trúc bảng dữ liệu:
+
+```bash
+php artisan migrate
+```
+
+---
+
+## Bước 2.5 - Xóa Cache hệ thống
+```bash
+php artisan optimize:clear
+```
+
+---
+## Bước 2.6 - Khởi chạy dự án
+
+```bash
 php artisan serve
-Open your browser at GraphiQL Playground:
+```
 
-Plaintext
-http://localhost:8000/graphiql
-The application exposes a single GraphQL endpoint at http://localhost:8000/graphql to handle all incoming frontend requests.
+---
 
-Project Structure
-Plaintext
-CYPRESS_BE/
-│
-├── app/
-│   ├── GraphQL/         # GraphQL Handlers (Queries & Mutations)
-│   ├── Models/          # Eloquent Models (User, Company, ...)
-│   ├── Services/        # Core Business Logic Services
-│   ├── Providers/       # Application Service Providers
-│   └── Http/            # Standard HTTP Layer (Controllers, Middleware)
-│
-├── graphql/             # GraphQL Schema Definitions
-│   ├── modules/         # Schema definitions split by business features
-│   └── schema.graphql   # Main entry point schema file
-│
-├── config/              # Application Configurations
-├── database/            # Migrations, Factories, and Seeders
-├── routes/              # Application Routes
-├── storage/             # File Storage & Logs[cite: 1]
-├── tests/               # Automated Tests (Unit & Feature)[cite: 1]
-│
-├── .husky/              # Git Hooks configuration (Pre-commit formatting)
-├── artisan[cite: 1]
-├── composer.json[cite: 1]
-└── README.md[cite: 1]
-Architecture
-The project adopts a Feature-Based Architecture for GraphQL components, where each business domain is split into independent schema files and structured backend handlers.
+#  3. Kiểm tra sau khi cài đặt
+Sau khi chạy:
 
-⚠️ TEAM WORK NOTE:
-To maintain the empty folder structure on Git, placeholder .md files are placed inside modules. When you start coding a feature, please change the file extension to .php (e.g., Login.md -> Login.php) or create a new .php file in that directory.
+```bash
+php artisan serve
+```
 
-Example:
-graphql/modules/
+Terminal sẽ hiển thị:
+```text
+INFO  Server running on [http://0.0.0.0:80].
 
-Plaintext
-├── auth.graphql
-├── user.graphql
-└── company.graphql
-app/GraphQL/
+➜ Admin Portal: http://admin.cypresshub.com
+➜ API Gateway : http://api.cypresshub.com
 
-Plaintext
-│
-├── Queries/             # For Fetching Data (Equivalent to GET)
-│   ├── User/
-│   │   └── UserQuery.php
-│   └── Company/
-│
-└── Mutations/           # For Modifying Data (Equivalent to POST/PUT/DELETE)
-    ├── Auth/
-    │   ├── Login.php
-    │   └── Logout.php
-    └── User/
-        └── CreateUser.php
-app/Services/ (Core business logic isolated from GraphQL layer)
+Press Ctrl+C to stop the server
+```
 
-Plaintext
-├── UserService.php
-└── CompanyService.php
-Technologies
-Laravel 13 Framework
+---
 
-[cite: 1]
+## Kiểm tra API Gateway
 
-PHP 8.3+
+Mở trình duyệt:
 
-[cite: 1]
+```text
+http://api.cypresshub.com
+```
 
-GraphQL (via Nuwave/Lighthouse)
+Kết quả mong đợi:
 
-GraphiQL (Development IDE Tools)
+```json
+{
+  "status": "success",
+  "message": "CypressHub API Client Gateway is active (.com production mode).",
+  "timestamp": "2026-07-14T10:29:37+00:00"
+}
+```
 
-Eloquent ORM
+---
 
-[cite: 1]
+## Kiểm tra Admin Portal
 
-Redis (Predis Client for Cache & Queue)
+Mở trình duyệt:
 
-Prettier (with PHP Plugin for Code Formatting)
+```text
+http://admin.cypresshub.com
+```
 
-Husky (Git Hooks for Pre-commit Linting)
+Kết quả mong đợi:
 
-PHPUnit (Testing)[cite: 1]
+```text
+CypressHub Admin Skeleton Boilerplate is Running!
 
-Scripts
-Bash
-composer install                     # Install PHP packages
-npm install                          # Install Node packages & activate Husky hooks
-php artisan serve                    # Start development backend server
-php artisan migrate                  # Run database migrations[cite: 1]
-php artisan db:seed                  # Seed database with sample data
-php artisan test                     # Run automated test suites[cite: 1]
-npx prettier --write "app/**/*.php"  # Manually format all PHP files
-Deployment
-The application can be deployed to:
+The Vue.js/GraphQL admin skeleton is ready for development.
+```
 
-Laravel Forge
+---
 
-Docker (Supports Docker Compose setup)[cite: 1]
+# Checklist
 
-AWS (Elastic Beanstalk / EC2)[cite: 1]
+Đảm bảo toàn bộ các bước dưới đây đã hoàn thành:
 
-DigitalOcean
+- [ ] Đã clone source code thành công
+- [ ] Chạy `composer install` thành công
+- [ ] Đã tạo file `.env`
+- [ ] Đã cấu hình PostgreSQL
+- [ ] Chạy `php artisan key:generate` thành công
+- [ ] Chạy `php artisan migrate` thành công
+- [ ] Chạy `php artisan optimize:clear` thành công
+- [ ] Chạy `php artisan serve` thành công
+- [ ] Truy cập được **API Gateway**
+- [ ] Truy cập được **Admin Portal**
 
-Heroku
+---
 
-License
-This project is intended for learning and internal development purposes.
+#  Ghi chú
+
+- Backend sử dụng **Laravel**.
+- Database sử dụng **PostgreSQL** được cung cấp thông qua **Supabase PG Pooler**.
+- Dự án chạy local với domain:
+
+```text
+http://admin.cypresshub.com
+http://api.cypresshub.com
+```
+
+- Nếu thay đổi file `.env`, hãy chạy lại:
+
+```bash
+php artisan optimize:clear
+```
