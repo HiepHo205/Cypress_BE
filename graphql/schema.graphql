@@ -42,3 +42,27 @@ type User {
     "When the account was last updated."
     updated_at: DateTime!
 }
+
+extend type Mutation {
+    "Register a new customer account"
+    register(input: RegisterInput! @spread): RegisterResponse!
+        @validator(
+            class: "App\\Modules\\Api\\GraphQL\\Validators\\RegisterInputValidator"
+        )
+        @field(
+            resolver: "App\\Modules\\Api\\GraphQL\\Mutations\\AuthMutation@register"
+        )
+}
+
+input RegisterInput {
+    name: String!
+    email: String!
+    password: String!
+    password_confirmation: String!
+}
+
+type RegisterResponse {
+    status: Boolean!
+    message: String!
+    user: User
+}
