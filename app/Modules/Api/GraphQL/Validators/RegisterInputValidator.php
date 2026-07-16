@@ -8,25 +8,28 @@ class RegisterInputValidator extends Validator
 {
     public function rules(): array
     {
-        dd($this->args);
-
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string', 'min:6'],
-            'password_confirmation' => ['required', 'same:password'],
+            'input.name' => ['required', 'string', 'max:255'],
+            'input.email' => ['required', 'email'],
+            'input.password' => ['required', 'string', 'min:6'],
+            'input.password_confirmation' => [
+                'required',
+                'same:input.password',
+            ],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'name.required' => 'Name is required.',
-            'email.required' => 'Email is required.',
-            'email.email' => 'Invalid email format.',
-            'password.required' => 'Password is required.',
-            'password.min' => 'Password must be at least 6 characters.',
-            'password_confirmation.same' =>
+            'input.name.required' => 'Name is required.',
+            'input.email.required' => 'Email is required.',
+            'input.email.email' => 'Invalid email format.',
+            'input.password.required' => 'Password is required.',
+            'input.password.min' => 'Password must be at least 6 characters.',
+            'input.password_confirmation.required' =>
+                'Confirm password is required.',
+            'input.password_confirmation.same' =>
                 'Password confirmation does not match.',
         ];
     }
