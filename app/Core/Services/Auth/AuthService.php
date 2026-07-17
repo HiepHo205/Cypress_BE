@@ -5,6 +5,7 @@ namespace App\Core\Services\Auth;
 use App\Core\Repositories\Contracts\UserRepositoryInterface;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthService
 {
@@ -35,13 +36,14 @@ class AuthService
         ];
     }
 
-    public function logout($data)
+    public function logout(): void
     {
-        $user = Auth::user();
+        $token = JWTAuth::getToken();
 
-        if (!$user) {
-            throw new Exception('User not found');
+        if (!$token) {
+            throw new Exception('Token not provided');
         }
-        $user->currentAccessToken()->delete();
+
+        JWTAuth::invalidate($token);
     }
 }

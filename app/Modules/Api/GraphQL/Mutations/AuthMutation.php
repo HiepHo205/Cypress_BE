@@ -31,17 +31,18 @@ class AuthMutation
     {
         try {
             $this->authService->logout();
+
             return [
-                'status' => true,   
-                'message'=> $e->getMessage(),
+                'status' => true,
+                'message' => 'Logout successfully',
                 'user' => null,
             ];
         } catch (Exception $e) {
-            return[
-                'status'=>false,
-                'message'=> $e->getMessage(),
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
                 'user' => null,
             ];
         }
-        }
+    }
 }

@@ -2,8 +2,10 @@
 
 namespace App\Modules\Admin\GraphQL\Mutations;
 
+use Exception;
 use GraphQL\Type\Definition\ResolveInfo;
 use Nuwave\Lighthouse\Support\Contracts\GraphQLContext;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AdminAuthMutation
 {
@@ -19,15 +21,24 @@ class AdminAuthMutation
         ];
     }
 
-    public function logout(
+ public function logout(
         $rootValue,
         array $args,
         GraphQLContext $context,
         ResolveInfo $resolveInfo,
     ) {
-        return [
-            'status' => true,
-            'message' => 'Logged out successfully.',
-        ];
+        try {
+            JWTAuth::invalidate(JWTAuth::getToken());
+
+            return [
+                'status' => true,
+                'message' => 'Logged out successfully.',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => 'Logout failed: ' . $e->getMessage(),
+            ];
+        }
     }
 }
