@@ -2,6 +2,4 @@
 
 namespace App\Models;
 
-class User extends \App\Core\Models\User
-{
-}
+class User extends \App\Core\Models\User {}

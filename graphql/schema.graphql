@@ -25,25 +25,30 @@ type Query {
 "Operations to manage users from the admin area."
 type Mutation {
     createUser(input: CreateUserInput!): CreateUserPayload!
-        @field(resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@create")
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@create"
+        )
 
     updateUser(id: ID!, input: UpdateUserInput!): UpdateUserPayload!
-        @field(resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@update")
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@update"
+        )
 
     deleteUser(id: ID!): DeleteUserPayload!
-        @field(resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@delete")
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@delete"
+        )
 
     deactivateUser(id: ID!): DeactivateUserPayload!
-        @field(resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@deactivate")
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@deactivate"
+        )
 }
 
 input CreateUserInput {
-    name: String!
-        @rules(apply: ["required", "string", "min:2"])
-    email: String!
-        @rules(apply: ["required", "email"])
-    password: String!
-        @rules(apply: ["required", "min:8"])
+    name: String! @rules(apply: ["required", "string", "min:2"])
+    email: String! @rules(apply: ["required", "email"])
+    password: String! @rules(apply: ["required", "min:8"])
 }
 
 input UpdateUserInput {
