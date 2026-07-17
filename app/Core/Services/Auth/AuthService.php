@@ -4,6 +4,7 @@ namespace App\Core\Services\Auth;
 
 use App\Core\Repositories\Contracts\UserRepositoryInterface;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 
 class AuthService
 {
@@ -32,5 +33,15 @@ class AuthService
             'message' => 'Registration completed successfully.',
             'user' => $user,
         ];
+    }
+
+    public function logout($data)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            throw new Exception('User not found');
+        }
+        $user->currentAccessToken()->delete();
     }
 }
