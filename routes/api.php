@@ -1,6 +1,5 @@
 <?php
-
-use App\Modules\Auth\Controllers\AuthController;
+use App\Modules\Admin\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::domain('api.cypresshub.com')->group(function () {
@@ -12,5 +11,5 @@ Route::domain('api.cypresshub.com')->group(function () {
         ]);
     })->name('api.gateway');
 
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [UserController::class, 'login']);
 });

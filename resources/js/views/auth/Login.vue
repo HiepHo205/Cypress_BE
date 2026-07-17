@@ -1,32 +1,23 @@
 <script setup>
 import { ref } from "vue";
 import { Mail, Lock, Eye, EyeOff } from "lucide-vue-next";
+import { useToast } from "vue-toastification";
+
+const toast = useToast();
 
 const email = ref("");
 const password = ref("");
-const errorMessage = ref("");
-const successMessage = ref("");
 const loading = ref(false);
 const showPassword = ref(false);
 
-const handleSocialLogin = (provider) => {
-    alert(`Initiating login with ${provider}. (Not yet implemented)`);
-};
+const togglePasswordVisibility = () => { showPassword.value = !showPassword.value;};
 
-const togglePasswordVisibility = () => {
-    showPassword.value = !showPassword.value;
-};
 const handleLogin = async () => {
-    errorMessage.value = "";
-
     if (!email.value || !password.value) {
-        successMessage.value = ""; // Clear success message if any
-        errorMessage.value = "Please enter your email and password.";
+        toast.error("Please enter your email and password.");
         return;
     }
-
     loading.value = true;
-
     const query = `
         mutation Login($email: String!, $password: String!) {
             login(email: $email, password: $password) {
@@ -42,13 +33,11 @@ const handleLogin = async () => {
                     status
                     roles {
                         id
-                        name
-                    }
+                        name }
                 }
             }
         }
     `;
-
     try {
         const response = await fetch("/graphql", {
             method: "POST",
@@ -64,19 +53,21 @@ const handleLogin = async () => {
                 },
             }),
         });
-
         const result = await response.json();
 
         if (result.errors) {
-            errorMessage.value =
-                result.errors[0]?.message || "Login failed.";
+            toast.error(
+                result.errors[0]?.message || "Login failed."
+            );
             return;
         }
 
         const login = result.data.login;
 
         if (!login.status) {
-            errorMessage.value = login.message;
+
+            toast.error(login.message);
+
             return;
         }
 
@@ -85,36 +76,42 @@ const handleLogin = async () => {
         );
 
         if (!isAdmin) {
-            errorMessage.value =
-                "Only admin accounts can access this page.";
+
+            toast.warning(
+                "Only admin accounts can access this page."
+            );
             return;
         }
-        errorMessage.value = "";
-        successMessage.value = "Login successful! Redirecting to dashboard...";
 
         localStorage.setItem(
             "token",
             login.access_token
         );
+
         localStorage.setItem(
             "user",
             JSON.stringify(login.user)
         );
 
+        toast.success(
+            "Login successful! Redirecting..."
+        );
+
         setTimeout(() => {
+
             window.location.href = "/dashboard";
-        }, 1500); 
+
+        }, 1500);
 
     } catch (error) {
-        console.error(error);
-        errorMessage.value = "Something went wrong.";
-
+        toast.error(
+            "Something went wrong. Please try again."
+        );
     } finally {
         loading.value = false;
     }
 };
 </script>
-
 <template>
     <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-50">
 

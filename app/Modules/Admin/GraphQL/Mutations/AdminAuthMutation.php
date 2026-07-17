@@ -33,13 +33,12 @@ class AdminAuthMutation
             'password' => $args['password'],
         ]);
 
-
         $result = $this->authService->login($data);
 
-        if (!$result['status']) {
+        if (!($result['status'] ?? false)) {
             return [
                 'status' => false,
-                'message' => $result['message'],
+                'message' => $result['message'] ?? 'Login failed.',
                 'access_token' => null,
                 'token_type' => null,
                 'expires_in' => null,
@@ -47,11 +46,9 @@ class AdminAuthMutation
             ];
         }
 
-
         $user = $result['user'];
 
-        if (!$user->hasRole('admin')) {
-
+        if (! $user->hasRole('admin')) {
             return [
                 'status' => false,
                 'message' => 'You do not have permission to access admin.',
@@ -62,17 +59,15 @@ class AdminAuthMutation
             ];
         }
 
-
         return [
             'status' => true,
-            'message' => 'Admin login successfully.',
+            'message' => $result['message'] ?? 'Login successful.',
             'access_token' => $result['access_token'],
             'token_type' => $result['token_type'],
             'expires_in' => $result['expires_in'],
             'user' => $user,
         ];
     }
-
 
     public function logout(
         $rootValue,

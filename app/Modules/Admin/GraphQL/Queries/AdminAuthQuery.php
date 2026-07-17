@@ -1,22 +1,18 @@
 <?php
 
-namespace App\Models;
+namespace App\Modules\Admin\GraphQL\Queries;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Tymon\JWTAuth\Contracts\JWTSubject;
+use GraphQL\Type\Definition\ResolveInfo;
+use Nuwave\Lighthouse\Support\Contracts\GraphQLContext;
 
-class AdminAuthQuery extends Authenticatable implements JWTSubject
+class AdminAuthQuery
 {
-    use Notifiable;
-
-    public function getJWTIdentifier()
-    {
-        return $this->getKey();
-    }
-
-    public function getJWTCustomClaims()
-    {
-        return [];
+    public function me(
+        $rootValue,
+        array $args,
+        GraphQLContext $context,
+        ResolveInfo $resolveInfo,
+    ) {
+        return null;
     }
 }
