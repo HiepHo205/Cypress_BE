@@ -22,6 +22,53 @@ type Query {
     ): [User!]! @paginate(defaultCount: 10)
 }
 
+"Operations to manage users from the admin area."
+type Mutation {
+    createUser(input: CreateUserInput!): CreateUserPayload!
+        @field(resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@create")
+
+    updateUser(id: ID!, input: UpdateUserInput!): UpdateUserPayload!
+        @field(resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@update")
+
+    deleteUser(id: ID!): DeleteUserPayload!
+        @field(resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@delete")
+
+    deactivateUser(id: ID!): DeactivateUserPayload!
+        @field(resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@deactivate")
+}
+
+input CreateUserInput {
+    name: String!
+        @rules(apply: ["required", "string", "min:2"])
+    email: String!
+        @rules(apply: ["required", "email"])
+    password: String!
+        @rules(apply: ["required", "min:8"])
+}
+
+input UpdateUserInput {
+    name: String @rules(apply: ["string", "min:2"])
+    email: String @rules(apply: ["email"])
+    password: String @rules(apply: ["min:8"])
+    status: String @rules(apply: ["in:active,unactive"])
+}
+
+type CreateUserPayload {
+    user: User!
+}
+
+type UpdateUserPayload {
+    user: User!
+}
+
+type DeleteUserPayload {
+    user: User!
+}
+
+type DeactivateUserPayload {
+    user: User!
+}
+
 "Account of a person who uses this application."
 type User {
     "Unique primary key."
@@ -41,6 +88,9 @@ type User {
 
     "When the account was last updated."
     updated_at: DateTime!
+
+    "Current account status."
+    status: String!
 }
 
 extend type Mutation {

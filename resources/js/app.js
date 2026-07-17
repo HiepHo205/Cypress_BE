@@ -1,8 +1,12 @@
-import './bootstrap';
-import { createApp } from 'vue';
-import AdminDashboard from './components/AdminDashboard.vue';
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+import { provideApolloClient } from './apollo'
 
-const app = createApp({});
+const app = createApp(App)
 
-app.component('admin-dashboard', AdminDashboard);
-app.mount('#app');
+provideApolloClient(app)
+
+app.use(router)
+
+app.mount('#app')

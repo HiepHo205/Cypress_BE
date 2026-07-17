@@ -10,6 +10,7 @@
   "devDependencies": {
     "@prettier/plugin-php": "^0.25.0",
     "@tailwindcss/vite": "^4.0.0",
+    "@vitejs/plugin-vue": "^6.0.8",
     "concurrently": "^9.0.1",
     "laravel-vite-plugin": "^3.1",
     "prettier": "^3.9.4",
@@ -17,7 +18,10 @@
     "vite": "^8.0.0"
   },
   "dependencies": {
-    "@vitejs/plugin-vue": "^6.0.8",
-    "vue": "^3.5.40"
+    "@apollo/client": "^4.2.7",
+    "graphql": "^16.14.2",
+    "pinia": "^4.0.2",
+    "vue": "^3.5.40",
+    "vue-router": "^5.2.0"
   }
 }

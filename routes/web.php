@@ -1,9 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Modules\Admin\Controllers\AdminController;
+use App\Modules\Admin\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
-Route::domain('admin.cypresshub.com')->group(function () {
+Route::prefix('admin')->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('admin.home');
+    Route::get('/users', [UserController::class, 'index'])->name('admin.users');
+});
 
+Route::get('/', function () {
+    return redirect('/admin');
 });
