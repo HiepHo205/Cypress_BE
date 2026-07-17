@@ -1,3 +1,4 @@
+import '../css/app.css';
 import { createApp } from 'vue';
 import AdminDashboard from './components/AdminDashboard.vue';
 import Login from './components/Login.vue';

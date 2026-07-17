@@ -5,12 +5,14 @@ import { Mail, Lock, Eye, EyeOff } from "lucide-vue-next";
 const email = ref("");
 const password = ref("");
 const errorMessage = ref("");
+const successMessage = ref("");
 const loading = ref(false);
 const showPassword = ref(false);
 
 const handleSocialLogin = (provider) => {
     alert(`Initiating login with ${provider}. (Not yet implemented)`);
 };
+
 const togglePasswordVisibility = () => {
     showPassword.value = !showPassword.value;
 };
@@ -18,6 +20,7 @@ const handleLogin = async () => {
     errorMessage.value = "";
 
     if (!email.value || !password.value) {
+        successMessage.value = ""; // Clear success message if any
         errorMessage.value = "Please enter your email and password.";
         return;
     }
@@ -86,19 +89,21 @@ const handleLogin = async () => {
                 "Only admin accounts can access this page.";
             return;
         }
+        errorMessage.value = "";
+        successMessage.value = "Login successful! Redirecting to dashboard...";
 
         localStorage.setItem(
             "token",
             login.access_token
         );
-
         localStorage.setItem(
             "user",
             JSON.stringify(login.user)
         );
 
-        alert('Login successful!')
-        window.location.href = "/dashboard";
+        setTimeout(() => {
+            window.location.href = "/dashboard";
+        }, 1500); 
 
     } catch (error) {
         console.error(error);
@@ -159,6 +164,11 @@ const handleLogin = async () => {
 
                 <div v-if="errorMessage" class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                     {{ errorMessage }}
+                </div>
+
+                <div v-if="successMessage"
+                    class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                    {{ successMessage }}
                 </div>
 
                 <form @submit.prevent="handleLogin" class="space-y-4">
