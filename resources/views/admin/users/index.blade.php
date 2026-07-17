@@ -30,10 +30,11 @@
             <th>Name</th>
             <th>Email</th>
             <th>Status</th>
+            <th>Actions</th>
         </tr>
         </thead>
         <tbody id="users-body">
-        <tr><td colspan="3" class="muted">Loading users...</td></tr>
+        <tr><td colspan="4" class="muted">Loading users...</td></tr>
         </tbody>
     </table>
 </div>

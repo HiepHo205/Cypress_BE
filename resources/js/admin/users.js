@@ -9,6 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('user-form');
     const feedback = document.getElementById('users-feedback');
     const tbody = document.getElementById('users-body');
+    const submitButton = form?.querySelector('button[type="submit"]');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    let editingUserId = null;
 
     async function gql(query, variables = {}) {
         const response = await fetch(endpoint, {
@@ -38,20 +43,32 @@ document.addEventListener('DOMContentLoaded', () => {
         feedback.style.color = type === 'error' ? '#b91c1c' : '#2563eb';
     }
 
+    function resetForm() {
+        if (form) {
+            form.reset();
+        }
+
+        editingUserId = null;
+
+        if (submitButton) {
+            submitButton.textContent = 'Create User';
+        }
+    }
+
     async function loadUsers() {
         if (!tbody) {
             return;
         }
 
-        tbody.innerHTML = '<tr><td colspan="3" class="muted">Loading users...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="muted">Loading users...</td></tr>';
         setFeedback('Loading users...');
 
         try {
-            const data = await gql(`query { users { data { id name email } paginatorInfo { total currentPage lastPage } } }`);
+            const data = await gql(`query { users { data { id name email status } paginatorInfo { total currentPage lastPage } } }`);
             const rows = data.users?.data || [];
 
             if (!rows.length) {
-                tbody.innerHTML = '<tr><td colspan="3" class="muted">No users found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="muted">No users found.</td></tr>';
                 setFeedback('No users available yet.');
                 return;
             }
@@ -62,7 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         <tr>
                             <td>${user.name}</td>
                             <td>${user.email}</td>
-                            <td><span style="color:#166534;">Active</span></td>
+                            <td><span style="color:${user.status === 'unactive' ? '#b91c1c' : '#166534'};">${user.status || 'active'}</span></td>
+                            <td>
+                                <button type="button" class="btn btn-secondary" data-action="edit" data-id="${user.id}" data-name="${user.name}" data-email="${user.email}">Edit</button>
+                                <button type="button" class="btn" data-action="deactivate" data-id="${user.id}">Lock</button>
+                                <button type="button" class="btn btn-secondary" data-action="delete" data-id="${user.id}">Delete</button>
+                            </td>
                         </tr>
                     `,
                 )
@@ -71,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setFeedback(`Loaded ${rows.length} user(s).`);
         } catch (error) {
             console.error(error);
-            tbody.innerHTML = '<tr><td colspan="3" class="muted">Unable to load users. Please check the GraphQL endpoint.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="muted">Unable to load users. Please check the GraphQL endpoint.</td></tr>';
             setFeedback(error.message || 'Unable to load users.', 'error');
         }
     }
@@ -80,29 +102,102 @@ document.addEventListener('DOMContentLoaded', () => {
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
 
-            const name = document.getElementById('name').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
+            const name = nameInput?.value.trim();
+            const email = emailInput?.value.trim();
+            const password = passwordInput?.value || '';
 
-            if (!name || !email || !password) {
-                setFeedback('Please fill in all fields.', 'error');
+            if (!name || !email) {
+                setFeedback('Name and email are required.', 'error');
+                return;
+            }
+
+            if (!editingUserId && !password) {
+                setFeedback('Password is required when creating a user.', 'error');
                 return;
             }
 
             try {
-                await gql(`mutation CreateUser($input: CreateUserInput!) { createUser(input: $input) { user { id name email } } }`, {
-                    input: { name, email, password },
-                });
+                if (editingUserId) {
+                    const payload = {};
 
-                form.reset();
-                setFeedback('User created successfully.');
+                    if (name) {
+                        payload.name = name;
+                    }
+
+                    if (email) {
+                        payload.email = email;
+                    }
+
+                    if (password) {
+                        payload.password = password;
+                    }
+
+                    await gql(`mutation UpdateUser($id: ID!, $input: UpdateUserInput!) { updateUser(id: $id, input: $input) { user { id name email status } } }`, {
+                        id: editingUserId,
+                        input: payload,
+                    });
+
+                    setFeedback('User updated successfully.');
+                } else {
+                    await gql(`mutation CreateUser($input: CreateUserInput!) { createUser(input: $input) { user { id name email status } } }`, {
+                        input: { name, email, password },
+                    });
+
+                    setFeedback('User created successfully.');
+                }
+
+                resetForm();
                 await loadUsers();
             } catch (error) {
                 console.error(error);
-                setFeedback(error.message || 'Unable to create user.', 'error');
+                setFeedback(error.message || (editingUserId ? 'Unable to update user.' : 'Unable to create user.'), 'error');
             }
         });
     }
+
+    page.addEventListener('click', async (event) => {
+        const button = event.target.closest('button[data-action]');
+
+        if (!button) {
+            return;
+        }
+
+        const action = button.dataset.action;
+        const id = button.dataset.id;
+
+        if (action === 'delete') {
+            try {
+                await gql(`mutation DeleteUser($id: ID!) { deleteUser(id: $id) { user { id } } }`, { id });
+                setFeedback('User deleted successfully.');
+                await loadUsers();
+            } catch (error) {
+                setFeedback(error.message || 'Unable to delete user.', 'error');
+            }
+            return;
+        }
+
+        if (action === 'deactivate') {
+            try {
+                await gql(`mutation DeactivateUser($id: ID!) { deactivateUser(id: $id) { user { id status } } }`, { id });
+                setFeedback('User deactivated successfully.');
+                await loadUsers();
+            } catch (error) {
+                setFeedback(error.message || 'Unable to deactivate user.', 'error');
+            }
+            return;
+        }
+
+        if (action === 'edit') {
+            const name = button.dataset.name;
+            const email = button.dataset.email;
+            editingUserId = id;
+            nameInput.value = name;
+            emailInput.value = email;
+            passwordInput.value = '';
+            submitButton.textContent = 'Update User';
+            setFeedback(`Editing ${name}. Enter a new password if needed.`);
+        }
+    });
 
     loadUsers();
 });

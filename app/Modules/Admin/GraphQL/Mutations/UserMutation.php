@@ -36,6 +36,10 @@ class UserMutation
             $user->password = Hash::make($args['input']['password']);
         }
 
+        if (array_key_exists('status', $args['input'])) {
+            $user->status = $args['input']['status'];
+        }
+
         $user->save();
 
         return ['user' => $user];
@@ -45,6 +49,15 @@ class UserMutation
     {
         $user = User::findOrFail($args['id']);
         $user->delete();
+
+        return ['user' => $user];
+    }
+
+    public function deactivate($rootValue, array $args, GraphQLContext $context, ResolveInfo $resolveInfo): array
+    {
+        $user = User::findOrFail($args['id']);
+        $user->status = 'unactive';
+        $user->save();
 
         return ['user' => $user];
     }

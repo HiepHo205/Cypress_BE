@@ -32,6 +32,9 @@ type Mutation {
 
     deleteUser(id: ID!): DeleteUserPayload!
         @field(resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@delete")
+
+    deactivateUser(id: ID!): DeactivateUserPayload!
+        @field(resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@deactivate")
 }
 
 input CreateUserInput {
@@ -47,6 +50,7 @@ input UpdateUserInput {
     name: String @rules(apply: ["string", "min:2"])
     email: String @rules(apply: ["email"])
     password: String @rules(apply: ["min:8"])
+    status: String @rules(apply: ["in:active,unactive"])
 }
 
 type CreateUserPayload {
@@ -58,6 +62,10 @@ type UpdateUserPayload {
 }
 
 type DeleteUserPayload {
+    user: User!
+}
+
+type DeactivateUserPayload {
     user: User!
 }
 
@@ -80,4 +88,7 @@ type User {
 
     "When the account was last updated."
     updated_at: DateTime!
+
+    "Current account status."
+    status: String!
 }
