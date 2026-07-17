@@ -11,11 +11,40 @@ export default defineConfig({
             refresh: true,
             fonts: [
                 bunny('Instrument Sans', {
-                    weights: [400, 500, 600],
-                }),
-            ],
+                    weights: [400, 500, 600]
+                })
+            ]
         }),
-        vue(),
-        tailwindcss(),
+
+        vue({
+            template: {
+                transformAssetUrls: {
+                    base: null,
+                    includeAbsolute: false
+                }
+            }
+        }),
+
+        tailwindcss()
     ],
+
+    resolve: {
+        alias: {
+            vue: 'vue/dist/vue.esm-bundler.js',
+            '@': '/resources/js'
+        }
+    },
+
+    server: {
+        host: '0.0.0.0',
+        port: 5173,
+        cors: true,
+        origin: 'http://localhost:5173',
+        hmr: {
+            host: 'admin.cypresshub.com'
+        },
+        watch: {
+            ignored: ['**/storage/framework/views/**']
+        }
+    }
 });

@@ -1,6 +1,10 @@
-import '../css/app.css';
-
 import { createApp } from 'vue';
-import Login from '../../app/Modules/Admin/Views/Login.vue';
+import AdminDashboard from './components/AdminDashboard.vue';
+import Login from './components/Login.vue';
+import '../css/app.css';
+const app = createApp({});
 
-createApp(Login).mount('#app');
+app.component('admin-dashboard', AdminDashboard);
+app.component('login', Login);
+
+app.mount('#app');
