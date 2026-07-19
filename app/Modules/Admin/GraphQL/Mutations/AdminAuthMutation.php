@@ -32,13 +32,13 @@ class AdminAuthMutation
         $user = User::find(Auth::id());
 
         $token = bin2hex(random_bytes(40));
-        
+
         if (schema_has_column('users', 'api_token') && $user) {
             $user->api_token = $token;
             $user->save();
         }
 
-      return [
+        return [
             'status' => true,
             'message' => 'Login successfully!',
             'access_token' => $token,
@@ -65,7 +65,8 @@ class AdminAuthMutation
 }
 
 if (!function_exists('schema_has_column')) {
-    function schema_has_column($table, $column) {
+    function schema_has_column($table, $column)
+    {
         return \Illuminate\Support\Facades\Schema::hasColumn($table, $column);
     }
 }

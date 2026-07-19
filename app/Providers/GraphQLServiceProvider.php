@@ -20,10 +20,14 @@ class GraphQLServiceProvider extends ServiceProvider
         $this->configureGraphQLGuard();
     }
 
-   private function configureGraphQLGuard(): void
+    private function configureGraphQLGuard(): void
     {
         $host = request()->getHost();
-        if ($host === config('app.admin_url', 'admin.cypresshub.com') || $host === '127.0.0.1' || $host === 'localhost') {
+        if (
+            $host === config('app.admin_url', 'admin.cypresshub.com') ||
+            $host === '127.0.0.1' ||
+            $host === 'localhost'
+        ) {
             config([
                 'lighthouse.route.middleware' => [
                     'web',

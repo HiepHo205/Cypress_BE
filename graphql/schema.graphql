@@ -9,9 +9,8 @@ type Query {
             @rules(apply: ["prohibits:id", "required_without:id", "email"])
     ): User @find
 
-    users(
-        name: String @where(operator: "like")
-    ): [User!]! @paginate(defaultCount: 10)
+    users(name: String @where(operator: "like")): [User!]!
+        @paginate(defaultCount: 10)
 }
 
 type Mutation {
