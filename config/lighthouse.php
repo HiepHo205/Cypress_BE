@@ -1,12 +1,14 @@
 <?php
 
 return [
-    'route' => [
+   'route' => [
         'middleware' => [
+            \Illuminate\Http\Middleware\HandleCors::class,
             'api',
             \Nuwave\Lighthouse\Http\Middleware\AcceptJson::class,
         ],
-        'prefix' => 'graphql',
+        'prefix' => '',
+        'domain' => 'api.cypresshub.com',
     ],
     'guards' => [
         'web' => 'web',
