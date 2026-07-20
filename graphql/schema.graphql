@@ -1,44 +1,102 @@
-"A datetime string with format `Y-m-d H:i:s`, e.g. `2018-05-23 13:43:32`."
+#import ../app/Modules/Api/GraphQL/api.graphql
+
 scalar DateTime
     @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
 
-"Indicates what fields are available at the top level of a query operation."
 type Query {
-    "Find a single user by an identifying attribute."
     user(
-        "Search by primary key."
         id: ID @eq @rules(apply: ["prohibits:email", "required_without:email"])
-
-        "Search by email address."
         email: String
             @eq
             @rules(apply: ["prohibits:id", "required_without:id", "email"])
     ): User @find
 
-    "List multiple users."
-    users(
-        "Filters by name. Accepts SQL LIKE wildcards `%` and `_`."
-        name: String @where(operator: "like")
-    ): [User!]! @paginate(defaultCount: 10)
+    users(name: String @where(operator: "like")): [User!]!
+        @paginate(defaultCount: 10)
 }
 
-"Account of a person who uses this application."
+type Mutation {
+    createUser(input: CreateUserInput!): CreateUserPayload!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@create"
+        )
+
+    updateUser(id: ID!, input: UpdateUserInput!): UpdateUserPayload!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@update"
+        )
+
+    deleteUser(id: ID!): DeleteUserPayload!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@delete"
+        )
+
+    deactivateUser(id: ID!): DeactivateUserPayload!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@deactivate"
+        )
+}
+
+input CreateUserInput {
+    name: String! @rules(apply: ["required", "string", "min:2"])
+    email: String! @rules(apply: ["required", "email", "unique:users,email"])
+    password: String! @rules(apply: ["required", "min:8"])
+}
+
+input UpdateUserInput {
+    name: String @rules(apply: ["string", "min:2"])
+    email: String @rules(apply: ["email"])
+    password: String @rules(apply: ["min:8"])
+    status: String @rules(apply: ["in:active,unactive"])
+}
+
+type CreateUserPayload {
+    user: User!
+}
+
+type UpdateUserPayload {
+    user: User!
+}
+
+type DeleteUserPayload {
+    user: User!
+}
+
+type DeactivateUserPayload {
+    user: User!
+}
+
 type User {
-    "Unique primary key."
     id: ID!
-
-    "Non-unique name."
     name: String!
-
-    "Unique email address."
+    full_name: String
     email: String!
-
-    "When the email was verified."
     email_verified_at: DateTime
-
-    "When the account was created."
     created_at: DateTime!
-
-    "When the account was last updated."
     updated_at: DateTime!
+
+    status: String!
+
+    roles: [Role!]! @belongsToMany
+}
+
+extend type Mutation {
+    login(email: String!, password: String!): AuthPayload
+        @field(
+            resolver: "App\\Modules\\Api\\GraphQL\\Mutations\\AuthMutation@login"
+        )
+}
+
+type AuthPayload {
+    access_token: String
+    token_type: String
+    user: User
+    status: Boolean!
+    message: String!
+    expires_in: Int
+}
+
+type Role {
+    id: ID!
+    name: String!
 }

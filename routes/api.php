@@ -1,5 +1,5 @@
 <?php
-
+use App\Modules\Admin\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::domain('api.cypresshub.com')->group(function () {
@@ -10,4 +10,6 @@ Route::domain('api.cypresshub.com')->group(function () {
             'timestamp' => now()->toIso8601String()
         ]);
     })->name('api.gateway');
+
+    Route::post('/login', [UserController::class, 'login']);
 });
