@@ -6,7 +6,7 @@ return [
             'api',
             \Nuwave\Lighthouse\Http\Middleware\AcceptJson::class,
         ],
-        'prefix' => 'graphql',
+        'prefix' => '',
     ],
     'guards' => [
         'web' => 'web',

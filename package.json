@@ -18,8 +18,10 @@
     "vite": "^8.0.0"
   },
   "dependencies": {
-    "@apollo/client": "^4.2.7",
+    "@apollo/client": "^3.14.1",
+    "@vue/apollo-composable": "^4.2.2",
     "graphql": "^16.14.2",
+    "graphql-tag": "^2.12.7",
     "pinia": "^4.0.2",
     "vue": "^3.5.40",
     "vue-router": "^5.2.0"

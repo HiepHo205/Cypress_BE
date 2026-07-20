@@ -4,7 +4,6 @@ namespace App\Modules\Admin\GraphQL\Mutations;
 
 use App\Core\Models\User;
 use GraphQL\Type\Definition\ResolveInfo;
-use Illuminate\Support\Facades\Hash;
 use Nuwave\Lighthouse\Support\Contracts\GraphQLContext;
 
 class UserMutation
@@ -14,7 +13,7 @@ class UserMutation
         $user = new User();
         $user->name = $args['input']['name'];
         $user->email = $args['input']['email'];
-        $user->password = Hash::make($args['input']['password']);
+        $user->password = $args['input']['password'];
         $user->save();
 
         return ['user' => $user];
@@ -33,7 +32,7 @@ class UserMutation
         }
 
         if (!empty($args['input']['password'])) {
-            $user->password = Hash::make($args['input']['password']);
+            $user->password = $args['input']['password'];
         }
 
         if (array_key_exists('status', $args['input'])) {

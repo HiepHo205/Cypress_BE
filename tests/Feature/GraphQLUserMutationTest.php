@@ -23,7 +23,7 @@ mutation CreateUser($input: CreateUserInput!) {
 }
 GRAPHQL;
 
-        $response = $this->postJson('/graphql/graphql', [
+        $response = $this->postJson('/graphql', [
             'query' => $query,
             'variables' => [
                 'input' => [
@@ -59,7 +59,7 @@ mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
 }
 GRAPHQL;
 
-        $response = $this->postJson('/graphql/graphql', [
+        $response = $this->postJson('/graphql', [
             'query' => $query,
             'variables' => [
                 'id' => (string) $user->id,
