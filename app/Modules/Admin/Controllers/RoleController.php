@@ -6,6 +6,6 @@ class RoleController
 {
     public function index()
     {
-        return view('admin');
+        return view('app');
     }
 }

@@ -10,6 +10,7 @@
   "devDependencies": {
     "@prettier/plugin-php": "^0.25.0",
     "@tailwindcss/vite": "^4.0.0",
+    "@vitejs/plugin-vue": "^6.0.8",
     "concurrently": "^9.0.1",
     "laravel-vite-plugin": "^3.1",
     "prettier": "^3.9.4",
