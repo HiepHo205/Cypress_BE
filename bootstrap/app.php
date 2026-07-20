@@ -14,20 +14,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+
+        $middleware->api([
+            \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
     })
+    ->withProviders([
+        App\Providers\RepositoryServiceProvider::class,
+    ])
     ->withExceptions(function (Exceptions $exceptions): void {
 
         $exceptions->shouldRenderJsonWhen(
-            fn(Request $request) => true
+            fn(Request $request) => $request->is('api/*'),
         );
-        $exceptions->render(function (
-            \Illuminate\Auth\AuthenticationException $e,
-            Request $request
-        ) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Unauthenticated'
-            ], 401);
-        });
     })->create();

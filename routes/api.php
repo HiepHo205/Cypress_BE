@@ -1,5 +1,7 @@
 <?php
 
+use App\Modules\Admin\Controllers\UserController;
+
 use App\Modules\Api\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -11,6 +13,8 @@ Route::domain('api.cypresshub.com')->group(function () {
             'timestamp' => now()->toIso8601String()
         ]);
     })->name('api.gateway');
+
+    Route::post('/login', [UserController::class, 'login']);
 
     Route::post('/logout', [AuthController::class, 'logout'])
         ->middleware('auth:api')
