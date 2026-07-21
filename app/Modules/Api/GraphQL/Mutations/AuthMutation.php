@@ -15,7 +15,7 @@ class AuthMutation
 
     public function __construct(
         AuthService $authService,
-        LoginInputValidator $loginValidator
+        LoginInputValidator $loginValidator,
     ) {
         $this->authService = $authService;
         $this->loginValidator = $loginValidator;
@@ -38,19 +38,15 @@ class AuthMutation
         mixed $root,
         array $args,
         GraphQLContext $context,
-        ResolveInfo $resolveInfo
+        ResolveInfo $resolveInfo,
     ): array {
-
         try {
-
             $result = $this->authService->login([
                 'email' => $args['email'],
                 'password' => $args['password'],
             ]);
 
-
             if (!$result['status']) {
-
                 return [
                     'status' => false,
                     'message' => $result['message'],
@@ -61,7 +57,6 @@ class AuthMutation
                 ];
             }
 
-
             return [
                 'status' => true,
                 'message' => $result['message'],
@@ -71,7 +66,6 @@ class AuthMutation
                 'user' => $result['user'],
             ];
         } catch (Exception $e) {
-
             return [
                 'status' => false,
                 'message' => $e->getMessage(),

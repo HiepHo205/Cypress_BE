@@ -539,3 +539,4 @@ return [
         'driver' => Nuwave\Lighthouse\Tracing\ApolloTracing\ApolloTracing::class,
     ],
 ];
+

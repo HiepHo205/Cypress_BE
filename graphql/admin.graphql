@@ -1,3 +1,4 @@
+#import ../app/Modules/Api/GraphQL/api.graphql
 <?php
 
 namespace App\Modules\Admin\GraphQL\Mutations;

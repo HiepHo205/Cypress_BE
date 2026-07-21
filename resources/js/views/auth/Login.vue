@@ -21,10 +21,12 @@ const handleLogin = async () => {
         toast.error('Please enter your email and password.');
         return;
     }
+
     loading.value = true;
+
     const query = `
-        mutation Login($email: String!, $password: String!) {
-            login(email: $email, password: $password) {
+        mutation Login($input: LoginInput!) {
+            login(input: $input) {
                 status
                 message
                 access_token
@@ -32,47 +34,60 @@ const handleLogin = async () => {
                 expires_in
                 user {
                     id
+                    name
                     full_name
                     email
                     status
                     roles {
                         id
-                        name }
+                        name
+                    }
                 }
             }
         }
     `;
+
     try {
         const response = await fetch('/graphql', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Accept: 'application/json'
+                Accept: 'application/json',
             },
             body: JSON.stringify({
                 query,
                 variables: {
-                    email: email.value,
-                    password: password.value
-                }
-            })
+                    input: {
+                        email: email.value,
+                        password: password.value,
+                    },
+                },
+            }),
         });
+
         const result = await response.json();
 
-        if (result.errors) {
-            toast.error(result.errors[0]?.message || 'Login failed.');
+        console.log('GraphQL response:', result);
+
+        if (result.errors?.length) {
+            toast.error(result.errors[0].message);
             return;
         }
 
-        const login = result.data.login;
+        const login = result?.data?.login;
+
+        if (!login) {
+            toast.error('Invalid response from server.');
+            return;
+        }
 
         if (!login.status) {
             toast.error(login.message);
-
             return;
         }
 
-        const isAdmin = login.user.roles.some((role) => role.name === 'admin');
+        const isAdmin =
+            login.user?.roles?.some(role => role.name === 'admin') ?? false;
 
         if (!isAdmin) {
             toast.warning('Only admin accounts can access this page.');
@@ -80,37 +95,36 @@ const handleLogin = async () => {
         }
 
         localStorage.setItem('token', login.access_token);
-
         localStorage.setItem('user', JSON.stringify(login.user));
 
-        toast.success('Login successful! Redirecting...');
+        toast.success(login.message || 'Login successful!');
 
-        setTimeout(() => router.push({ name: 'dashboard' }), 1500);
+        setTimeout(() => {
+            router.push('/admin');
+        }, 1000);
     } catch (error) {
+        console.error(error);
         toast.error('Something went wrong. Please try again.');
     } finally {
         loading.value = false;
     }
 };
 </script>
+
 <template>
-    <div
-        class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-50"
-    >
-        <div
-            class="w-[800px] h-[550px] bg-white rounded-2xl shadow-xl flex overflow-hidden"
-        >
-            <div
-                class="w-1/2 bg-gradient-to-br from-indigo-500 to-blue-400 text-white p-10 flex flex-col justify-center"
-            >
+    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-50">
+        <div class="w-[800px] h-[550px] bg-white rounded-2xl shadow-xl flex overflow-hidden">
+
+            <div class="w-1/2 bg-gradient-to-br from-indigo-500 to-blue-400 text-white p-10 flex flex-col justify-center">
+
                 <div class="mb-10">
-                    <div
-                        class="w-12 h-12 bg-white text-indigo-500 rounded-xl flex items-center justify-center font-bold text-xl mb-4"
-                    >
+                    <div class="w-12 h-12 bg-white text-indigo-500 rounded-xl flex items-center justify-center font-bold text-xl mb-4">
                         C
                     </div>
 
-                    <h2 class="font-semibold text-xl">Cypress Hub</h2>
+                    <h2 class="font-semibold text-xl">
+                        Cypress Hub
+                    </h2>
                 </div>
 
                 <h1 class="text-4xl font-bold leading-tight mb-6">
@@ -122,9 +136,11 @@ const handleLogin = async () => {
                 <p class="text-sm opacity-90">
                     Manage your Cypress Hub easily.
                 </p>
+
             </div>
 
             <div class="w-1/2 p-8 flex flex-col justify-center">
+
                 <h2 class="text-2xl font-semibold text-center mb-2">
                     Welcome back
                 </h2>
@@ -134,13 +150,14 @@ const handleLogin = async () => {
                 </p>
 
                 <form @submit.prevent="handleLogin" class="space-y-4">
+
                     <div>
-                        <label class="text-sm font-bold"> Email </label>
+                        <label class="text-sm font-bold">
+                            Email
+                        </label>
 
                         <div class="relative mt-1">
-                            <Mail
-                                class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-                            />
+                            <Mail class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
 
                             <input
                                 v-model="email"
@@ -152,12 +169,12 @@ const handleLogin = async () => {
                     </div>
 
                     <div>
-                        <label class="text-sm font-bold"> Password </label>
+                        <label class="text-sm font-bold">
+                            Password
+                        </label>
 
                         <div class="relative mt-1">
-                            <Lock
-                                class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10"
-                            />
+                            <Lock class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
 
                             <input
                                 v-model="password"
@@ -171,6 +188,7 @@ const handleLogin = async () => {
                                 @click="togglePasswordVisibility"
                                 class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 cursor-pointer z-10"
                             />
+
                             <EyeOff
                                 v-else
                                 @click="togglePasswordVisibility"
@@ -186,8 +204,11 @@ const handleLogin = async () => {
                     >
                         {{ loading ? 'Logging in...' : 'Login' }}
                     </button>
+
                 </form>
+
             </div>
+
         </div>
     </div>
 </template>

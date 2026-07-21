@@ -4,6 +4,8 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 
 import Dashboard from '@/views/Dashboard.vue';
 import UserList from '@/views/users/UserList.vue';
+import UserCreate from '@/views/users/UserCreate.vue';
+import UserEdit from '@/views/users/UserEdit.vue';
 
 const routes = [
     {
