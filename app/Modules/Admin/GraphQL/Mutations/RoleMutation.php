@@ -20,23 +20,19 @@ class RoleMutation
         return $this->roleService->update($args);
     }
 
-    public function delete($_, array $args): bool
-    {
-        return $this->roleService->delete($args);
-    }
-    public function transferAdmin($_, array $args): bool
-    {
-        return $this->roleService->transferAdmin($args);
-    }
     public function changeUserRole($_, array $args): bool
     {
         $user = User::findOrFail($args['userId']);
-
-        // tìm role theo name
         $role = Role::where('name', $args['role'])->firstOrFail();
 
         $user->roles()->sync([$role->id]);
 
         return true;
+    }
+    public function removeUserRole($_, array $args): bool
+    {
+        return $this->roleService->removeUserRole([
+            'userId' => $args['id']
+        ]);
     }
 }

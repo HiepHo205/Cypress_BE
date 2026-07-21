@@ -30,3 +30,9 @@ export const UPDATE_ROLE = gql`
         }
     }
 `;
+
+export const REMOVE_USER_ROLE = gql`
+    mutation RemoveUserRole($userId: ID!) {
+        removeUserRole(userId: $userId)
+    }
+`;

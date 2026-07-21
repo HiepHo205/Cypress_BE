@@ -11,9 +11,3 @@ export const CHANGE_USER_ROLE = gql`
         changeUserRole(userId: $userId, role: $role)
     }
 `;
-
-export const TRANSFER_ADMIN = gql`
-    mutation TransferAdmin($newAdminId: ID!) {
-        transferAdmin(newAdminId: $newAdminId)
-    }
-`;

@@ -13,30 +13,21 @@ use Illuminate\Support\Facades\Validator;
 
 class RoleService
 {
-    public function delete(array $args): bool
-    {
-        $user = Auth::user();
 
-        if (!$user instanceof User || !$user->hasRole('admin')) {
-            throw new Exception('You do not have permission to delete roles.');
-        }
+    public function removeUserRole(array $args): bool
+{
+    $currentUser = Auth::user();
 
-        Validator::make(
-            $args,
-            (new DeleteRoleValidator())->rules()
-        )->validate();
-
-        $role = Role::findOrFail($args['id']);
-
-        if (in_array($role->name, ['admin', 'user'])) {
-            throw new Exception('Default roles cannot be deleted.');
-        }
-
-        $role->delete();
-
-        return true;
+    if (!$currentUser instanceof User || !$currentUser->hasRole('admin')) {
+        throw new Exception('Only admin can remove user role.');
     }
 
+    $user = User::findOrFail($args['userId']);
+
+    $user->roles()->detach();
+
+    return true;
+}
     public function update(array $args): Role
     {
         $user = Auth::user();
@@ -85,45 +76,6 @@ class RoleService
         ]);
 
         return $role->fresh();
-    }
-    public function transferAdmin(array $args): bool
-    {
-        /** @var User|null $currentUser */
-        $currentUser = Auth::user();
-
-        if (!$currentUser instanceof User) {
-            throw new Exception('Unauthenticated.');
-        }
-
-        if (!$currentUser->hasRole('admin')) {
-            throw new Exception('Only admin can transfer admin role.');
-        }
-
-        $newAdmin = User::findOrFail($args['newAdminId']);
-
-        if ($currentUser->id === $newAdmin->id) {
-            throw new Exception('You are already the admin.');
-        }
-        if ($newAdmin->hasRole('admin')) {
-            throw new Exception('Selected user is already an admin.');
-        }
-
-        $adminRole = Role::where('name', 'admin')->firstOrFail();
-        $userRole = Role::where('name', 'user')->firstOrFail();
-
-        DB::transaction(function () use (
-            $currentUser,
-            $newAdmin,
-            $adminRole,
-            $userRole
-        ) {
-
-            $currentUser->roles()->sync([$userRole->id]);
-
-            $newAdmin->roles()->sync([$adminRole->id]);
-        });
-
-        return true;
     }
 
     public function changeUserRole(array $args): bool

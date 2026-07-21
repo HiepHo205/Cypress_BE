@@ -125,17 +125,9 @@ extend type Mutation {
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@update"
         )
-
     deleteRole(id: ID!): Boolean!
-        @guard(with: ["api"])
         @field(
-            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@delete"
-        )
-
-    transferAdmin(newAdminId: ID!): Boolean!
-        @guard(with: ["api"])
-        @field(
-            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@transferAdmin"
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@removeUserRole"
         )
     changeUserRole(userId: ID!, role: String!): Boolean!
         @guard(with: ["api"])
