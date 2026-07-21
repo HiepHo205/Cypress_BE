@@ -172,7 +172,6 @@ async function deactivateUser(id) {
             :columns="columns"
             :items="users"
         >
-            <!-- Desktop -->
             <template #row="{ item }">
                 <td class="px-6 py-4">
                     {{ item.id }}
@@ -182,8 +181,12 @@ async function deactivateUser(id) {
                     {{ item.name }}
                 </td>
 
-                <td class="px-6 py-4">
-                    {{ item.email }}
+                <td class="px-6 py-4" :title="item.email">
+                    {{
+                        item.email.length > 22
+                            ? item.email.slice(0, 22) + '...'
+                            : item.email
+                    }}
                 </td>
 
                 <td class="px-6 py-4">
@@ -238,7 +241,6 @@ async function deactivateUser(id) {
                 </td>
             </template>
 
-            <!-- Mobile -->
             <template #mobile="{ item }">
                 <div
                     class="bg-white rounded-lg shadow border p-4"
