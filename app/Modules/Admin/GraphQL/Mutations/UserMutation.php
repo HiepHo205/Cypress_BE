@@ -52,16 +52,24 @@ class UserMutation
         ];
     }
 
-    public function delete($rootValue, array $args, GraphQLContext $context, ResolveInfo $resolveInfo): array
-    {
+    public function delete(
+        $rootValue,
+        array $args,
+        GraphQLContext $context,
+        ResolveInfo $resolveInfo,
+    ): array {
         $user = User::findOrFail($args['id']);
         $user->delete();
 
         return ['user' => $user];
     }
 
-    public function deactivate($rootValue, array $args, GraphQLContext $context, ResolveInfo $resolveInfo): array
-    {
+    public function deactivate(
+        $rootValue,
+        array $args,
+        GraphQLContext $context,
+        ResolveInfo $resolveInfo,
+    ): array {
         $user = User::findOrFail($args['id']);
         $user->status = 'unactive';
         $user->save();
