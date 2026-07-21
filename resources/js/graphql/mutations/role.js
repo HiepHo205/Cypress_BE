@@ -6,12 +6,14 @@ export const DELETE_ROLE = gql`
     }
 `;
 
-export const UPDATE_ROLE = gql`
-    mutation UpdateRole($id: ID!, $name: String!, $description: String) {
-        updateRole(id: $id, name: $name, description: $description) {
-            id
-            name
-            description
-        }
+export const CHANGE_USER_ROLE = gql`
+    mutation ChangeUserRole($userId: ID!, $role: String!) {
+        changeUserRole(userId: $userId, role: $role)
+    }
+`;
+
+export const TRANSFER_ADMIN = gql`
+    mutation TransferAdmin($newAdminId: ID!) {
+        transferAdmin(newAdminId: $newAdminId)
     }
 `;

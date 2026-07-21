@@ -1,175 +1,350 @@
 <template>
-    <div v-if="loading" class="text-gray-500">
+    <div v-if="loading" class="text-gray-500 py-6 text-center">
         Loading roles...
     </div>
 
-    <div v-else-if="error" class="text-red-500">
+    <div v-else-if="error" class="text-red-500 py-6 text-center">
         {{ error.message }}
     </div>
 
-    <div v-else class="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+    <div v-else class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow">
+
         <table class="w-full text-sm">
+
             <thead>
                 <tr class="bg-gradient-to-r from-[#6C9ADB] to-[#2B71D3] text-white">
-                    <th class="text-left py-3 px-4 font-semibold">User</th>
-                    <th class="text-left px-4 font-semibold">Email</th>
-                    <th class="text-left px-4 font-semibold">Role</th>
-                    <th class="text-left px-4 font-semibold">Status</th>
-                    <th class="text-left px-4 font-semibold">Permissions</th>
-                    <th class="text-center px-4 font-semibold">Action</th>
+
+                    <th class="px-5 py-3 text-left">
+                        User
+                    </th>
+
+                    <th class="px-5 py-3 text-left">
+                        Email
+                    </th>
+
+                    <th class="px-5 py-3 text-left">
+                        Role
+                    </th>
+
+                    <th class="px-5 py-3 text-left">
+                        Status
+                    </th>
+
+                    <th class="px-5 py-3 text-left">
+                        Permissions
+                    </th>
+
+                    <th class="px-5 py-3 text-center">
+                        Action
+                    </th>
+
                 </tr>
             </thead>
 
+
             <tbody>
+
                 <template v-for="role in roles" :key="role.id">
-                    <tr v-for="user in role.users || []" :key="user.id"
-                        class="border-b border-gray-200 hover:bg-gray-50">
-                        <td class="py-4 px-4">
+
+                    <tr v-for="user in role.users" :key="user.id" class="border-b hover:bg-gray-50">
+
+
+                        <!-- USER -->
+                        <td class="px-5 py-4">
+
                             <div class="flex items-center gap-3">
+
                                 <div
-                                    class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold">
-                                    {{ user.name ? user.name.charAt(0).toUpperCase() : "U" }}
+                                    class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 font-bold flex items-center justify-center">
+                                    {{ user.name.charAt(0).toUpperCase() }}
                                 </div>
 
-                                <p class="font-medium text-gray-800">
+
+                                <span class="font-medium">
                                     {{ user.name }}
-                                </p>
+                                </span>
+
                             </div>
+
                         </td>
 
-                        <td class="px-4 text-gray-600">
+
+
+                        <!-- EMAIL -->
+                        <td class="px-5 text-gray-600">
+
                             {{ user.email }}
+
                         </td>
 
-                        <td class="px-4">
-                            <template v-if="editingRoleId === role.id">
-                                <select v-model="form.name"
-                                    class="w-36 border border-gray-300 rounded-lg px-2 py-1 bg-white outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="admin">Admin</option>
-                                    <option value="user">User</option>
+
+
+
+                        <!-- ROLE -->
+                        <td class="px-5">
+
+
+                            <template v-if="editingUserId === user.id">
+
+
+                                <select v-model="selectedRole" class="border rounded-lg px-3 py-2">
+
+                                    <option value="admin">
+                                        Admin
+                                    </option>
+
+                                    <option value="user">
+                                        User
+                                    </option>
+
+
                                 </select>
+
+
                             </template>
+
 
                             <template v-else>
-                                <span class="px-3 py-1 rounded-full text-xs text-white" :class="roleColor(role.name)">
+
+
+                                <span class="px-3 py-1 rounded-full text-white text-xs" :class="roleColor(role.name)">
+
                                     {{ role.name }}
+
                                 </span>
+
+
                             </template>
+
+
                         </td>
 
-                        <td class="px-4">
+
+
+
+
+                        <!-- STATUS -->
+                        <td class="px-5">
+
+
                             <span class="px-3 py-1 rounded-full text-xs" :class="user.status === 'active'
                                 ? 'bg-green-100 text-green-700'
-                                : 'bg-gray-100 text-gray-500'
+                                : 'bg-gray-100 text-gray-600'
                                 ">
-                                {{ user.status || "inactive" }}
+
+                                {{ user.status }}
+
                             </span>
+
+
                         </td>
 
-                        <td class="px-4">
-                            <div class="flex flex-wrap gap-2">
-                                <div v-for="permission in role.permissions || []" :key="permission.id" class="text-xs">
-                                    <span class="font-medium text-blue-600">
+
+
+
+                        <!-- PERMISSIONS -->
+                        <td class="px-5">
+
+
+                            <div v-if="role.permissions?.length" class="space-y-1">
+
+                                <div v-for="permission in role.permissions" :key="permission.id">
+
+                                    <div class="text-blue-600 font-medium">
+
                                         {{ permission.code }}
-                                    </span>
 
-                                    <br>
+                                    </div>
 
-                                    <span class="text-gray-500">
+
+                                    <div class="text-gray-500 text-xs">
+
                                         {{ permission.description }}
-                                    </span>
+
+                                    </div>
+
+
                                 </div>
 
-                                <span v-if="!role.permissions?.length" class="text-gray-400 text-xs italic">
-                                    No permissions
-                                </span>
+
                             </div>
+
+
+                            <span v-else class="italic text-gray-400">
+
+                                No permission
+
+                            </span>
+
+
                         </td>
 
-                        <td class="px-4">
+
+
+
+
+                        <!-- ACTION -->
+                        <td class="px-5">
+
+
                             <div class="flex justify-center gap-2">
-                                <template v-if="editingRoleId === role.id">
-                                    <button @click="saveRole(role)"
-                                        class="w-8 h-8 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 flex items-center justify-center">
-                                        <Check :size="16" />
+
+
+                                <template v-if="editingUserId === user.id">
+
+
+                                    <button @click="save(user)" class="bg-green-500 text-white px-3 py-1 rounded">
+
+                                        Save
+
                                     </button>
 
-                                    <button @click="cancelEdit"
-                                        class="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center">
-                                        <X :size="16" />
+
+
+                                    <button @click="cancel" class="bg-gray-500 text-white px-3 py-1 rounded">
+
+                                        Cancel
+
                                     </button>
+
+
+
                                 </template>
+
+
+
 
                                 <template v-else>
-                                    <button @click="startEdit(role)"
-                                        class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center">
-                                        <Pencil :size="16" />
+
+
+                                    <button @click="edit(user, role)" class="bg-blue-500 text-white px-3 py-1 rounded">
+
+                                        Edit
+
                                     </button>
+
+
 
                                     <button @click="$emit('delete', role)"
-                                        class="w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center">
-                                        <Trash2 :size="16" />
+                                        class="bg-red-500 text-white px-3 py-1 rounded">
+
+                                        Delete
+
                                     </button>
+
+
                                 </template>
+
+
                             </div>
+
+
                         </td>
+
+
                     </tr>
+
+
                 </template>
 
+
+
+
                 <tr v-if="roles.length === 0">
-                    <td colspan="6" class="text-center py-6 text-gray-400">
-                        No roles found
+
+                    <td colspan="6" class="py-8 text-center text-gray-400">
+
+                        No roles found.
+
                     </td>
+
                 </tr>
+
+
             </tbody>
+
+
         </table>
+
+
     </div>
 </template>
 
+
+
 <script setup>
+
 import { ref } from "vue";
-import { Pencil, Trash2, Check, X } from "lucide-vue-next";
 import { roleColor } from "@/utils/role";
 
-const props = defineProps({
+
+defineProps({
+
     roles: {
         type: Array,
-        default: () => [],
+        default: () => []
     },
-    loading: {
-        type: Boolean,
-        default: false,
-    },
-    error: {
-        type: Object,
-        default: null,
-    },
+
+    loading: Boolean,
+
+    error: Object
+
 });
 
-const emit = defineEmits(["update", "delete"]);
 
-const editingRoleId = ref(null);
 
-const form = ref({
-    name: "",
-});
+const emit = defineEmits([
+    "update",
+    "delete"
+]);
 
-function startEdit(role) {
-    editingRoleId.value = role.id;
-    form.value.name = role.name;
+
+
+const editingUserId = ref(null);
+
+const selectedRole = ref("");
+
+
+
+
+function edit(user, role) {
+
+    editingUserId.value = user.id;
+
+    selectedRole.value = role.name;
+
 }
 
-function cancelEdit() {
-    editingRoleId.value = null;
-    form.value.name = "";
+
+
+
+function cancel() {
+
+    editingUserId.value = null;
+
+    selectedRole.value = "";
+
 }
 
-function saveRole(role) {
-    emit("update", {
-        id: role.id,
-        name: form.value.name,
-    });
 
-    cancelEdit();
+
+
+function save(user) {
+
+
+    emit(
+        "update",
+        {
+            userId: user.id,
+            role: selectedRole.value
+        }
+    );
+
+
+    editingUserId.value = null;
+
+
 }
+
+
 </script>

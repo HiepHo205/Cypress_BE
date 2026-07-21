@@ -29,12 +29,12 @@ const routes = [
                 component: UserList
             },
             {
-                path: '/users/create',
+                path: 'users/create',
                 name: 'users.create',
                 component: UserCreate
             },
             {
-                path: '/users/:id/edit',
+                path: 'users/:id/edit',
                 name: 'users.edit',
                 component: UserEdit,
                 props: true

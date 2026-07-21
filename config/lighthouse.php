@@ -285,7 +285,7 @@ return [
     |
     */
 
-    'debug' => env('LIGHTHOUSE_DEBUG', GraphQL\Error\DebugFlag::INCLUDE_DEBUG_MESSAGE | GraphQL\Error\DebugFlag::INCLUDE_TRACE),
+    'debug' => (int) env('LIGHTHOUSE_DEBUG', env('APP_DEBUG') ? (GraphQL\Error\DebugFlag::INCLUDE_DEBUG_MESSAGE | GraphQL\Error\DebugFlag::INCLUDE_TRACE) : GraphQL\Error\DebugFlag::RETHROW_UNSAFE_EXCEPTIONS),
 
     /*
     |--------------------------------------------------------------------------

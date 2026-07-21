@@ -15,4 +15,9 @@ class UserController extends Controller
     {
         return view('app');
     }
+
+    public function register()
+    {
+        return view('app');
+    }
 }

@@ -46,9 +46,10 @@ class User extends Authenticatable implements JWTSubject
             Role::class,
             'user_roles',
             'user_id',
-            'role_id'
+            'role_id',
         );
     }
+
 
     public function hasRole(string $role): bool
     {
