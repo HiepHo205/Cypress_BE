@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@prettier/plugin-php": "^0.25.0",
+    "@tailwindcss/postcss": "^4.3.3",
     "@tailwindcss/vite": "^4.0.0",
     "@vitejs/plugin-vue": "^6.0.8",
     "concurrently": "^9.0.1",
@@ -18,10 +19,13 @@
     "vite": "^8.0.0"
   },
   "dependencies": {
-    "@apollo/client": "^4.2.7",
+    "@apollo/client": "^3.14.1",
+    "@vue/apollo-composable": "^4.2.2",
     "graphql": "^16.14.2",
+    "lucide-vue-next": "^1.0.0",
     "pinia": "^4.0.2",
     "vue": "^3.5.40",
-    "vue-router": "^5.2.0"
+    "vue-router": "^5.2.0",
+    "vue-toastification": "^2.0.0-rc.5"
   }
 }

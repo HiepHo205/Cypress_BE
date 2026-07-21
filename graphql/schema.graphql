@@ -1,3 +1,5 @@
+#import ../app/Modules/Api/GraphQL/api.graphql
+
 scalar DateTime
     @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
 
@@ -67,39 +69,25 @@ type DeactivateUserPayload {
 type User {
     id: ID!
     name: String!
+    full_name: String
     email: String!
     email_verified_at: DateTime
     created_at: DateTime!
     updated_at: DateTime!
     status: String!
+    roles: [Role!]! @belongsToMany
 }
 
 extend type Mutation {
-    register(input: RegisterInput! @spread): RegisterResponse!
-        @validator(
-            class: "App\\Modules\\Api\\GraphQL\\Validators\\RegisterInputValidator"
-        )
-        @field(
-            resolver: "App\\Modules\\Api\\GraphQL\\Mutations\\AuthMutation@register"
-        )
-
     login(input: LoginInput! @spread): LoginResponse!
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\AdminAuthMutation@login"
         )
 }
 
-input RegisterInput {
+type Role {
+    id: ID!
     name: String!
-    email: String!
-    password: String!
-    password_confirmation: String!
-}
-
-type RegisterResponse {
-    status: Boolean!
-    message: String!
-    user: User
 }
 
 input LoginInput {
@@ -111,5 +99,7 @@ type LoginResponse {
     status: Boolean!
     message: String!
     access_token: String
+    token_type: String
+    expires_in: Int
     user: User
 }

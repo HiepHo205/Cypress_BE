@@ -1,9 +1,14 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router';
 
-import Dashboard from '@/views/Dashboard.vue'
-import UserList from '@/views/users/UserList.vue'
+import Dashboard from '@/views/Dashboard.vue';
+import UserList from '@/views/users/UserList.vue';
 
 const routes = [
+    {
+        path: '/login',
+        name: 'login',
+        component: () => import('@/views/auth/Login.vue')
+    },
     {
         path: '/admin',
         name: 'dashboard',
@@ -14,9 +19,9 @@ const routes = [
         name: 'users.list',
         component: UserList
     }
-]
+];
 
 export default createRouter({
     history: createWebHistory(),
     routes
-})
+});

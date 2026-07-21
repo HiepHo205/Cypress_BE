@@ -8,6 +8,7 @@ Route::prefix('admin')->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('admin.home');
     Route::get('/users', [UserController::class, 'index'])->name('admin.users');
 });
+Route::get('/login', [UserController::class, 'login'])->name('login');
 
 Route::get('/', function () {
     return redirect('/admin');

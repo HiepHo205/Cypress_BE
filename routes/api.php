@@ -1,5 +1,5 @@
 <?php
-
+use App\Modules\Admin\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::domain('api.cypresshub.com')->group(function () {
