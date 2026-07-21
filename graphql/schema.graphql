@@ -39,7 +39,7 @@ type Mutation {
 
 input CreateUserInput {
     name: String! @rules(apply: ["required", "string", "min:2"])
-    email: String! @rules(apply: ["required", "email"])
+    email: String! @rules(apply: ["required", "email", "unique:users,email"])
     password: String! @rules(apply: ["required", "min:8"])
 }
 

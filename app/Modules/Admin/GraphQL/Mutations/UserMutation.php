@@ -4,17 +4,14 @@ namespace App\Modules\Admin\GraphQL\Mutations;
 
 use App\Core\Models\User;
 use GraphQL\Type\Definition\ResolveInfo;
-use Illuminate\Support\Facades\Hash;
 use Nuwave\Lighthouse\Support\Contracts\GraphQLContext;
+use Illuminate\Support\Facades\Hash;
 
 class UserMutation
 {
-    public function create(
-        $rootValue,
-        array $args,
-        GraphQLContext $context,
-        ResolveInfo $resolveInfo,
-    ): array {
+
+    public function create($rootValue, array $args, GraphQLContext $context, ResolveInfo $resolveInfo): array
+    {
         $user = new User();
         $user->name = $args['input']['name'];
         $user->email = $args['input']['email'];
@@ -28,7 +25,7 @@ class UserMutation
         $rootValue,
         array $args,
         GraphQLContext $context,
-        ResolveInfo $resolveInfo,
+        ResolveInfo $resolveInfo
     ): array {
         $user = User::findOrFail($args['id']);
 
@@ -50,7 +47,9 @@ class UserMutation
 
         $user->save();
 
-        return ['user' => $user];
+        return [
+            'user' => $user
+        ];
     }
 
     public function delete(
