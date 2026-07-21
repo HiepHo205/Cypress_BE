@@ -16,59 +16,53 @@ class AdminAuthMutation
 
     public function __construct(
         AuthService $authService,
-        LoginInputValidator $validator
+        LoginInputValidator $validator,
     ) {
         $this->authService = $authService;
         $this->validator = $validator;
     }
 
-
     public function login(
-        $rootValue,
+        mixed $root,
         array $args,
         GraphQLContext $context,
         ResolveInfo $resolveInfo,
     ): array {
+        try {
+            $result = $this->authService->login([
+                'email' => $args['email'],
+                'password' => $args['password'],
+            ]);
 
-        $data = $this->validator->validate([
-            'email' => $args['email'],
-            'password' => $args['password'],
-        ]);
+            if (!$result['status']) {
+                return [
+                    'status' => false,
+                    'message' => $result['message'],
+                    'access_token' => null,
+                    'token_type' => null,
+                    'expires_in' => null,
+                    'user' => null,
+                ];
+            }
 
-        $result = $this->authService->login($data);
-
-        if (!($result['status'] ?? false)) {
+            return [
+                'status' => true,
+                'message' => $result['message'],
+                'access_token' => $result['access_token'],
+                'token_type' => $result['token_type'],
+                'expires_in' => $result['expires_in'],
+                'user' => $result['user'],
+            ];
+        } catch (Exception $e) {
             return [
                 'status' => false,
-                'message' => $result['message'] ?? 'Login failed.',
+                'message' => $e->getMessage(),
                 'access_token' => null,
                 'token_type' => null,
                 'expires_in' => null,
                 'user' => null,
             ];
         }
-
-        $user = $result['user'];
-
-        if (! $user->hasRole('admin')) {
-            return [
-                'status' => false,
-                'message' => 'You do not have permission to access admin.',
-                'access_token' => null,
-                'token_type' => null,
-                'expires_in' => null,
-                'user' => null,
-            ];
-        }
-
-        return [
-            'status' => true,
-            'message' => $result['message'] ?? 'Login successful.',
-            'access_token' => $result['access_token'],
-            'token_type' => $result['token_type'],
-            'expires_in' => $result['expires_in'],
-            'user' => $user,
-        ];
     }
 
  public function logout(
@@ -76,8 +70,7 @@ class AdminAuthMutation
         array $args,
         GraphQLContext $context,
         ResolveInfo $resolveInfo,
-    ) {
-
+    ): array {
         return [
             'status' => true,
             'message' => 'Logged out successfully.',

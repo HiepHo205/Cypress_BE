@@ -41,13 +41,7 @@ return [
             // Logs every incoming GraphQL query.
             // Nuwave\Lighthouse\Http\Middleware\LogGraphQLQueries::class,
         ],
-
-        /*
-         * The `prefix`, `domain` and `where` configuration options are optional.
-         */
-        // 'prefix' => '',
-        // 'domain' => '',
-        // 'where' => [],
+        'prefix' => '',
     ],
 
     /*
@@ -545,3 +539,4 @@ return [
         'driver' => Nuwave\Lighthouse\Tracing\ApolloTracing\ApolloTracing::class,
     ],
 ];
+

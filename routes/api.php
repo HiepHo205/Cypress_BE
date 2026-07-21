@@ -13,10 +13,4 @@ Route::domain('api.cypresshub.com')->group(function () {
             'timestamp' => now()->toIso8601String()
         ]);
     })->name('api.gateway');
-
-    Route::post('/login', [UserController::class, 'login']);
-
-    Route::post('/logout', [AuthController::class, 'logout'])
-        ->middleware('auth:api')
-        ->name('api.logout');
 });

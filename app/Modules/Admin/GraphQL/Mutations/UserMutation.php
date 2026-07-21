@@ -4,11 +4,12 @@ namespace App\Modules\Admin\GraphQL\Mutations;
 
 use App\Core\Models\User;
 use GraphQL\Type\Definition\ResolveInfo;
-use Illuminate\Support\Facades\Hash;
 use Nuwave\Lighthouse\Support\Contracts\GraphQLContext;
+use Illuminate\Support\Facades\Hash;
 
 class UserMutation
 {
+
     public function create($rootValue, array $args, GraphQLContext $context, ResolveInfo $resolveInfo): array
     {
         $user = new User();
@@ -20,8 +21,12 @@ class UserMutation
         return ['user' => $user];
     }
 
-    public function update($rootValue, array $args, GraphQLContext $context, ResolveInfo $resolveInfo): array
-    {
+    public function update(
+        $rootValue,
+        array $args,
+        GraphQLContext $context,
+        ResolveInfo $resolveInfo
+    ): array {
         $user = User::findOrFail($args['id']);
 
         if (isset($args['input']['name'])) {
@@ -42,19 +47,29 @@ class UserMutation
 
         $user->save();
 
-        return ['user' => $user];
+        return [
+            'user' => $user
+        ];
     }
 
-    public function delete($rootValue, array $args, GraphQLContext $context, ResolveInfo $resolveInfo): array
-    {
+    public function delete(
+        $rootValue,
+        array $args,
+        GraphQLContext $context,
+        ResolveInfo $resolveInfo,
+    ): array {
         $user = User::findOrFail($args['id']);
         $user->delete();
 
         return ['user' => $user];
     }
 
-    public function deactivate($rootValue, array $args, GraphQLContext $context, ResolveInfo $resolveInfo): array
-    {
+    public function deactivate(
+        $rootValue,
+        array $args,
+        GraphQLContext $context,
+        ResolveInfo $resolveInfo,
+    ): array {
         $user = User::findOrFail($args['id']);
         $user->status = 'unactive';
         $user->save();

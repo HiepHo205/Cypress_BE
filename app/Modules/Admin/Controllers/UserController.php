@@ -8,10 +8,15 @@ class UserController extends Controller
 {
     public function index()
     {
-        return view('admin.users.index');
+        return view('app');
     }
 
     public function login()
+    {
+        return view('app');
+    }
+
+    public function register()
     {
         return view('app');
     }

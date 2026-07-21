@@ -1,11 +1,14 @@
 extend type Mutation {
     "Register a new customer account"
     register(input: RegisterInput! @spread): RegisterResponse!
-        @validator(class: "App\\Modules\\Api\\GraphQL\\Validators\\RegisterInputValidator")
-        @field(resolver: "App\\Modules\\Api\\GraphQL\\Mutations\\AuthMutation@register")
+        @validator(
+            class: "App\\Modules\\Api\\GraphQL\\Validators\\RegisterInputValidator"
+        )
+        @field(
+            resolver: "App\\Modules\\Api\\GraphQL\\Mutations\\AuthMutation@register"
+        )
 }
 
-"Input structure for the register mutation"
 input RegisterInput {
     name: String!
     email: String!
@@ -13,16 +16,8 @@ input RegisterInput {
     password_confirmation: String!
 }
 
-"Response structure returned by the server"
 type RegisterResponse {
     status: Boolean!
     message: String!
     user: User
-}
-
-"Basic user information returned after registration"
-type User {
-    id: ID!
-    name: String!
-    email: String!
 }
