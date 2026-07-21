@@ -65,18 +65,14 @@ class AdminAuthMutation
         }
     }
 
- public function logout(
+    public function logout(
         $rootValue,
         array $args,
         GraphQLContext $context,
         ResolveInfo $resolveInfo,
     ): array {
-        return [
-            'status' => true,
-            'message' => 'Logged out successfully.',
-        ];
         try {
-            JWTAuth::invalidate(JWTAuth::getToken());
+            $this->authService->logout();
 
             return [
                 'status' => true,
@@ -85,7 +81,7 @@ class AdminAuthMutation
         } catch (Exception $e) {
             return [
                 'status' => false,
-                'message' => 'Logout failed: ' . $e->getMessage(),
+                'message' => $e->getMessage(),
             ];
         }
     }

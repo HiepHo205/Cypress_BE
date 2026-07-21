@@ -2,22 +2,12 @@
 
 namespace App\Core\Models;
 
-
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-
-#[Fillable(['name'])]
 class Role extends Model
 {
     protected $fillable = ['name'];
 
-    protected $table = 'roles';
-
-    protected $fillable = [
-        'name',
-    ];
     public function users()
     {
         return $this->belongsToMany(
@@ -25,9 +15,6 @@ class Role extends Model
             'user_roles',
             'role_id',
             'user_id',
-            'user_roles',
-            'role_id',
-            'user_id'
         );
     }
 }
