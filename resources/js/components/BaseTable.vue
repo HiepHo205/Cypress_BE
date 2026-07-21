@@ -13,7 +13,7 @@ defineProps({
 
 <template>
     <div class="overflow-x-auto rounded-lg bg-white shadow">
-        <table class="min-w-[900px] divide-y divide-gray-200">
+        <table class="w-full table-fixed divide-y divide-gray-200">
             <thead class="bg-gray-100">
                 <tr>
                     <th
