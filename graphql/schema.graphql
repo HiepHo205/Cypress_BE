@@ -94,15 +94,6 @@ type Role {
     id: ID!
     name: String!
     description: String
-
-    users: [User!]! @belongsToMany
-
-    permissions: [Permission!]! @belongsToMany
-}
-type Permission {
-    id: ID!
-    code: String!
-    description: String
 }
 
 input LoginInput {
@@ -133,15 +124,24 @@ extend type Mutation {
 }
 
 extend type Mutation {
+    createRole(name: String!, description: String): Role!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@createRole"
+        )
+
     updateRole(id: ID!, name: String!, description: String): Role!
         @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@update"
         )
+
     deleteRole(id: ID!): Boolean!
+        @guard(with: ["api"])
         @field(
-            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@removeUserRole"
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@delete"
         )
+
     changeUserRole(userId: ID!, role: String!): Boolean!
         @guard(with: ["api"])
         @field(

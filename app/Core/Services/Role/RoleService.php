@@ -4,36 +4,56 @@ namespace App\Core\Services\Role;
 
 use App\Core\Models\Role;
 use App\Core\Models\User;
-use App\Modules\Admin\GraphQL\Validators\DeleteRoleValidator;
-use Illuminate\Validation\Rule;
 use Exception;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class RoleService
 {
+    public function create(array $args): Role
+    {
+        $user = Auth::user();
 
-    public function removeUserRole(array $args): bool
-{
-    $currentUser = Auth::user();
+        if (!$user instanceof User || !$user->hasRole('admin')) {
+            throw new Exception(
+                'You do not have permission to create roles.'
+            );
+        }
 
-    if (!$currentUser instanceof User || !$currentUser->hasRole('admin')) {
-        throw new Exception('Only admin can remove user role.');
+        Validator::make(
+            $args,
+            [
+                'name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    'unique:roles,name',
+                ],
+                'description' => [
+                    'nullable',
+                    'string',
+                ],
+            ],
+            [
+                'name.unique' => 'Role name already exists.',
+            ]
+        )->validate();
+
+        return Role::create([
+            'name' => $args['name'],
+            'description' => $args['description'] ?? null,
+        ]);
     }
 
-    $user = User::findOrFail($args['userId']);
-
-    $user->roles()->detach();
-
-    return true;
-}
     public function update(array $args): Role
     {
         $user = Auth::user();
 
         if (!$user instanceof User || !$user->hasRole('admin')) {
-            throw new Exception('You do not have permission to update roles.');
+            throw new Exception(
+                'You do not have permission to update roles.'
+            );
         }
 
         Validator::make(
@@ -61,12 +81,13 @@ class RoleService
         )->validate();
 
         $role = Role::findOrFail($args['id']);
+
         if (
-            in_array($role->name, ['admin', 'user']) &&
-            $role->name !== $args['name']
+            $role->name === 'admin' &&
+            $args['name'] !== 'admin'
         ) {
             throw new Exception(
-                'Default roles cannot be renamed. Please change the user\'s role instead.'
+                'The Admin role cannot be renamed.'
             );
         }
 
@@ -78,38 +99,36 @@ class RoleService
         return $role->fresh();
     }
 
-    public function changeUserRole(array $args): bool
+    public function delete(array $args): bool
     {
-        /** @var User|null $currentUser */
-        $currentUser = Auth::user();
+        $user = Auth::user();
 
-        if (!$currentUser instanceof User || !$currentUser->hasRole('admin')) {
-            throw new Exception('Only admin can change roles.');
+        if (!$user instanceof User || !$user->hasRole('admin')) {
+            throw new Exception(
+                'You do not have permission to delete roles.'
+            );
         }
 
-        $user = User::findOrFail($args['userId']);
+        Validator::make(
+            $args,
+            [
+                'id' => [
+                    'required',
+                    'integer',
+                    'exists:roles,id',
+                ],
+            ]
+        )->validate();
 
-        $newRole = Role::where('name', $args['roleName'])->firstOrFail();
+        $role = Role::findOrFail($args['id']);
 
-        DB::transaction(function () use ($user, $newRole) {
+        if ($role->name === 'admin') {
+            throw new Exception(
+                'The Admin role cannot be deleted.'
+            );
+        }
 
-            if ($newRole->name === 'admin') {
-
-                $adminRole = Role::where('name', 'admin')->first();
-
-                $userRole = Role::where('name', 'user')->first();
-
-                $oldAdmin = User::whereHas('roles', function ($q) {
-                    $q->where('name', 'admin');
-                })->first();
-
-                if ($oldAdmin && $oldAdmin->id !== $user->id) {
-                    $oldAdmin->roles()->sync([$userRole->id]);
-                }
-            }
-
-            $user->roles()->sync([$newRole->id]);
-        });
+        $role->delete();
 
         return true;
     }

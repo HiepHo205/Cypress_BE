@@ -1,154 +1,93 @@
-<template>
-  <div class="p-6 bg-white rounded-xl shadow-sm">
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h2 class="text-2xl font-bold"> Role Management</h2>
-        <p class="text-sm text-gray-500">
-          Manage roles and permissions
-        </p>
-      </div>
-    </div>
-    <div class="mb-5">
-      <input v-model="search" type="text" placeholder="Search role..."
-        class="w-full px-4 py-2 border border-gray-200 rounded-lg" />
-    </div>
-    <div v-if="loading" class="text-gray-500">
-      Loading roles...
-    </div>
-    <div v-else-if="error" class="text-red-500">
-      {{ error.message }}
-    </div>
-    <div v-else class="overflow-hidden bg-white rounded-xl shadow-sm">
-
-      <RoleTable :users="paginatedItems" :all-users="allUsers" :loading="loading" :error="error"
-        @update="updateRoleData" @delete="removeUserRole" />
-
-      <RolePagination :current-page="currentPage" :total-pages="totalPages" @prev="prevPage" @next="nextPage" />
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, computed, watch } from "vue";
-import { useQuery, useMutation } from "@vue/apollo-composable";
-import { useToast } from "vue-toastification";
+import { useQuery } from "@vue/apollo-composable";
+import { Plus } from "lucide-vue-next";
 import { GET_ROLES } from "@/graphql/queries/role";
-import { DELETE_ROLE, CHANGE_USER_ROLE } from "@/graphql/mutations/role";
 import RoleTable from "./components/RoleTable.vue";
 import RolePagination from "./components/RolePagination.vue";
-import { useRolePagination } from "@/composables/useRolePagination";
-const toast = useToast();
+import { useRolePagination } from "@/composables/role/useRolePagination";
+import { useRoleManagement } from "@/composables/role/useRoleManagement";
 const roles = ref([]);
 const search = ref("");
-const { result, loading, error, refetch } = useQuery(GET_ROLES, null, { fetchPolicy: "network-only" });
-watch(
-  result,
-  (data) => {
-    if (data?.roles) {
-      roles.value = data.roles;
-    }
-  },
-  {
-    immediate: true
-  }
-);
-const filteredUsers = computed(() => {
-  const users = [];
-  roles.value.forEach(role => {
-    role.users.forEach(user => {
-      users.push({
-        ...user,
-        role: role
+const roleTableRef = ref(null);
+const {
+  createRole,
+  updateRole,
+  deleteRole
+} = useRoleManagement(roles);
+
+const { result, loading, error } = useQuery(GET_ROLES);
+watch(result, (data) => {
+  if (data?.roles) {
+
+    roles.value = data.roles
+      .map(role => ({ ...role }))
+      .sort((a, b) => {
+
+        if (a.name.toLowerCase() === "admin") return -1;
+        if (b.name.toLowerCase() === "admin") return 1;
+
+        return a.name.localeCompare(b.name);
+
       });
-    });
-  });
-  return users.filter(user =>
-    user.name
+
+  }
+}, {
+  immediate: true
+});
+const filteredRoles = computed(() => {
+  return roles.value.filter(role =>
+    role.name
       .toLowerCase()
       .includes(search.value.toLowerCase())
   );
 });
-const {
-  currentPage,
-  totalPages,
-  paginatedItems,
-  nextPage,
-  prevPage,
-  goToPage
-} = useRolePagination(filteredUsers, 10);
+const { currentPage, totalPages, paginatedItems, nextPage, prevPage
+} = useRolePagination(filteredRoles, 10);
+
 watch(search, () => {
   currentPage.value = 1;
 });
-const { mutate: changeUserRole } = useMutation(CHANGE_USER_ROLE);
-const { mutate: removeUserFromRole } = useMutation(DELETE_ROLE);
-async function updateRoleData(payload) {
-  try {
-    await changeUserRole({
-      userId: payload.userId,
-      role: payload.role
-    },
-      {
-        context: {
-          headers: {
-            Authorization:
-              `Bearer ${localStorage.getItem("token")}`
-          }
-        }
-      }
-    );
-    await refetch();
-    toast.success(
-      "Role updated successfully"
-    );
-  }
-  catch (err) {
-    console.error(err);
-    toast.error(
-      err?.graphQLErrors?.[0]?.message
-      ||
-      err.message
-      ||
-      "Update role failed"
-    );
-  }
-}
-async function removeUserRole(user) {
-  try {
-    await removeUserFromRole(
-      {
-        id: user.id
-      },
-      {
-        context: {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          }
-        }
-      }
-    );
+function handleAddRole() {
 
-    await refetch();
+  roleTableRef.value?.addRole();
 
-    toast.success("User removed successfully");
-  } catch (err) {
-    console.error(err);
-    toast.error(
-      err?.graphQLErrors?.[0]?.message ||
-      err.message ||
-      "Remove user failed"
-    );
-  }
 }
-const allUsers = computed(() => {
-  const users = [];
-  roles.value.forEach(role => {
-    role.users.forEach(user => {
-      users.push({
-        ...user,
-        role: role
-      });
-    });
-  });
-  return users;
-});
+
 </script>
+<template>
+  <div class="p-6 bg-white rounded-xl shadow-sm">
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h2 class="text-2xl font-bold">Role Management</h2>
+      </div>
+
+      <button @click="handleAddRole"
+        class="flex items-center gap-2 rounded-lg bg-[#2B71D3] px-4 py-2 text-white transition hover:bg-[#1E5BB8]">
+        <Plus :size="18" />
+        <span>Add Role</span>
+      </button>
+    </div>
+
+    <div class="mb-5">
+      <input v-model="search" type="text" placeholder="Search role..."
+        class="w-full px-4 py-2 border border-gray-200 rounded-lg" />
+    </div>
+
+    <div v-if="loading" class="text-gray-500">
+      Loading roles...
+    </div>
+
+    <div v-else-if="error" class="text-red-500">
+      {{ error.message }}
+    </div>
+
+    <div v-else class="overflow-hidden bg-white rounded-xl shadow-sm">
+
+      <RoleTable ref="roleTableRef" :roles="paginatedItems" :role-options="roles" :loading="loading" :error="error"
+        @create="createRole" @update="updateRole" @delete="deleteRole" />
+      <RolePagination :current-page="currentPage" :total-pages="totalPages" @prev="prevPage" @next="nextPage" />
+
+    </div>
+  </div>
+</template>

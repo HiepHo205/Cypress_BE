@@ -8,6 +8,6 @@ class RoleQuery
 {
     public function roles($_, array $args)
     {
-        return Role::with('permissions')->get();
+        return Role::all();
     }
 }

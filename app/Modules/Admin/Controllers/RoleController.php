@@ -16,13 +16,35 @@ class RoleController
         ]);
     }
 
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                'unique:roles,name'
+            ]
+        ]);
+
+        $role = Role::create([
+            'name' => $request->name
+        ]);
+
+        return response()->json([
+            'message' => 'Role created successfully',
+            'role' => $role
+        ], 201);
+    }
+
     public function update(Request $request, $id)
     {
         $request->validate([
             'name' => [
                 'required',
                 'string',
-                'max:255'
+                'max:255',
+                'unique:roles,name,' . $id
             ]
         ]);
 

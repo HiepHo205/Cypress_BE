@@ -3,11 +3,7 @@
 namespace App\Modules\Admin\GraphQL\Mutations;
 
 use App\Core\Models\Role;
-use App\Core\Models\User;
 use App\Core\Services\Role\RoleService;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Tymon\JWTAuth\Facades\JWTAuth;
 
 class RoleMutation
 {
@@ -15,24 +11,18 @@ class RoleMutation
         protected RoleService $roleService
     ) {}
 
+    public function createRole($_, array $args): Role
+    {
+        return $this->roleService->create($args);
+    }
+
     public function update($_, array $args): Role
     {
         return $this->roleService->update($args);
     }
 
-    public function changeUserRole($_, array $args): bool
+    public function delete($_, array $args): bool
     {
-        $user = User::findOrFail($args['userId']);
-        $role = Role::where('name', $args['role'])->firstOrFail();
-
-        $user->roles()->sync([$role->id]);
-
-        return true;
-    }
-    public function removeUserRole($_, array $args): bool
-    {
-        return $this->roleService->removeUserRole([
-            'userId' => $args['id']
-        ]);
+        return $this->roleService->delete($args);
     }
 }

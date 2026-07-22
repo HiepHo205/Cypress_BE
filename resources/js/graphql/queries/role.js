@@ -6,17 +6,6 @@ export const GET_ROLES = gql`
             id
             name
             description
-            users {
-                id
-                name
-                email
-                status
-            }
-            permissions {
-                id
-                code
-                description
-            }
         }
     }
 `;
