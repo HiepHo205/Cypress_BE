@@ -7,6 +7,7 @@ use App\Modules\Api\GraphQL\Validators\LoginInputValidator;
 use Exception;
 use GraphQL\Type\Definition\ResolveInfo;
 use Nuwave\Lighthouse\Support\Contracts\GraphQLContext;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AdminAuthMutation
 {
@@ -70,9 +71,18 @@ class AdminAuthMutation
         GraphQLContext $context,
         ResolveInfo $resolveInfo,
     ): array {
-        return [
-            'status' => true,
-            'message' => 'Logged out successfully.',
-        ];
+        try {
+            $this->authService->logout();
+
+            return [
+                'status' => true,
+                'message' => 'Logged out successfully.',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
     }
 }

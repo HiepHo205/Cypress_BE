@@ -1,5 +1,8 @@
 <?php
+
 use App\Modules\Admin\Controllers\UserController;
+
+use App\Modules\Api\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::domain('api.cypresshub.com')->group(function () {

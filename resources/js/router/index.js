@@ -6,7 +6,7 @@ import Dashboard from '@/views/Dashboard.vue';
 import UserList from '@/views/users/UserList.vue';
 import UserCreate from '@/views/users/UserCreate.vue';
 import UserEdit from '@/views/users/UserEdit.vue';
-
+import { useToast } from 'vue-toastification';
 const routes = [
     {
         path: '/login',
@@ -17,6 +17,9 @@ const routes = [
     {
         path: '/admin',
         component: AdminLayout,
+        meta: {
+            requiresAuth: true
+        },
         children: [
             {
                 path: '',
@@ -43,12 +46,35 @@ const routes = [
                 path: 'roles',
                 name: 'role.management',
                 component: () => import('@/views/roles/RoleManagement.vue')
+
             }
         ]
     }
 ];
 
-export default createRouter({
+const router = createRouter({
     history: createWebHistory(),
     routes
 });
+
+router.beforeEach((to, from, next) => {
+    const token = localStorage.getItem('token');
+
+    const requiresAuth = to.matched.some((route) => route.meta.requiresAuth);
+
+    const toast = useToast();
+
+    if (requiresAuth && !token) {
+        toast.warning('Please login to access this page.');
+
+        return next('/login');
+    }
+
+    if (to.path === '/login' && token) {
+        return next('/admin');
+    }
+
+    next();
+});
+
+export default router;

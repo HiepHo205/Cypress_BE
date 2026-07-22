@@ -119,6 +119,19 @@ type LoginResponse {
     user: User
 }
 
+type LogoutResponse {
+    status: Boolean!
+    message: String!
+}
+
+extend type Mutation {
+    logout: LogoutResponse!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\AdminAuthMutation@logout"
+        )
+}
+
 extend type Mutation {
     updateRole(id: ID!, name: String!, description: String): Role!
         @guard(with: ["api"])
