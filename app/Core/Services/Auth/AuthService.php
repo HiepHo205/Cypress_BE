@@ -78,4 +78,15 @@ class AuthService
             'user' => $user,
         ];
     }
+
+    public function logout(): void
+    {
+        $token = JWTAuth::getToken();
+
+        if (!$token) {
+            throw new Exception('Token not provided');
+        }
+
+        JWTAuth::invalidate($token);
+    }
 }
