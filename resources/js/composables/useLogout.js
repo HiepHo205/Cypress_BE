@@ -25,16 +25,17 @@ export function useLogout() {
             toast.success(
                 response?.data?.logout?.message || 'Logged out successfully.'
             );
-
-            localStorage.removeItem('token');
-
-            router.push('/login');
         } catch (err) {
             toast.error(
                 err?.graphQLErrors?.[0]?.message ||
                     err.message ||
                     'Logout failed.'
             );
+        } finally {
+            // ✅ LUÔN XOÁ TOKEN
+            localStorage.removeItem('token');
+
+            router.push('/login');
         }
     };
 
