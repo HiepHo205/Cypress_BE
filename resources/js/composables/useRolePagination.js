@@ -1,6 +1,6 @@
 import { ref, computed, watch } from 'vue';
 
-export function useRolePagination(items, perPage = 5) {
+export function useRolePagination(items, perPage = 10) {
     const currentPage = ref(1);
 
     const totalPages = computed(() => {
@@ -9,6 +9,7 @@ export function useRolePagination(items, perPage = 5) {
 
     const paginatedItems = computed(() => {
         const start = (currentPage.value - 1) * perPage;
+
         return items.value.slice(start, start + perPage);
     });
 

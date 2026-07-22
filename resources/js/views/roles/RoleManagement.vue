@@ -19,10 +19,11 @@
       {{ error.message }}
     </div>
     <div v-else class="overflow-hidden bg-white rounded-xl shadow-sm">
-      <RoleTable :roles="paginatedItems" :loading="loading" :error="error" @update="updateRoleData"
-        @delete="removeUserRole" />
-      <RolePagination :current-page="currentPage" :total-pages="totalPages" @prev="prevPage" @next="nextPage"
-        @change="goToPage" />
+
+      <RoleTable :users="paginatedItems" :all-users="allUsers" :loading="loading" :error="error"
+        @update="updateRoleData" @delete="removeUserRole" />
+
+      <RolePagination :current-page="currentPage" :total-pages="totalPages" @prev="prevPage" @next="nextPage" />
     </div>
   </div>
 </template>
@@ -51,15 +52,33 @@ watch(
     immediate: true
   }
 );
-const filteredRoles = computed(() => {
-  return roles.value.filter(role =>
-    role.name.toLowerCase()
-      .includes(
-        search.value.toLowerCase()
-      )
+const filteredUsers = computed(() => {
+  const users = [];
+  roles.value.forEach(role => {
+    role.users.forEach(user => {
+      users.push({
+        ...user,
+        role: role
+      });
+    });
+  });
+  return users.filter(user =>
+    user.name
+      .toLowerCase()
+      .includes(search.value.toLowerCase())
   );
 });
-const { currentPage, totalPages, paginatedItems, nextPage, prevPage, goToPage } = useRolePagination(filteredRoles);
+const {
+  currentPage,
+  totalPages,
+  paginatedItems,
+  nextPage,
+  prevPage,
+  goToPage
+} = useRolePagination(filteredUsers, 10);
+watch(search, () => {
+  currentPage.value = 1;
+});
 const { mutate: changeUserRole } = useMutation(CHANGE_USER_ROLE);
 const { mutate: removeUserFromRole } = useMutation(DELETE_ROLE);
 async function updateRoleData(payload) {
@@ -120,4 +139,16 @@ async function removeUserRole(user) {
     );
   }
 }
+const allUsers = computed(() => {
+  const users = [];
+  roles.value.forEach(role => {
+    role.users.forEach(user => {
+      users.push({
+        ...user,
+        role: role
+      });
+    });
+  });
+  return users;
+});
 </script>
