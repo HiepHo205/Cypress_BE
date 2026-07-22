@@ -80,7 +80,7 @@ type User {
     created_at: DateTime!
     updated_at: DateTime!
     status: String!
-    roles: [Role!]! @belongsToMany
+    role: Role @belongsTo
 }
 
 extend type Mutation {
@@ -92,8 +92,10 @@ extend type Mutation {
 
 type Role {
     id: ID!
-    name: String!
+    role_name: String!
     description: String
+    created_at: DateTime
+    updated_at: DateTime
 }
 
 input LoginInput {
@@ -124,13 +126,13 @@ extend type Mutation {
 }
 
 extend type Mutation {
-    createRole(name: String!, description: String): Role!
+    createRole(role_name: String!, description: String): Role!
         @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@createRole"
         )
 
-    updateRole(id: ID!, name: String!, description: String): Role!
+    updateRole(id: ID!, role_name: String!, description: String): Role!
         @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@update"
@@ -140,11 +142,5 @@ extend type Mutation {
         @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@delete"
-        )
-
-    changeUserRole(userId: ID!, role: String!): Boolean!
-        @guard(with: ["api"])
-        @field(
-            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@changeUserRole"
         )
 }

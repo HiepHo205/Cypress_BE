@@ -18,29 +18,23 @@ const {
 
 const { result, loading, error } = useQuery(GET_ROLES);
 watch(result, (data) => {
-  if (data?.roles) {
+  if (!data?.roles) return;
 
-    roles.value = data.roles
-      .map(role => ({ ...role }))
-      .sort((a, b) => {
+  roles.value = [...data.roles].sort((a, b) => {
+    if (a.role_name === "admin") return -1;
+    if (b.role_name === "admin") return 1;
 
-        if (a.name.toLowerCase() === "admin") return -1;
-        if (b.name.toLowerCase() === "admin") return 1;
-
-        return a.name.localeCompare(b.name);
-
-      });
-
-  }
-}, {
-  immediate: true
-});
+    return a.role_name.localeCompare(b.role_name);
+  });
+}, { immediate: true });
 const filteredRoles = computed(() => {
+  const keyword = search.value.toLowerCase();
   return roles.value.filter(role =>
-    role.name
+    (role.role_name || "")
       .toLowerCase()
-      .includes(search.value.toLowerCase())
+      .includes(keyword)
   );
+
 });
 const { currentPage, totalPages, paginatedItems, nextPage, prevPage
 } = useRolePagination(filteredRoles, 10);

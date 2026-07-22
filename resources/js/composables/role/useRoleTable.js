@@ -31,7 +31,10 @@ export function useRoleTable(emit) {
         };
     }
     function saveCreate() {
-        if (!newRole.value.name.trim() || !newRole.value.description.trim()) {
+        if (
+            !newRole.value.role_name.trim() ||
+            !newRole.value.description.trim()
+        ) {
             toast.warning('Please enter full role name and description.');
             return;
         }
@@ -47,20 +50,20 @@ export function useRoleTable(emit) {
     }
 
     function edit(role) {
-        if (role.name.toLowerCase() === 'admin') {
+        if (role.role_name.toLowerCase() === 'admin') {
             toast.info('The Admin role cannot be modified.');
             return;
         }
 
         editingRoleId.value = role.id;
-        editedName.value = role.name;
+        editedName.value = role.role_name;
         editedDescription.value = role.description ?? '';
     }
 
     function save(role) {
         emit('update', {
             id: role.id,
-            name: editedName.value,
+            role_name: editedName.value,
             description: editedDescription.value
         });
 
@@ -74,12 +77,12 @@ export function useRoleTable(emit) {
     }
 
     function handleDelete(role) {
-        if (role.name.toLowerCase() === 'admin') {
+        if (role.role_name.toLowerCase() === 'admin') {
             toast.info('The Admin role cannot be deleted.');
             return;
         }
 
-        if (confirm(`Are you sure you want to delete "${role.name}"?`)) {
+        if (confirm(`Are you sure you want to delete "${role.role_name}"?`)) {
             emit('delete', role);
         }
     }

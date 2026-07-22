@@ -32,15 +32,25 @@ export function useRoleManagement(roles) {
         try {
             const { data } = await createRoleMutation(
                 {
-                    name: payload.name,
+                    role_name: payload.role_name,
                     description: payload.description
                 },
                 getAuthContext()
             );
 
-            roles.value.unshift({
-                ...data.createRole
-            });
+            const newRole = data.createRole;
+
+            const adminIndex = roles.value.findIndex(
+                (role) => role.role_name?.toLowerCase() === 'admin'
+            );
+
+            if (adminIndex !== -1) {
+                // Chèn ngay sau admin
+                roles.value.splice(adminIndex + 1, 0, newRole);
+            } else {
+                // Nếu không có admin thì thêm đầu danh sách
+                roles.value.unshift(newRole);
+            }
 
             toast.dismiss(toastId);
             toast.success('Role created successfully');
@@ -64,10 +74,10 @@ export function useRoleManagement(roles) {
         });
 
         try {
-            await updateRoleMutation(
+            const { data } = await updateRoleMutation(
                 {
                     id: payload.id,
-                    name: payload.name,
+                    role_name: payload.role_name,
                     description: payload.description
                 },
                 getAuthContext()
@@ -78,11 +88,7 @@ export function useRoleManagement(roles) {
             );
 
             if (index !== -1) {
-                roles.value[index] = {
-                    ...roles.value[index],
-                    name: payload.name,
-                    description: payload.description
-                };
+                roles.value[index] = data.updateRole;
             }
 
             toast.dismiss(toastId);

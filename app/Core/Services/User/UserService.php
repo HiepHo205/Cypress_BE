@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Core\Services\User;
 
 use App\Core\Models\User;
@@ -9,12 +10,10 @@ class UserService
 {
     public function transferAdmin(int $newAdminId): bool
     {
-        $adminRole = Role::where('name', 'admin')->firstOrFail();
-        $userRole  = Role::where('name', 'user')->firstOrFail();
+        $adminRole = Role::where('role_name', 'admin')->firstOrFail();
+        $userRole  = Role::where('role_name', 'user')->firstOrFail();
 
-        $currentAdmin = User::whereHas('roles', function ($q) {
-            $q->where('name', 'admin');
-        })->first();
+        $currentAdmin = User::where('role_id', $adminRole->id)->first();
 
         if (!$currentAdmin) {
             throw new Exception('Current admin not found.');
@@ -23,10 +22,16 @@ class UserService
         if ($currentAdmin->id == $newAdminId) {
             throw new Exception('This user is already the admin.');
         }
-        $currentAdmin->roles()->sync([$userRole->id]);
+
+        $currentAdmin->update([
+            'role_id' => $userRole->id
+        ]);
 
         $newAdmin = User::findOrFail($newAdminId);
-        $newAdmin->roles()->sync([$adminRole->id]);
+
+        $newAdmin->update([
+            'role_id' => $adminRole->id
+        ]);
 
         return true;
     }

@@ -7,12 +7,11 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use App\Core\Models\Role;
-
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable(['name', 'email', 'password', 'status'])]
 #[Hidden(['password', 'remember_token'])]
@@ -40,21 +39,14 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->password;
     }
-    public function roles(): BelongsToMany
+    public function role(): BelongsTo
     {
-        return $this->belongsToMany(
-            Role::class,
-            'user_roles',
-            'user_id',
-            'role_id',
-        );
+        return $this->belongsTo(Role::class, 'role_id');
     }
 
 
     public function hasRole(string $role): bool
     {
-        return $this->roles()
-            ->where('name', $role)
-            ->exists();
+        return $this->role?->role_name === $role;
     }
 }

@@ -4,17 +4,17 @@ export const GET_ROLES = gql`
     query GetRoles {
         roles {
             id
-            name
+            role_name
             description
         }
     }
 `;
 
 export const UPDATE_ROLE = gql`
-    mutation UpdateRole($id: ID!, $name: String!, $description: String) {
-        updateRole(id: $id, name: $name, description: $description) {
+    mutation UpdateRole($id: ID!, $role_name: String!, $description: String) {
+        updateRole(id: $id, role_name: $role_name, description: $description) {
             id
-            name
+            role_name
             description
         }
     }

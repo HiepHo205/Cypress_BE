@@ -75,7 +75,7 @@ defineExpose({
             <tbody>
                 <tr v-if="creating" class="border-b border-gray-200 bg-blue-50">
                     <td class="w-1/4 px-5 py-4 text-center">
-                        <input v-model="newRole.name" placeholder="Role name"
+                        <input v-model="newRole.role_name" placeholder="Role name"
                             class="w-full rounded border border-gray-300 px-3 py-2" />
                     </td>
 
@@ -107,7 +107,7 @@ defineExpose({
                         </template>
 
                         <template v-else>
-                            {{ role.name }}
+                            {{ role.role_name }}
                         </template>
                     </td>
 

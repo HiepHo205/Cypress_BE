@@ -16,19 +16,17 @@ class RoleService
         $user = Auth::user();
 
         if (!$user instanceof User || !$user->hasRole('admin')) {
-            throw new Exception(
-                'You do not have permission to create roles.'
-            );
+            throw new Exception('You do not have permission to create roles.');
         }
 
         Validator::make(
             $args,
             [
-                'name' => [
+                'role_name' => [
                     'required',
                     'string',
                     'max:255',
-                    'unique:roles,name',
+                    'unique:roles,role_name',
                 ],
                 'description' => [
                     'nullable',
@@ -36,12 +34,12 @@ class RoleService
                 ],
             ],
             [
-                'name.unique' => 'Role name already exists.',
+                'role_name.unique' => 'Role name already exists.',
             ]
         )->validate();
 
         return Role::create([
-            'name' => $args['name'],
+            'role_name' => $args['role_name'],
             'description' => $args['description'] ?? null,
         ]);
     }
@@ -51,9 +49,7 @@ class RoleService
         $user = Auth::user();
 
         if (!$user instanceof User || !$user->hasRole('admin')) {
-            throw new Exception(
-                'You do not have permission to update roles.'
-            );
+            throw new Exception('You do not have permission to update roles.');
         }
 
         Validator::make(
@@ -64,11 +60,11 @@ class RoleService
                     'integer',
                     'exists:roles,id',
                 ],
-                'name' => [
+                'role_name' => [
                     'required',
                     'string',
                     'max:255',
-                    Rule::unique('roles', 'name')->ignore($args['id']),
+                    Rule::unique('roles', 'role_name')->ignore($args['id']),
                 ],
                 'description' => [
                     'nullable',
@@ -76,23 +72,17 @@ class RoleService
                 ],
             ],
             [
-                'name.unique' => 'Role name already exists.',
+                'role_name.unique' => 'Role name already exists.',
             ]
         )->validate();
 
         $role = Role::findOrFail($args['id']);
 
-        if (
-            $role->name === 'admin' &&
-            $args['name'] !== 'admin'
-        ) {
-            throw new Exception(
-                'The Admin role cannot be renamed.'
-            );
+        if ($role->name === 'admin' && $args['role_name'] !== 'admin') {
+            throw new Exception('The Admin role cannot be renamed.');
         }
-
         $role->update([
-            'name' => $args['name'],
+            'role_name' => $args['role_name'],
             'description' => $args['description'] ?? $role->description,
         ]);
 
@@ -104,9 +94,7 @@ class RoleService
         $user = Auth::user();
 
         if (!$user instanceof User || !$user->hasRole('admin')) {
-            throw new Exception(
-                'You do not have permission to delete roles.'
-            );
+            throw new Exception('You do not have permission to delete roles.');
         }
 
         Validator::make(
@@ -123,9 +111,7 @@ class RoleService
         $role = Role::findOrFail($args['id']);
 
         if ($role->name === 'admin') {
-            throw new Exception(
-                'The Admin role cannot be deleted.'
-            );
+            throw new Exception('The Admin role cannot be deleted.');
         }
 
         $role->delete();
