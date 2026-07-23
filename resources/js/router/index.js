@@ -41,6 +41,12 @@ const routes = [
                 name: 'users.edit',
                 component: UserEdit,
                 props: true
+            },
+            {
+                path: 'roles',
+                name: 'role.management',
+                component: () => import('@/views/roles/RoleManagement.vue')
+
             }
         ]
     }

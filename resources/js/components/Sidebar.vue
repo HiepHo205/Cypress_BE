@@ -23,12 +23,19 @@
                         Users
                     </router-link>
                 </li>
+
+                <li>
+                    <router-link to="/admin/roles"
+                        class="flex items-center px-4 py-3 rounded-lg transition hover:bg-slate-800">
+                        Roles
+                    </router-link>
+                </li>
             </ul>
         </nav>
 
         <div class="p-4 border-t border-slate-700">
             <button @click="showLogoutModal = true"
-                class="flex items-center w-full gap-3 px-4 py-3 rounded-lg text-red-400 hover:bg-slate-800 hover:text-red-300 transition">
+                class="flex items-center w-full gap-3 px-4 py-3 rounded-lg text-white hover:bg-slate-800 hover:text-gray-300 transition">
                 <LogOut :size="18" />
                 <span>Logout</span>
             </button>

@@ -15,6 +15,7 @@ class UserFactory extends Factory
     /**
      * The current password being used by the factory.
      */
+    protected $model = User::class;
     protected static ?string $password;
 
     /**
@@ -39,7 +40,7 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
     }

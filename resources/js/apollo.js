@@ -1,25 +1,30 @@
-import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core';
+import {
+    ApolloClient,
+    createHttpLink,
+    InMemoryCache
+} from '@apollo/client/core';
 import { setContext } from '@apollo/client/link/context';
 
 const httpLink = createHttpLink({
     uri: import.meta.env.VITE_GRAPHQL_URL || '/graphql',
-    credentials: 'same-origin',
+    credentials: 'include'
 });
 
 const authLink = setContext((_, { headers }) => {
-    const token = document
-        .querySelector('meta[name="csrf-token"]')
-        ?.getAttribute('content');
+    const token = localStorage.getItem('token');
 
     return {
         headers: {
             ...headers,
-            ...(token ? { 'X-CSRF-TOKEN': token } : {}),
-        },
+
+            ...(token && {
+                Authorization: `Bearer ${token}`
+            })
+        }
     };
 });
 
 export const apolloClient = new ApolloClient({
     link: authLink.concat(httpLink),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache()
 });

@@ -31,7 +31,7 @@ class AuthController extends Controller
 
             $message = 'User logout successfully';
 
-            if ($user->roles()->where('name', 'admin')->exists()) {
+            if ($user->role?->role_name === 'admin') {
                 $message = 'Admin logout successfully';
             }
 

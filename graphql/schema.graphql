@@ -13,6 +13,11 @@ type Query {
 
     users(name: String @where(operator: "like")): [User!]!
         @paginate(defaultCount: 10)
+
+    roles: [Role!]!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\RoleQuery@roles"
+        )
 }
 
 type Mutation {
@@ -75,7 +80,7 @@ type User {
     created_at: DateTime!
     updated_at: DateTime!
     status: String!
-    roles: [Role!]! @belongsToMany
+    role: Role @belongsTo
 }
 
 extend type Mutation {
@@ -87,7 +92,10 @@ extend type Mutation {
 
 type Role {
     id: ID!
-    name: String!
+    role_name: String!
+    description: String
+    created_at: DateTime
+    updated_at: DateTime
 }
 
 input LoginInput {
@@ -114,5 +122,25 @@ extend type Mutation {
         @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\AdminAuthMutation@logout"
+        )
+}
+
+extend type Mutation {
+    createRole(role_name: String!, description: String): Role!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@createRole"
+        )
+
+    updateRole(id: ID!, role_name: String!, description: String): Role!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@update"
+        )
+
+    deleteRole(id: ID!): Boolean!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@delete"
         )
 }

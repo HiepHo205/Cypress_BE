@@ -25,27 +25,27 @@ const handleLogin = async () => {
     loading.value = true;
 
     const query = `
-        mutation Login($input: LoginInput!) {
-            login(input: $input) {
+    mutation Login($input: LoginInput!) {
+        login(input: $input) {
+            status
+            message
+            access_token
+            token_type
+            expires_in
+            user {
+                id
+                name
+                full_name
+                email
                 status
-                message
-                access_token
-                token_type
-                expires_in
-                user {
+                role {
                     id
-                    name
-                    full_name
-                    email
-                    status
-                    roles {
-                        id
-                        name
-                    }
+                    role_name
                 }
             }
         }
-    `;
+    }
+`;
 
     try {
         const response = await fetch('/graphql', {
@@ -86,8 +86,7 @@ const handleLogin = async () => {
             return;
         }
 
-        const isAdmin =
-            login.user?.roles?.some(role => role.name === 'admin') ?? false;
+        const isAdmin = login.user?.role?.role_name === 'admin';
 
         if (!isAdmin) {
             toast.warning('Only admin accounts can access this page.');
