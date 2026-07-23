@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 return [
     /*
@@ -55,7 +57,9 @@ return [
     |
     */
 
-    'guards' => null,
+    'guards' => [
+        'api',
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -200,11 +204,15 @@ return [
         'mutations' => 'App\\GraphQL\\Mutations',
         'subscriptions' => 'App\\GraphQL\\Subscriptions',
         'types' => 'App\\GraphQL\\Types',
-        'interfaces' => 'App\\GraphQL\\Interfaces',
-        'unions' => 'App\\GraphQL\\Unions',
-        'scalars' => 'App\\GraphQL\\Scalars',
-        'directives' => 'App\\GraphQL\\Directives',
-        'validators' => 'App\\GraphQL\\Validators',
+        'interfaces' => ['App\\GraphQL\\Interfaces', 'Modules\\Admin\\GraphQL\\Interfaces', 'Modules\\Api\\GraphQL\\Interfaces'],
+        'unions' => ['App\\GraphQL\\Unions', 'Modules\\Admin\\GraphQL\\Unions', 'Modules\\Api\\GraphQL\\Unions'],
+        'scalars' => ['App\\GraphQL\\Scalars', 'Modules\\Admin\\GraphQL\\Scalars', 'Modules\\Api\\GraphQL\\Scalars'],
+        'directives' => ['App\\GraphQL\\Directives', 'Modules\\Admin\\GraphQL\\Directives', 'Modules\\Api\\GraphQL\\Directives'],
+        'validators' => [
+            'App\\GraphQL\\Validators',
+            'Modules\\Admin\\GraphQL\\Validators',
+            'Modules\\Api\\GraphQL\\Validators',
+        ],
     ],
 
     /*
@@ -277,7 +285,7 @@ return [
     |
     */
 
-    'debug' => env('LIGHTHOUSE_DEBUG', GraphQL\Error\DebugFlag::INCLUDE_DEBUG_MESSAGE | GraphQL\Error\DebugFlag::INCLUDE_TRACE),
+    'debug' => (int) env('LIGHTHOUSE_DEBUG', env('APP_DEBUG') ? (GraphQL\Error\DebugFlag::INCLUDE_DEBUG_MESSAGE | GraphQL\Error\DebugFlag::INCLUDE_TRACE) : GraphQL\Error\DebugFlag::RETHROW_UNSAFE_EXCEPTIONS),
 
     /*
     |--------------------------------------------------------------------------
@@ -539,4 +547,3 @@ return [
         'driver' => Nuwave\Lighthouse\Tracing\ApolloTracing\ApolloTracing::class,
     ],
 ];
-

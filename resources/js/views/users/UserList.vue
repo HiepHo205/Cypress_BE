@@ -190,7 +190,7 @@ async function deactivateUser(id) {
                     }}
                 </td>
                 <td class="px-6 py-4">
-                    {{ item.role?.name ?? '-' }}
+                    {{ item.role?.role_name ?? '-' }}
                 </td>
 
                 <td class="px-6 py-4">

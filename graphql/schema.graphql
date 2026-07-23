@@ -11,10 +11,13 @@ type Query {
             @rules(apply: ["prohibits:id", "required_without:id", "email"])
     ): User @find
 
-    users(
-        name: String @where(operator: "like")
-        role_id: ID @where
-    ): [User!]! @paginate(defaultCount: 10)
+    users(name: String @where(operator: "like")): [User!]!
+        @paginate(defaultCount: 10)
+
+    roles: [Role!]!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\RoleQuery@roles"
+        )
 }
 
 type Mutation {
@@ -79,6 +82,7 @@ type User {
     created_at: DateTime!
     updated_at: DateTime!
     status: String!
+    role_id: ID
     role: Role @belongsTo
 }
 
@@ -91,7 +95,10 @@ extend type Mutation {
 
 type Role {
     id: ID!
-    name: String!
+    role_name: String!
+    description: String
+    created_at: DateTime
+    updated_at: DateTime
 }
 
 input LoginInput {
@@ -106,4 +113,37 @@ type LoginResponse {
     token_type: String
     expires_in: Int
     user: User
+}
+
+type LogoutResponse {
+    status: Boolean!
+    message: String!
+}
+
+extend type Mutation {
+    logout: LogoutResponse!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\AdminAuthMutation@logout"
+        )
+}
+
+extend type Mutation {
+    createRole(role_name: String!, description: String): Role!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@createRole"
+        )
+
+    updateRole(id: ID!, role_name: String!, description: String): Role!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@update"
+        )
+
+    deleteRole(id: ID!): Boolean!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@delete"
+        )
 }

@@ -26,4 +26,13 @@ class AuthController
 
         return response()->json($result);
     }
+    public function logout(): JsonResponse
+    {
+        $this->authService->logout();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Logout successful.'
+        ]);
+    }
 }

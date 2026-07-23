@@ -25,27 +25,27 @@ const handleLogin = async () => {
     loading.value = true;
 
     const query = `
-        mutation Login($input: LoginInput!) {
-            login(input: $input) {
+    mutation Login($input: LoginInput!) {
+        login(input: $input) {
+            status
+            message
+            access_token
+            token_type
+            expires_in
+            user {
+                id
+                name
+                full_name
+                email
                 status
-                message
-                access_token
-                token_type
-                expires_in
-                user {
+                role {
                     id
-                    name
-                    full_name
-                    email
-                    status
-                    roles {
-                        id
-                        name
-                    }
+                    role_name
                 }
             }
         }
-    `;
+    }
+`;
 
     try {
         const response = await fetch('/graphql', {
@@ -86,8 +86,7 @@ const handleLogin = async () => {
             return;
         }
 
-        const isAdmin =
-            login.user?.roles?.some(role => role.name === 'admin') ?? false;
+        const isAdmin = login.user?.role?.role_name === 'admin';
 
         if (!isAdmin) {
             toast.warning('Only admin accounts can access this page.');
@@ -115,10 +114,12 @@ const handleLogin = async () => {
     <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-50">
         <div class="w-[800px] h-[550px] bg-white rounded-2xl shadow-xl flex overflow-hidden">
 
-            <div class="w-1/2 bg-gradient-to-br from-indigo-500 to-blue-400 text-white p-10 flex flex-col justify-center">
+            <div
+                class="w-1/2 bg-gradient-to-br from-indigo-500 to-blue-400 text-white p-10 flex flex-col justify-center">
 
                 <div class="mb-10">
-                    <div class="w-12 h-12 bg-white text-indigo-500 rounded-xl flex items-center justify-center font-bold text-xl mb-4">
+                    <div
+                        class="w-12 h-12 bg-white text-indigo-500 rounded-xl flex items-center justify-center font-bold text-xl mb-4">
                         C
                     </div>
 
@@ -159,12 +160,8 @@ const handleLogin = async () => {
                         <div class="relative mt-1">
                             <Mail class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
 
-                            <input
-                                v-model="email"
-                                type="email"
-                                placeholder="Enter your email"
-                                class="w-full h-11 pl-10 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-400"
-                            />
+                            <input v-model="email" type="email" placeholder="Enter your email"
+                                class="w-full h-11 pl-10 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-400" />
                         </div>
                     </div>
 
@@ -176,32 +173,20 @@ const handleLogin = async () => {
                         <div class="relative mt-1">
                             <Lock class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
 
-                            <input
-                                v-model="password"
-                                :type="showPassword ? 'text' : 'password'"
+                            <input v-model="password" :type="showPassword ? 'text' : 'password'"
                                 placeholder="Enter your password"
-                                class="w-full h-11 pl-10 pr-10 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-400"
-                            />
+                                class="w-full h-11 pl-10 pr-10 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-400" />
 
-                            <Eye
-                                v-if="!showPassword"
-                                @click="togglePasswordVisibility"
-                                class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 cursor-pointer z-10"
-                            />
+                            <Eye v-if="!showPassword" @click="togglePasswordVisibility"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 cursor-pointer z-10" />
 
-                            <EyeOff
-                                v-else
-                                @click="togglePasswordVisibility"
-                                class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 cursor-pointer z-10"
-                            />
+                            <EyeOff v-else @click="togglePasswordVisibility"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 cursor-pointer z-10" />
                         </div>
                     </div>
 
-                    <button
-                        type="submit"
-                        :disabled="loading"
-                        class="w-full h-11 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg"
-                    >
+                    <button type="submit" :disabled="loading"
+                        class="w-full h-11 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg">
                         {{ loading ? 'Logging in...' : 'Login' }}
                     </button>
 

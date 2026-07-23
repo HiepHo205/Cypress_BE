@@ -9,18 +9,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            if (!Schema::hasColumn('users', 'status')) {
-                $table->string('status')->default('active')->after('password');
-            }
+            $table->foreignId('role_id')
+                ->nullable()
+                ->after('id')
+                ->constrained('roles')
+                ->nullOnDelete();
         });
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            if (Schema::hasColumn('users', 'status')) {
-                $table->dropColumn('status');
-            }
+            $table->dropForeign(['role_id']);
+            $table->dropColumn('role_id');
         });
     }
 };

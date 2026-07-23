@@ -76,4 +76,23 @@ class AuthMutation
             ];
         }
     }
+
+    public function logout(mixed $root, array $args): array
+    {
+        try {
+            $this->authService->logout();
+
+            return [
+                'status' => true,
+                'message' => 'Logout successfully',
+                'user' => null,
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+                'user' => null,
+            ];
+        }
+    }
 }

@@ -33,22 +33,13 @@ class User extends Authenticatable implements JWTSubject
         return UserFactory::new();
     }
 
-    public function role(): BelongsTo
-    {
-        return $this->belongsTo(Role::class);
-    }
-
-    public function hasRole(string $role): bool
-    {
-        return $this->role?->name === $role;
-    }
 
     public function getJWTIdentifier()
     {
         return $this->getKey();
     }
 
-    public function getJWTCustomClaims()
+    public function getJWTCustomClaims(): array
     {
         return [];
     }
@@ -56,5 +47,15 @@ class User extends Authenticatable implements JWTSubject
     public function getAuthPassword()
     {
         return $this->password;
+    }
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+
+    public function hasRole(string $role): bool
+    {
+        return $this->role?->role_name === $role;
     }
 }

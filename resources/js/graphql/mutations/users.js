@@ -7,6 +7,7 @@ export const CREATE_USER = gql`
                 id
                 name
                 email
+                role_id
             }
         }
     }
@@ -20,6 +21,7 @@ export const UPDATE_USER = gql`
                 name
                 email
                 status
+                role_id
             }
         }
     }

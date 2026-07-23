@@ -6,44 +6,75 @@ import Dashboard from '@/views/Dashboard.vue';
 import UserList from '@/views/users/UserList.vue';
 import UserCreate from '@/views/users/UserCreate.vue';
 import UserEdit from '@/views/users/UserEdit.vue';
-
+import { useToast } from 'vue-toastification';
 const routes = [
     {
         path: '/login',
         name: 'login',
-        component: () => import('@/views/auth/Login.vue'),
+        component: () => import('@/views/auth/Login.vue')
     },
 
     {
         path: '/admin',
         component: AdminLayout,
+        meta: {
+            requiresAuth: true
+        },
         children: [
             {
                 path: '',
                 name: 'dashboard',
-                component: Dashboard,
+                component: Dashboard
             },
             {
                 path: 'users',
                 name: 'users.list',
-                component: UserList,
+                component: UserList
             },
             {
                 path: 'users/create',
                 name: 'users.create',
-                component: UserCreate,
+                component: UserCreate
             },
             {
                 path: 'users/:id/edit',
                 name: 'users.edit',
                 component: UserEdit,
-                props: true,
+                props: true
             },
-        ],
-    },
+            {
+                path: 'roles',
+                name: 'role.management',
+                component: () => import('@/views/roles/RoleManagement.vue')
+
+            }
+        ]
+    }
 ];
 
-export default createRouter({
+const router = createRouter({
     history: createWebHistory(),
-    routes,
+    routes
 });
+
+router.beforeEach((to, from, next) => {
+    const token = localStorage.getItem('token');
+
+    const requiresAuth = to.matched.some((route) => route.meta.requiresAuth);
+
+    const toast = useToast();
+
+    if (requiresAuth && !token) {
+        toast.warning('Please login to access this page.');
+
+        return next('/login');
+    }
+
+    if (to.path === '/login' && token) {
+        return next('/admin');
+    }
+
+    next();
+});
+
+export default router;

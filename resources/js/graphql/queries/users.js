@@ -11,7 +11,7 @@ export const GET_USERS = gql`
 
                 role {
                     id
-                    name
+                    role_name
                 }
 
                 created_at
@@ -35,7 +35,7 @@ export const GET_USER = gql`
 
             role {
                 id
-                name
+                role_name
             }
         }
     }
