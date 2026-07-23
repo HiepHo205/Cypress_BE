@@ -1,41 +1,69 @@
 <template>
     <div class="w-64 h-screen bg-slate-900 text-white flex flex-col">
         <div class="p-6 border-b border-slate-800">
-            <h1 class="text-2xl font-bold">
-                Cypress
-            </h1>
+            <h1 class="text-2xl font-bold">Cypress</h1>
         </div>
 
         <nav class="flex-1 p-4">
             <ul class="space-y-2">
                 <li>
                     <router-link to="/admin"
-                        class="flex items-center px-4 py-3 rounded-lg transition hover:bg-slate-800"
+                        class="flex items-center gap-3 px-4 py-3 rounded-lg transition hover:bg-slate-800"
                         exact-active-class="bg-slate-800">
-                        Dashboard
+                        <LayoutDashboard :size="18" />
+                        <span>Dashboard</span>
                     </router-link>
                 </li>
 
                 <li>
                     <router-link to="/admin/users"
-                        class="flex items-center px-4 py-3 rounded-lg transition hover:bg-slate-800"
+                        class="flex items-center gap-3 px-4 py-3 rounded-lg transition hover:bg-slate-800"
                         exact-active-class="bg-slate-800">
-                        Users
+                        <Users :size="18" />
+                        <span>Users</span>
                     </router-link>
                 </li>
 
                 <li>
                     <router-link to="/admin/roles"
-                        class="flex items-center px-4 py-3 rounded-lg transition hover:bg-slate-800">
-                        Roles
+                        class="flex items-center gap-3 px-4 py-3 rounded-lg transition hover:bg-slate-800"
+                        exact-active-class="bg-slate-800">
+                        <ShieldCheck :size="18" />
+                        <span>Roles</span>
                     </router-link>
+                </li>
+
+                <li>
+                    <button @click="openStructure = !openStructure"
+                        class="w-full flex items-center justify-between px-4 py-3 rounded-lg transition hover:bg-slate-800">
+                        <div class="flex items-center gap-3">
+                            <FolderTree :size="18" />
+                            <span>Cấu trúc chung</span>
+                        </div>
+                        <ChevronDown v-if="openStructure" :size="18" />
+                        <ChevronRight v-else :size="18" />
+                    </button>
+
+                    <transition enter-active-class="transition-all duration-300 ease-out"
+                        leave-active-class="transition-all duration-300 ease-in">
+                        <ul v-show="openStructure" class="mt-2 ml-6 space-y-1">
+                            <li>
+                                <router-link to="/admin/header"
+                                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition hover:bg-slate-800"
+                                    active-class="bg-slate-800">
+                                    <PanelTop :size="16" />
+                                    <span>Header</span>
+                                </router-link>
+                            </li>
+                        </ul>
+                    </transition>
                 </li>
             </ul>
         </nav>
 
         <div class="p-4 border-t border-slate-700">
             <button @click="showLogoutModal = true"
-                class="flex items-center w-full gap-3 px-4 py-3 rounded-lg text-white hover:bg-slate-800 hover:text-gray-300 transition">
+                class="flex items-center w-full gap-3 px-4 py-3 rounded-lg text-white transition hover:bg-slate-800">
                 <LogOut :size="18" />
                 <span>Logout</span>
             </button>
@@ -44,34 +72,46 @@
 
     <div v-if="showLogoutModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
         <div class="w-[400px] rounded-xl bg-white p-6 shadow-xl">
-            <h2 class="text-xl font-semibold text-gray-800">
-                Logout
-            </h2>
-
-            <p class="mt-3 text-gray-600">
-                Are you sure you want to log out?
-            </p>
-
+            <h2 class="text-xl font-semibold text-gray-800">Logout</h2>
+            <p class="mt-3 text-gray-600">Are you sure you want to log out?</p>
             <div class="mt-6 flex justify-end gap-3">
                 <button @click="showLogoutModal = false"
-                    class="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-100">
-                    Cancel
-                </button>
-
-                <button @click="confirmLogout" class="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700">
-                    Logout
-                </button>
+                    class="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-100">Cancel</button>
+                <button @click="confirmLogout"
+                    class="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700">Logout</button>
             </div>
         </div>
     </div>
 </template>
-
 <script setup>
-import { ref } from "vue";
-import { LogOut } from "lucide-vue-next";
+import { ref, watch } from "vue";
+import { useRoute } from "vue-router";
+import {
+    LogOut,
+    LayoutDashboard,
+    Users,
+    ShieldCheck,
+    FolderTree,
+    PanelTop,
+    ChevronDown,
+    ChevronRight
+} from "lucide-vue-next";
 import { useLogout } from "@/composables/useLogout";
 
+const route = useRoute();
+
 const showLogoutModal = ref(false);
+
+const openStructure = ref(route.path.startsWith("/admin/header"));
+
+watch(
+    () => route.path,
+    (path) => {
+        if (path.startsWith("/admin/header")) {
+            openStructure.value = true;
+        }
+    }
+);
 
 const { logout } = useLogout();
 

@@ -144,3 +144,75 @@ extend type Mutation {
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@delete"
         )
 }
+
+extend type Query {
+    header: Header
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@header"
+        )
+}
+
+type Header {
+    logo: String
+    menus: [Menu]
+    cta: CTA
+}
+
+type Menu {
+    id: ID!
+    label: String
+    children: [MenuChild]
+}
+
+type MenuChild {
+    id: ID!
+    label: String
+    href: String
+}
+
+type CTA {
+    label: String
+    href: String
+}
+
+input HeaderMenuInput {
+    label: String!
+    children: [HeaderMenuChildInput!]
+}
+
+input HeaderMenuChildInput {
+    label: String!
+}
+type HeaderMenuResponse {
+    id: ID
+    label: String
+    children: [HeaderMenuChildResponse]
+}
+
+type HeaderMenuChildResponse {
+    id: ID
+    label: String
+    href: String
+}
+
+type DeleteResponse {
+    message: String
+}
+
+type Mutation {
+    createHeaderMenu(input: HeaderMenuInput!): HeaderMenuResponse
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMenuMutation@createHeaderMenu"
+        )
+
+    updateHeaderMenu(id: ID!, input: HeaderMenuInput!): HeaderMenuResponse
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMenuMutation@updateHeaderMenu"
+        )
+
+    deleteHeaderMenu(id: ID!): DeleteResponse
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMenuMutation@deleteHeaderMenu"
+        )
+}
+
