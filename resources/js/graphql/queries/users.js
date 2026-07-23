@@ -8,8 +8,15 @@ export const GET_USERS = gql`
                 name
                 email
                 status
+
+                role {
+                    id
+                    name
+                }
+
                 created_at
             }
+
             paginatorInfo {
                 currentPage
                 lastPage
@@ -25,8 +32,11 @@ export const GET_USER = gql`
             name
             email
             status
-            created_at
-            updated_at
+
+            role {
+                id
+                name
+            }
         }
     }
 `;

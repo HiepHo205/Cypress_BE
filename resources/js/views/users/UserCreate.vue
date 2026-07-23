@@ -41,6 +41,15 @@
           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
+      <select v-model="form.role_id">
+        <option
+            v-for="role in roles"
+            :key="role.id"
+            :value="role.id"
+        >
+            {{ role.name }}
+        </option>
+    </select>
 
       <div
         v-if="errorMessages.length"
@@ -74,6 +83,7 @@ const form = reactive({
   name: '',
   email: '',
   password: '',
+  role_id: '',
 });
 
 const { mutate: createUser, loading, error } = useMutation(CREATE_USER, {
@@ -89,6 +99,7 @@ async function submit() {
         name: form.name,
         email: form.email,
         password: form.password,
+        role_id: form.role_id,
       },
     });
 

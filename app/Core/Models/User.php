@@ -2,26 +2,45 @@
 
 namespace App\Core\Models;
 
+use App\Core\Models\Role;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Tymon\JWTAuth\Contracts\JWTSubject;
-use App\Core\Models\Role;
 
-#[Fillable(['name', 'email', 'password', 'status'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
 
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'status',
+        'role_id',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
     protected static function newFactory(): Factory
     {
         return UserFactory::new();
+    }
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return $this->role?->name === $role;
     }
 
     public function getJWTIdentifier()
@@ -33,23 +52,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
     public function getAuthPassword()
     {
         return $this->password;
-    }
-
-    public function roles(): BelongsToMany
-    {
-        return $this->belongsToMany(
-            Role::class,
-            'user_roles',
-            'user_id',
-            'role_id',
-        );
-    }
-
-    public function hasRole(string $role): bool
-    {
-        return $this->roles()->where('name', $role)->exists();
     }
 }
