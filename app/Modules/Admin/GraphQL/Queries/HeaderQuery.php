@@ -140,4 +140,33 @@ class HeaderQuery
             'public_id' => $meta['public_id'] ?? null,
         ];
     }
+    public function getCta()
+    {
+        $entry = Collection::where('api_endpoint', 'header')
+            ->firstOrFail()
+            ->entries()
+            ->whereHas('metas', function ($query) {
+                $query->where('meta_key', 'type')
+                    ->where('meta_value', 'cta');
+            })
+            ->with('metas')
+            ->first();
+
+
+        if (!$entry) {
+            return null;
+        }
+
+
+        $meta = $entry->metas->pluck(
+            'meta_value',
+            'meta_key'
+        );
+
+
+        return [
+            'label' => $meta->get('label'),
+            'href' => $meta->get('href'),
+        ];
+    }
 }

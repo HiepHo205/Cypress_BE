@@ -205,7 +205,7 @@ type DeleteResponse {
     message: String
 }
 
-type Mutation {
+extend type Mutation {
     createHeaderMenu(input: HeaderMenuInput!): HeaderMenuResponse
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@createHeaderMenu"
@@ -258,11 +258,14 @@ extend type Header {
     countdown: HeaderCountdown
 }
 
+input HeaderCTAInput {
+    label: String
+    href: String
+}
 input UpdateHeaderCountdownInput {
     enabled: Boolean!
-    target_date: DateTime
-    button_label: String
-    button_href: String
+    target_date: String
+    cta: HeaderCTAInput
 }
 
 extend type Mutation {
@@ -288,5 +291,12 @@ extend type Query {
     getFavicon: HeaderFavicon
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getFavicon"
+        )
+}
+
+extend type Query {
+    headerCta: HeaderCTA
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getCta"
         )
 }

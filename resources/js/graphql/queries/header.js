@@ -39,3 +39,16 @@ export const GET_HEADER_FAVICON = gql`
         }
     }
 `;
+
+export const GET_HEADER_CTA = gql`
+    query GetHeaderCta {
+        header {
+            countdown {
+                button {
+                    label
+                    href
+                }
+            }
+        }
+    }
+`;

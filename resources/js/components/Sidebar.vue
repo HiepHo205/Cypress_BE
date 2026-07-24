@@ -38,7 +38,7 @@
                         class="w-full flex items-center justify-between px-4 py-3 rounded-lg transition hover:bg-slate-800">
                         <div class="flex items-center gap-3">
                             <FolderTree :size="18" />
-                            <span>Cấu trúc chung</span>
+                            <span>General Structure</span>
                         </div>
                         <ChevronDown v-if="openStructure" :size="18" />
                         <ChevronRight v-else :size="18" />

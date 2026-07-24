@@ -2,12 +2,10 @@
 import { reactive, computed, onMounted, onUnmounted, ref } from 'vue';
 import useHeaderCountdown from '@/composables/header/useHeaderCountdown';
 import LoadingOverlay from '@/components/common/LoadingOverlay.vue';
-
 const {
     getCountdown,
     updateCountdown
 } = useHeaderCountdown();
-
 const form = reactive({
     target_date: '',
     enabled: true,
@@ -17,38 +15,31 @@ const form = reactive({
 
 const currentTime = ref(new Date());
 const pageLoading = ref(true);
-
 let timer = null;
-
 onMounted(async () => {
     timer = setInterval(() => {
         currentTime.value = new Date();
     }, 1000);
-
     try {
         const data = await getCountdown();
-
         if (!data) {
             return;
         }
-
         form.target_date = data.target_date
             ? data.target_date.slice(0, 16)
             : '';
-
         form.enabled = data.enabled;
         form.button_label = data.button?.label ?? '';
         form.button_href = data.button?.href ?? '';
-
+    } catch (error) {
+        console.error(error);
     } finally {
         pageLoading.value = false;
     }
 });
-
 onUnmounted(() => {
     clearInterval(timer);
 });
-
 const countdown = computed(() => {
     if (!form.target_date) {
         return {
@@ -59,10 +50,10 @@ const countdown = computed(() => {
         };
     }
 
-    const inputDate = new Date(form.target_date);
+    const selectedDate = new Date(form.target_date);
 
-    const target = new Date(
-        inputDate.getFullYear(),
+    const targetDate = new Date(
+        selectedDate.getFullYear(),
         11,
         31,
         23,
@@ -70,20 +61,50 @@ const countdown = computed(() => {
         59
     );
 
-    let diff = target.getTime() - inputDate.getTime();
+    const now = currentTime.value;
+    const startTime = now < selectedDate
+        ? selectedDate
+        : now;
 
-    if (diff < 0) diff = 0;
 
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    let diff = targetDate.getTime() - startTime.getTime();
+
+
+    if (diff <= 0) {
+        return {
+            days: 0,
+            hours: '00',
+            minutes: '00',
+            seconds: '00'
+        };
+    }
+
+
+    const days = Math.floor(
+        diff / (1000 * 60 * 60 * 24)
+    );
+
     diff %= 1000 * 60 * 60 * 24;
 
-    const hours = Math.floor(diff / (1000 * 60 * 60));
+
+    const hours = Math.floor(
+        diff / (1000 * 60 * 60)
+    );
+
     diff %= 1000 * 60 * 60;
 
-    const minutes = Math.floor(diff / (1000 * 60));
+
+    const minutes = Math.floor(
+        diff / (1000 * 60)
+    );
+
     diff %= 1000 * 60;
 
-    const seconds = Math.floor(diff / 1000);
+
+    const seconds = Math.floor(
+        diff / 1000
+    );
+
 
     return {
         days,
@@ -92,21 +113,22 @@ const countdown = computed(() => {
         seconds: String(seconds).padStart(2, '0')
     };
 });
-
 const save = async () => {
     await updateCountdown({
         enabled: form.enabled,
+
         target_date: form.target_date
             ? form.target_date.replace('T', ' ') + ':00'
             : null,
-        button_label: form.button_label || '',
-        button_href: form.button_href || ''
+
+        cta: {
+            label: form.button_label,
+            href: form.button_href
+        }
     });
 };
 </script>
-
 <template>
-
     <div class="relative rounded-2xl">
         <LoadingOverlay :show="pageLoading" message="Loading countdown..." :fullScreen="false" />
 
@@ -124,7 +146,8 @@ const save = async () => {
                     </p>
 
                     <div class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <div>
+
+                        <div class="md:col-span-2">
                             <label class="mb-2 block text-sm font-medium text-gray-700">
                                 Countdown Date
                             </label>
@@ -133,22 +156,6 @@ const save = async () => {
                                 class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-blue-500" />
                         </div>
 
-                        <div>
-                            <label class="mb-2 block text-sm font-medium text-gray-700">
-                                Status
-                            </label>
-
-                            <select v-model="form.enabled"
-                                class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-blue-500">
-                                <option :value="true">
-                                    Enabled
-                                </option>
-
-                                <option :value="false">
-                                    Disabled
-                                </option>
-                            </select>
-                        </div>
 
                         <div>
                             <label class="mb-2 block text-sm font-medium text-gray-700">
@@ -159,6 +166,7 @@ const save = async () => {
                                 class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-blue-500" />
                         </div>
 
+
                         <div>
                             <label class="mb-2 block text-sm font-medium text-gray-700">
                                 Button URL
@@ -167,6 +175,7 @@ const save = async () => {
                             <input v-model="form.button_href" type="text"
                                 class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-blue-500" />
                         </div>
+
                     </div>
 
                     <div class="mt-8 rounded-2xl border border-blue-100 bg-blue-50 p-6">

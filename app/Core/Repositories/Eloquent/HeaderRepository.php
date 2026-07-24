@@ -200,7 +200,13 @@ class HeaderRepository
             )->firstOrFail();
 
 
-            $entry = $collection->entries()
+            /**
+             * =========================
+             * UPDATE COUNTDOWN
+             * =========================
+             */
+
+            $countdownEntry = $collection->entries()
                 ->whereHas('metas', function ($query) {
                     $query->where('meta_key', 'type')
                         ->where('meta_value', 'countdown');
@@ -209,16 +215,16 @@ class HeaderRepository
                 ->first();
 
 
-            if (!$entry) {
+            if (!$countdownEntry) {
 
-                $entry = Entry::create([
+                $countdownEntry = Entry::create([
                     'collection_id' => $collection->id,
                     'title' => 'Header Countdown',
                     'status' => 'published',
                 ]);
 
 
-                $entry->metas()->createMany([
+                $countdownEntry->metas()->createMany([
                     [
                         'meta_key' => 'type',
                         'meta_value' => 'countdown',
@@ -231,36 +237,77 @@ class HeaderRepository
                         'meta_key' => 'target_date',
                         'meta_value' => '',
                     ],
+                ]);
+            }
+
+
+            $countdownData = [
+                'enabled' => $input['enabled']
+                    ? 'true'
+                    : 'false',
+
+                'target_date' => $input['target_date'] ?? '',
+            ];
+
+
+            foreach ($countdownData as $key => $value) {
+
+                EntryMeta::updateOrCreate(
                     [
-                        'meta_key' => 'button_label',
+                        'entry_id' => $countdownEntry->id,
+                        'meta_key' => $key,
+                    ],
+                    [
+                        'meta_value' => $value,
+                    ]
+                );
+            }
+
+            $ctaEntry = $collection->entries()
+                ->whereHas('metas', function ($query) {
+                    $query->where('meta_key', 'type')
+                        ->where('meta_value', 'cta');
+                })
+                ->first();
+
+
+            if (!$ctaEntry) {
+
+                $ctaEntry = Entry::create([
+                    'collection_id' => $collection->id,
+                    'title' => 'Header CTA',
+                    'status' => 'published',
+                ]);
+
+
+                $ctaEntry->metas()->createMany([
+                    [
+                        'meta_key' => 'type',
+                        'meta_value' => 'cta',
+                    ],
+                    [
+                        'meta_key' => 'label',
                         'meta_value' => '',
                     ],
                     [
-                        'meta_key' => 'button_href',
+                        'meta_key' => 'href',
                         'meta_value' => '',
                     ],
                 ]);
             }
 
 
-            $data = [
-                'enabled' => $input['enabled']
-                    ? 'true'
-                    : 'false',
-
-                'target_date' => $input['target_date'],
-
-                'button_label' => $input['button_label'],
-
-                'button_href' => $input['button_href'],
+            $ctaData = [
+                'label' => $input['cta']['label'] ?? '',
+                'href' => $input['cta']['href'] ?? '',
             ];
 
 
-            foreach ($data as $key => $value) {
+            foreach ($ctaData as $key => $value) {
 
                 EntryMeta::updateOrCreate(
                     [
-                        'entry_id' => $entry->id,
+                        'entry_id' => $ctaEntry->id,
                         'meta_key' => $key,
                     ],
                     [
