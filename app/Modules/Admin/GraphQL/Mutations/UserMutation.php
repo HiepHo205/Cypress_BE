@@ -16,6 +16,7 @@ class UserMutation
         $user->name = $args['input']['name'];
         $user->email = $args['input']['email'];
         $user->password = Hash::make($args['input']['password']);
+        $user->role_id = $args['input']['role_id'];
         $user->save();
 
         return ['user' => $user];
@@ -43,6 +44,9 @@ class UserMutation
 
         if (array_key_exists('status', $args['input'])) {
             $user->status = $args['input']['status'];
+        }
+        if (isset($args['input']['role_id'])) {
+            $user->role_id = $args['input']['role_id'];
         }
 
         $user->save();

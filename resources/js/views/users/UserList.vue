@@ -16,6 +16,7 @@ const columns = [
     { key: 'id', label: 'ID' },
     { key: 'name', label: 'Name' },
     { key: 'email', label: 'Email' },
+    { key: 'role', label: 'Role' },
     { key: 'status', label: 'Status' },
     { key: 'created_at', label: 'Created At' },
     { key: 'actions', label: 'Actions' }
@@ -187,6 +188,9 @@ async function deactivateUser(id) {
                             ? item.email.slice(0, 22) + '...'
                             : item.email
                     }}
+                </td>
+                <td class="px-6 py-4">
+                    {{ item.role?.role_name ?? '-' }}
                 </td>
 
                 <td class="px-6 py-4">

@@ -46,16 +46,18 @@ type Mutation {
 }
 
 input CreateUserInput {
-    name: String! @rules(apply: ["required", "string", "min:2"])
-    email: String! @rules(apply: ["required", "email", "unique:users,email"])
-    password: String! @rules(apply: ["required", "min:8"])
+    name: String!
+    email: String!
+    password: String!
+    role_id: ID!
 }
 
 input UpdateUserInput {
-    name: String @rules(apply: ["string", "min:2"])
-    email: String @rules(apply: ["email"])
-    password: String @rules(apply: ["min:8"])
-    status: String @rules(apply: ["in:active,unactive"])
+    name: String
+    email: String
+    password: String
+    status: String
+    role_id: ID
 }
 
 type CreateUserPayload {
@@ -83,6 +85,7 @@ type User {
     created_at: DateTime!
     updated_at: DateTime!
     status: String!
+    role_id: ID
     role: Role @belongsTo
 }
 
