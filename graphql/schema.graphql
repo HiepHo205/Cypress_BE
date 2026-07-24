@@ -3,6 +3,9 @@
 scalar DateTime
     @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
 
+scalar Upload
+    @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Upload")
+
 type Query {
     user(
         id: ID @eq @rules(apply: ["prohibits:email", "required_without:email"])
@@ -145,5 +148,155 @@ extend type Mutation {
         @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@delete"
+        )
+}
+
+extend type Query {
+    header: Header
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@header"
+        )
+}
+
+type Header {
+    logo: String
+    menus: [Menu]
+    cta: CTA
+}
+
+type Menu {
+    id: ID!
+    label: String
+    children: [MenuChild]
+}
+
+type MenuChild {
+    id: ID!
+    label: String
+    href: String
+}
+
+type CTA {
+    label: String
+    href: String
+}
+
+input HeaderMenuInput {
+    label: String!
+    children: [HeaderMenuChildInput!]
+}
+
+input HeaderMenuChildInput {
+    label: String!
+}
+type HeaderMenuResponse {
+    id: ID
+    label: String
+    children: [HeaderMenuChildResponse]
+}
+
+type HeaderMenuChildResponse {
+    id: ID
+    label: String
+    href: String
+}
+
+type DeleteResponse {
+    message: String
+}
+
+extend type Mutation {
+    createHeaderMenu(input: HeaderMenuInput!): HeaderMenuResponse
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@createHeaderMenu"
+        )
+
+    updateHeaderMenu(id: ID!, input: HeaderMenuInput!): HeaderMenuResponse
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@updateHeaderMenu"
+        )
+
+    deleteHeaderMenu(id: ID!): DeleteResponse
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@deleteHeaderMenu"
+        )
+}
+
+extend type Mutation {
+    updateLogo(logo: Upload!): HeaderLogo!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@updateLogo"
+        )
+}
+type HeaderLogo {
+    logo: String
+}
+
+extend type Query {
+    getLogo: HeaderLogo
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getLogo"
+        )
+}
+type HeaderCountdownButton {
+    label: String
+    href: String
+}
+
+type HeaderCountdown {
+    enabled: Boolean!
+    target_date: DateTime
+    button: HeaderCountdownButton
+}
+
+type Response {
+    success: Boolean!
+    message: String!
+}
+
+extend type Header {
+    countdown: HeaderCountdown
+}
+
+input HeaderCTAInput {
+    label: String
+    href: String
+}
+input UpdateHeaderCountdownInput {
+    enabled: Boolean!
+    target_date: String
+    cta: HeaderCTAInput
+}
+
+extend type Mutation {
+    updateHeaderCountdown(input: UpdateHeaderCountdownInput!): Response!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@updateCountdown"
+        )
+}
+
+extend type Mutation {
+    updateFavicon(favicon: Upload!): HeaderFavicon!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@updateFavicon"
+        )
+}
+
+type HeaderFavicon {
+    url: String
+    public_id: String
+}
+
+extend type Query {
+    getFavicon: HeaderFavicon
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getFavicon"
+        )
+}
+
+extend type Query {
+    headerCta: HeaderCTA
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getCta"
         )
 }

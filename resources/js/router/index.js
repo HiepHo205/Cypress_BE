@@ -7,6 +7,7 @@ import UserList from '@/views/users/UserList.vue';
 import UserCreate from '@/views/users/UserCreate.vue';
 import UserEdit from '@/views/users/UserEdit.vue';
 import { useToast } from 'vue-toastification';
+import Header from '../views/cms/header/Header.vue';
 const routes = [
     {
         path: '/login',
@@ -46,7 +47,11 @@ const routes = [
                 path: 'roles',
                 name: 'role.management',
                 component: () => import('@/views/roles/RoleManagement.vue')
-
+            },
+            {
+                path: 'header',
+                name: 'cms.header',
+                component: Header
             }
         ]
     }
