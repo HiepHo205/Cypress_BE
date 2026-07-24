@@ -1,11 +1,8 @@
-import {
-    ApolloClient,
-    createHttpLink,
-    InMemoryCache
-} from '@apollo/client/core';
+import { ApolloClient, InMemoryCache } from '@apollo/client/core';
 import { setContext } from '@apollo/client/link/context';
+import { createUploadLink } from 'apollo-upload-client';
 
-const httpLink = createHttpLink({
+const uploadLink = createUploadLink({
     uri: import.meta.env.VITE_GRAPHQL_URL || '/graphql',
     credentials: 'include'
 });
@@ -16,7 +13,6 @@ const authLink = setContext((_, { headers }) => {
     return {
         headers: {
             ...headers,
-
             ...(token && {
                 Authorization: `Bearer ${token}`
             })
@@ -25,6 +21,6 @@ const authLink = setContext((_, { headers }) => {
 });
 
 export const apolloClient = new ApolloClient({
-    link: authLink.concat(httpLink),
+    link: authLink.concat(uploadLink),
     cache: new InMemoryCache()
 });

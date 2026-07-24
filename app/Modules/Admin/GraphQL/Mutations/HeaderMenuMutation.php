@@ -66,4 +66,13 @@ class HeaderMenuMutation
             'message' => 'Menu deleted successfully'
         ];
     }
+
+    public function updateLogo($_, array $args)
+    {
+        $service = app(HeaderService::class);
+
+        return $service->updateLogo(
+            $args['logo']
+        );
+    }
 }

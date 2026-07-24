@@ -9,17 +9,26 @@ import {
     DELETE_HEADER_MENU
 } from '@/graphql/mutations/header';
 
+const menus = ref([]);
+const loaded = ref(false);
+
 export default function useHeaderMenu() {
-    const menus = ref([]);
     const { resolveClient } = useApolloClient();
     const toast = useToast();
+
     const getHeaderMenu = async () => {
+        if (loaded.value) {
+            return;
+        }
+
         try {
             const response = await resolveClient().query({
                 query: GET_HEADER_MENU,
                 fetchPolicy: 'network-only'
             });
+
             menus.value = [...response.data.header.menus];
+            loaded.value = true;
         } catch (error) {
             console.error(error);
             toast.error('Failed to load header menu');
@@ -27,38 +36,30 @@ export default function useHeaderMenu() {
     };
 
     const createMenu = async (data) => {
-        const toastId = toast.info('Creating menu...', {
-            timeout: false
-        });
         try {
             const response = await resolveClient().mutate({
                 mutation: CREATE_HEADER_MENU,
-
                 variables: {
                     input: data
                 }
             });
+
             const newMenu = response?.data?.createHeaderMenu;
 
             if (!newMenu) {
                 throw new Error('Create menu response empty');
             }
+
             menus.value = [...menus.value, newMenu];
-            toast.dismiss(toastId);
-            toast.success('Created menu successfully');
+
             return true;
         } catch (error) {
-            toast.dismiss(toastId);
-            console.error('CREATE MENU ERROR:', error);
-            toast.error('Create menu failed');
+            console.error(error);
             return false;
         }
     };
 
     const updateMenu = async (id, data) => {
-        const toastId = toast.info('Updating menu...', {
-            timeout: false
-        });
         try {
             await resolveClient().mutate({
                 mutation: UPDATE_HEADER_MENU,
@@ -67,21 +68,18 @@ export default function useHeaderMenu() {
                     input: data
                 }
             });
+
+            loaded.value = false;
             await getHeaderMenu();
-            toast.dismiss(toastId);
-            toast.success('Updated menu successfully');
+
             return true;
         } catch (error) {
-            toast.dismiss(toastId);
             console.error(error);
-            toast.error('Update menu failed');
             return false;
         }
     };
+
     const deleteMenu = async (id) => {
-        const toastId = toast.info('Deleting menu...', {
-            timeout: false
-        });
         try {
             await resolveClient().mutate({
                 mutation: DELETE_HEADER_MENU,
@@ -89,14 +87,12 @@ export default function useHeaderMenu() {
                     id
                 }
             });
+
             menus.value = menus.value.filter((item) => item.id !== id);
-            toast.dismiss(toastId);
-            toast.success('Deleted menu successfully');
+
             return true;
         } catch (error) {
-            toast.dismiss(toastId);
-            console.error('DELETE MENU ERROR:', error);
-            toast.error('Delete menu failed');
+            console.error(error);
             return false;
         }
     };

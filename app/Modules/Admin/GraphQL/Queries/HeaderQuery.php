@@ -89,4 +89,32 @@ class HeaderQuery
             'cta' => $cta,
         ];
     }
+
+
+    public function getLogo()
+    {
+        $entry = Collection::where(
+            'api_endpoint',
+            'header'
+        )
+            ->firstOrFail()
+            ->entries()
+            ->whereHas('metas', function ($query) {
+                $query->where('meta_key', 'type')
+                    ->where('meta_value', 'logo');
+            })
+            ->with('metas')
+            ->first();
+
+        if (!$entry) {
+            return null;
+        }
+
+        $meta = $entry->metas
+            ->pluck('meta_value', 'meta_key');
+
+        return [
+            'logo' => $meta['image'] ?? null,
+        ];
+    }
 }
