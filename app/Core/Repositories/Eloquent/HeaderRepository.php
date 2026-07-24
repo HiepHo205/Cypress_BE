@@ -68,7 +68,6 @@ class HeaderRepository
             ]);
         });
     }
-
     public function updateMenu(int $id, array $data)
     {
         return DB::transaction(function () use ($id, $data) {
@@ -189,6 +188,143 @@ class HeaderRepository
 
         return [
             'logo' => $logo?->meta_value,
+        ];
+    }
+    public function updateCountdown(array $input)
+    {
+        return DB::transaction(function () use ($input) {
+
+            $collection = Collection::where(
+                'api_endpoint',
+                'header'
+            )->firstOrFail();
+
+
+            $entry = $collection->entries()
+                ->whereHas('metas', function ($query) {
+                    $query->where('meta_key', 'type')
+                        ->where('meta_value', 'countdown');
+                })
+                ->with('metas')
+                ->first();
+
+
+            if (!$entry) {
+
+                $entry = Entry::create([
+                    'collection_id' => $collection->id,
+                    'title' => 'Header Countdown',
+                    'status' => 'published',
+                ]);
+
+
+                $entry->metas()->createMany([
+                    [
+                        'meta_key' => 'type',
+                        'meta_value' => 'countdown',
+                    ],
+                    [
+                        'meta_key' => 'enabled',
+                        'meta_value' => 'true',
+                    ],
+                    [
+                        'meta_key' => 'target_date',
+                        'meta_value' => '',
+                    ],
+                    [
+                        'meta_key' => 'button_label',
+                        'meta_value' => '',
+                    ],
+                    [
+                        'meta_key' => 'button_href',
+                        'meta_value' => '',
+                    ],
+                ]);
+            }
+
+
+            $data = [
+                'enabled' => $input['enabled']
+                    ? 'true'
+                    : 'false',
+
+                'target_date' => $input['target_date'],
+
+                'button_label' => $input['button_label'],
+
+                'button_href' => $input['button_href'],
+            ];
+
+
+            foreach ($data as $key => $value) {
+
+                EntryMeta::updateOrCreate(
+                    [
+                        'entry_id' => $entry->id,
+                        'meta_key' => $key,
+                    ],
+                    [
+                        'meta_value' => $value,
+                    ]
+                );
+            }
+
+
+            return [
+                'success' => true,
+                'message' => 'Header countdown updated successfully.',
+            ];
+        });
+    }
+    public function updateFavicon(array $image)
+    {
+        $collection = Collection::where('api_endpoint', 'header')
+            ->firstOrFail();
+
+
+        $entry = $collection->entries()
+            ->whereHas('metas', function ($query) {
+                $query->where('meta_key', 'type')
+                    ->where('meta_value', 'favicon');
+            })
+            ->first();
+
+
+        if (!$entry) {
+            $entry = $collection->entries()->create([
+                'status' => 'published'
+            ]);
+
+            $entry->metas()->create([
+                'meta_key' => 'type',
+                'meta_value' => 'favicon'
+            ]);
+        }
+
+
+        $entry->metas()->updateOrCreate(
+            [
+                'meta_key' => 'url'
+            ],
+            [
+                'meta_value' => $image['url']
+            ]
+        );
+
+
+        $entry->metas()->updateOrCreate(
+            [
+                'meta_key' => 'public_id'
+            ],
+            [
+                'meta_value' => $image['public_id']
+            ]
+        );
+
+
+        return [
+            'url' => $image['url'],
+            'public_id' => $image['public_id']
         ];
     }
 }

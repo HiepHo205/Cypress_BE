@@ -15,3 +15,27 @@ export const GET_HEADER_MENU = gql`
         }
     }
 `;
+
+export const GET_HEADER_COUNTDOWN = gql`
+    query GetHeaderCountdown {
+        header {
+            countdown {
+                enabled
+                target_date
+                button {
+                    label
+                    href
+                }
+            }
+        }
+    }
+`;
+
+export const GET_HEADER_FAVICON = gql`
+    query GetHeaderFavicon {
+        getFavicon {
+            url
+            public_id
+        }
+    }
+`;

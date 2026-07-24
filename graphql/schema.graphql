@@ -205,24 +205,24 @@ type DeleteResponse {
 type Mutation {
     createHeaderMenu(input: HeaderMenuInput!): HeaderMenuResponse
         @field(
-            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMenuMutation@createHeaderMenu"
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@createHeaderMenu"
         )
 
     updateHeaderMenu(id: ID!, input: HeaderMenuInput!): HeaderMenuResponse
         @field(
-            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMenuMutation@updateHeaderMenu"
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@updateHeaderMenu"
         )
 
     deleteHeaderMenu(id: ID!): DeleteResponse
         @field(
-            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMenuMutation@deleteHeaderMenu"
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@deleteHeaderMenu"
         )
 }
 
 extend type Mutation {
     updateLogo(logo: Upload!): HeaderLogo!
         @field(
-            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMenuMutation@updateLogo"
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@updateLogo"
         )
 }
 type HeaderLogo {
@@ -233,5 +233,57 @@ extend type Query {
     getLogo: HeaderLogo
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getLogo"
+        )
+}
+type HeaderCountdownButton {
+    label: String
+    href: String
+}
+
+type HeaderCountdown {
+    enabled: Boolean!
+    target_date: DateTime
+    button: HeaderCountdownButton
+}
+
+type Response {
+    success: Boolean!
+    message: String!
+}
+
+extend type Header {
+    countdown: HeaderCountdown
+}
+
+input UpdateHeaderCountdownInput {
+    enabled: Boolean!
+    target_date: DateTime
+    button_label: String
+    button_href: String
+}
+
+extend type Mutation {
+    updateHeaderCountdown(input: UpdateHeaderCountdownInput!): Response!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@updateCountdown"
+        )
+}
+
+extend type Mutation {
+    updateFavicon(favicon: Upload!): HeaderFavicon!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@updateFavicon"
+        )
+}
+
+type HeaderFavicon {
+    url: String
+    public_id: String
+}
+
+extend type Query {
+    getFavicon: HeaderFavicon
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getFavicon"
         )
 }

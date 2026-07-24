@@ -28,6 +28,7 @@ export default function useHeaderMenu() {
             });
 
             menus.value = [...response.data.header.menus];
+
             loaded.value = true;
         } catch (error) {
             console.error(error);
@@ -36,6 +37,10 @@ export default function useHeaderMenu() {
     };
 
     const createMenu = async (data) => {
+        const toastId = toast.info('Creating menu...', {
+            timeout: false
+        });
+
         try {
             const response = await resolveClient().mutate({
                 mutation: CREATE_HEADER_MENU,
@@ -52,14 +57,35 @@ export default function useHeaderMenu() {
 
             menus.value = [...menus.value, newMenu];
 
+            toast.update(toastId, {
+                content: 'Menu created successfully',
+                options: {
+                    type: 'success',
+                    timeout: 3000
+                }
+            });
+
             return true;
         } catch (error) {
             console.error(error);
+
+            toast.update(toastId, {
+                content: 'Failed to create menu',
+                options: {
+                    type: 'error',
+                    timeout: 3000
+                }
+            });
+
             return false;
         }
     };
 
     const updateMenu = async (id, data) => {
+        const toastId = toast.info('Updating menu...', {
+            timeout: false
+        });
+
         try {
             await resolveClient().mutate({
                 mutation: UPDATE_HEADER_MENU,
@@ -70,16 +96,38 @@ export default function useHeaderMenu() {
             });
 
             loaded.value = false;
+
             await getHeaderMenu();
+
+            toast.update(toastId, {
+                content: 'Menu updated successfully',
+                options: {
+                    type: 'success',
+                    timeout: 3000
+                }
+            });
 
             return true;
         } catch (error) {
             console.error(error);
+
+            toast.update(toastId, {
+                content: 'Failed to update menu',
+                options: {
+                    type: 'error',
+                    timeout: 3000
+                }
+            });
+
             return false;
         }
     };
 
     const deleteMenu = async (id) => {
+        const toastId = toast.info('Deleting menu...', {
+            timeout: false
+        });
+
         try {
             await resolveClient().mutate({
                 mutation: DELETE_HEADER_MENU,
@@ -90,9 +138,26 @@ export default function useHeaderMenu() {
 
             menus.value = menus.value.filter((item) => item.id !== id);
 
+            toast.update(toastId, {
+                content: 'Menu deleted successfully',
+                options: {
+                    type: 'success',
+                    timeout: 3000
+                }
+            });
+
             return true;
         } catch (error) {
             console.error(error);
+
+            toast.update(toastId, {
+                content: 'Failed to delete menu',
+                options: {
+                    type: 'error',
+                    timeout: 3000
+                }
+            });
+
             return false;
         }
     };

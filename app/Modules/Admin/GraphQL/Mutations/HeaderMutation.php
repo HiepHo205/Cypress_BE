@@ -4,7 +4,7 @@ namespace App\Modules\Admin\GraphQL\Mutations;
 
 use App\Core\Services\Layout\Header\HeaderService;
 
-class HeaderMenuMutation
+class HeaderMutation
 {
     public function createHeaderMenu($_, array $args, $context)
     {
@@ -42,7 +42,6 @@ class HeaderMenuMutation
         ];
     }
 
-
     public function updateHeaderMenu($_, array $args)
     {
         $service = app(HeaderService::class);
@@ -52,7 +51,6 @@ class HeaderMenuMutation
             $args['input']
         );
     }
-
 
     public function deleteHeaderMenu($_, array $args)
     {
@@ -66,13 +64,29 @@ class HeaderMenuMutation
             'message' => 'Menu deleted successfully'
         ];
     }
-
     public function updateLogo($_, array $args)
     {
         $service = app(HeaderService::class);
 
         return $service->updateLogo(
             $args['logo']
+        );
+    }
+
+    public function updateCountdown($_, array $args)
+    {
+        $service = app(HeaderService::class);
+
+        return $service->updateCountdown(
+            $args['input']
+        );
+    }
+    public function updateFavicon($_, array $args)
+    {
+        $service = app(HeaderService::class);
+
+        return $service->updateFavicon(
+            $args['favicon']
         );
     }
 }

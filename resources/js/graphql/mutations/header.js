@@ -35,3 +35,20 @@ export const DELETE_HEADER_MENU = gql`
         }
     }
 `;
+
+export const UPDATE_HEADER_COUNTDOWN = gql`
+    mutation UpdateHeaderCountdown($input: UpdateHeaderCountdownInput!) {
+        updateHeaderCountdown(input: $input) {
+            success
+            message
+        }
+    }
+`;
+export const UPDATE_HEADER_FAVICON = gql`
+    mutation UpdateFavicon($favicon: Upload!) {
+        updateFavicon(favicon: $favicon) {
+            url
+            public_id
+        }
+    }
+`;

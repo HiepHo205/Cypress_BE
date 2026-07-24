@@ -13,56 +13,39 @@ class HeaderService
         protected UploadService $uploadService
     ) {}
 
-
     public function getHeader()
     {
         $entries = $this->repository->getHeader();
-
         $logo = null;
         $cta = null;
         $menus = [];
 
-
         foreach ($entries as $entry) {
-
             $meta = $entry->metas->pluck(
                 'meta_value',
                 'meta_key'
             );
 
-
             switch ($meta['type'] ?? null) {
-
-
                 case 'logo':
-
                     $logo = $meta['image'] ?? null;
-
                     break;
 
-
                 case 'cta':
-
                     $cta = [
                         'label' => $meta['label'] ?? null,
                         'href' => $meta['href'] ?? null,
                     ];
-
                     break;
 
-
                 case 'menu':
-
                     $children = [];
 
-
                     foreach ($entry->childEntries as $child) {
-
                         $childMeta = $child->metas->pluck(
                             'meta_value',
                             'meta_key'
                         );
-
 
                         $children[] = [
                             'id' => $child->id,
@@ -71,18 +54,14 @@ class HeaderService
                         ];
                     }
 
-
                     $menus[] = [
                         'id' => $entry->id,
                         'label' => $meta['label'] ?? null,
                         'children' => $children,
                     ];
-
-
                     break;
             }
         }
-
 
         return [
             'logo' => $logo,
@@ -91,12 +70,10 @@ class HeaderService
         ];
     }
 
-
     public function createMenu(array $data)
     {
         return $this->repository->createMenu($data);
     }
-
 
     public function updateMenu(int $id, array $data)
     {
@@ -106,12 +83,10 @@ class HeaderService
         );
     }
 
-
     public function deleteMenu(int $id)
     {
         return $this->repository->deleteMenu($id);
     }
-
 
     public function updateLogo(UploadedFile $logo)
     {
@@ -120,7 +95,20 @@ class HeaderService
             'cypress/header'
         );
 
-
         return $this->repository->updateLogo($image);
+    }
+    public function updateFavicon(UploadedFile $favicon)
+    {
+        $image = $this->uploadService->uploadImage(
+            $favicon,
+            'cypress/favicon'
+        );
+
+        return $this->repository->updateFavicon($image);
+    }
+
+    public function updateCountdown(array $input)
+    {
+        return $this->repository->updateCountdown($input);
     }
 }

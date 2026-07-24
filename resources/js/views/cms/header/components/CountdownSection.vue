@@ -1,100 +1,244 @@
+<script setup>
+import { reactive, computed, onMounted, onUnmounted, ref } from 'vue';
+import useHeaderCountdown from '@/composables/header/useHeaderCountdown';
+import LoadingOverlay from '@/components/common/LoadingOverlay.vue';
+
+const {
+    getCountdown,
+    updateCountdown
+} = useHeaderCountdown();
+
+const form = reactive({
+    target_date: '',
+    enabled: true,
+    button_label: '',
+    button_href: ''
+});
+
+const currentTime = ref(new Date());
+const pageLoading = ref(true);
+
+let timer = null;
+
+onMounted(async () => {
+    timer = setInterval(() => {
+        currentTime.value = new Date();
+    }, 1000);
+
+    try {
+        const data = await getCountdown();
+
+        if (!data) {
+            return;
+        }
+
+        form.target_date = data.target_date
+            ? data.target_date.slice(0, 16)
+            : '';
+
+        form.enabled = data.enabled;
+        form.button_label = data.button?.label ?? '';
+        form.button_href = data.button?.href ?? '';
+
+    } finally {
+        pageLoading.value = false;
+    }
+});
+
+onUnmounted(() => {
+    clearInterval(timer);
+});
+
+const countdown = computed(() => {
+    if (!form.target_date) {
+        return {
+            days: 0,
+            hours: '00',
+            minutes: '00',
+            seconds: '00'
+        };
+    }
+
+    const inputDate = new Date(form.target_date);
+
+    const target = new Date(
+        inputDate.getFullYear(),
+        11,
+        31,
+        23,
+        59,
+        59
+    );
+
+    let diff = target.getTime() - inputDate.getTime();
+
+    if (diff < 0) diff = 0;
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    diff %= 1000 * 60 * 60 * 24;
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    diff %= 1000 * 60 * 60;
+
+    const minutes = Math.floor(diff / (1000 * 60));
+    diff %= 1000 * 60;
+
+    const seconds = Math.floor(diff / 1000);
+
+    return {
+        days,
+        hours: String(hours).padStart(2, '0'),
+        minutes: String(minutes).padStart(2, '0'),
+        seconds: String(seconds).padStart(2, '0')
+    };
+});
+
+const save = async () => {
+    await updateCountdown({
+        enabled: form.enabled,
+        target_date: form.target_date
+            ? form.target_date.replace('T', ' ') + ':00'
+            : null,
+        button_label: form.button_label || '',
+        button_href: form.button_href || ''
+    });
+};
+</script>
+
 <template>
-    <div>
-        <h2 class="text-lg font-semibold text-gray-900">Countdown & Action Button</h2>
 
-        <p class="mt-1 text-sm text-gray-500">
-            Configure the countdown timer and primary action button displayed in the website header.
-        </p>
+    <div class="relative rounded-2xl">
+        <LoadingOverlay :show="pageLoading" message="Loading countdown..." :fullScreen="false" />
 
-        <div class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div>
-                <label class="mb-2 block text-sm font-medium text-gray-700">
-                    Countdown Date
-                </label>
+        <div :class="pageLoading ? 'pointer-events-none opacity-50' : ''">
 
-                <input type="datetime-local" value="2026-12-31T23:59" readonly
-                    class="w-full rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-sm outline-none" />
-            </div>
+            <div :class="loading ? 'pointer-events-none opacity-50' : ''">
 
-            <div>
-                <label class="mb-2 block text-sm font-medium text-gray-700">
-                    Status
-                </label>
+                <div :class="loading ? 'pointer-events-none opacity-50' : ''">
+                    <h2 class="text-lg font-semibold text-gray-900">
+                        Countdown & Action Button
+                    </h2>
 
-                <select class="w-full rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-sm outline-none"
-                    disabled>
-                    <option selected>Enabled</option>
-                </select>
-            </div>
-
-            <div>
-                <label class="mb-2 block text-sm font-medium text-gray-700">
-                    Button Text
-                </label>
-
-                <input type="text" value="Book Now" readonly
-                    class="w-full rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-sm outline-none" />
-            </div>
-
-            <div>
-                <label class="mb-2 block text-sm font-medium text-gray-700">
-                    Button URL
-                </label>
-
-                <input type="text" value="https://cypresshub.com/register" readonly
-                    class="w-full rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-sm outline-none" />
-            </div>
-        </div>
-
-        <div class="mt-8 rounded-2xl border border-blue-100 bg-blue-50 p-6">
-            <h3 class="text-sm font-semibold text-blue-700">
-                Preview
-            </h3>
-
-            <div
-                class="mt-5 flex flex-col gap-5 rounded-xl bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between">
-                <div>
-                    <p class="text-xs uppercase tracking-wide text-gray-500">
-                        Event Starts In
+                    <p class="mt-1 text-sm text-gray-500">
+                        Configure the countdown timer and primary action button displayed in the website header.
                     </p>
 
-                    <div class="mt-2 flex gap-3">
-                        <div class="rounded-lg bg-slate-900 px-4 py-3 text-center text-white">
-                            <div class="text-xl font-bold">120</div>
-                            <div class="text-xs">Days</div>
+                    <div class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-700">
+                                Countdown Date
+                            </label>
+
+                            <input v-model="form.target_date" type="datetime-local"
+                                class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-blue-500" />
                         </div>
 
-                        <div class="rounded-lg bg-slate-900 px-4 py-3 text-center text-white">
-                            <div class="text-xl font-bold">08</div>
-                            <div class="text-xs">Hours</div>
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-700">
+                                Status
+                            </label>
+
+                            <select v-model="form.enabled"
+                                class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-blue-500">
+                                <option :value="true">
+                                    Enabled
+                                </option>
+
+                                <option :value="false">
+                                    Disabled
+                                </option>
+                            </select>
                         </div>
 
-                        <div class="rounded-lg bg-slate-900 px-4 py-3 text-center text-white">
-                            <div class="text-xl font-bold">35</div>
-                            <div class="text-xs">Minutes</div>
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-700">
+                                Button Text
+                            </label>
+
+                            <input v-model="form.button_label" type="text"
+                                class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-blue-500" />
                         </div>
 
-                        <div class="rounded-lg bg-slate-900 px-4 py-3 text-center text-white">
-                            <div class="text-xl font-bold">42</div>
-                            <div class="text-xs">Seconds</div>
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-700">
+                                Button URL
+                            </label>
+
+                            <input v-model="form.button_href" type="text"
+                                class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-blue-500" />
                         </div>
                     </div>
+
+                    <div class="mt-8 rounded-2xl border border-blue-100 bg-blue-50 p-6">
+                        <h3 class="text-sm font-semibold text-blue-700">
+                            Preview
+                        </h3>
+
+                        <div
+                            class="mt-5 flex flex-col gap-5 rounded-xl bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between">
+                            <div>
+                                <p class="text-xs uppercase tracking-wide text-gray-500">
+                                    Event Starts In
+                                </p>
+
+                                <div class="mt-2 flex gap-3">
+                                    <div class="rounded-lg bg-blue-600 px-4 py-3 text-center text-white">
+                                        <div class="text-xl font-bold">
+                                            {{ countdown.days }}
+                                        </div>
+
+                                        <div class="text-xs">
+                                            Days
+                                        </div>
+                                    </div>
+
+                                    <div class="rounded-lg bg-blue-600 px-4 py-3 text-center text-white">
+                                        <div class="text-xl font-bold">
+                                            {{ countdown.hours }}
+                                        </div>
+
+                                        <div class="text-xs">
+                                            Hours
+                                        </div>
+                                    </div>
+
+                                    <div class="rounded-lg bg-blue-600 px-4 py-3 text-center text-white">
+                                        <div class="text-xl font-bold">
+                                            {{ countdown.minutes }}
+                                        </div>
+
+                                        <div class="text-xs">
+                                            Minutes
+                                        </div>
+                                    </div>
+
+                                    <div class="rounded-lg bg-blue-600 px-4 py-3 text-center text-white">
+                                        <div class="text-xl font-bold">
+                                            {{ countdown.seconds }}
+                                        </div>
+
+                                        <div class="text-xs">
+                                            Seconds
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white">
+                                {{ form.button_label || 'Book Now' }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-end">
+                        <button
+                            class="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+                            @click="save">
+                            Save Changes
+                        </button>
+                    </div>
                 </div>
-
-                <button class="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700">
-                    Book Now
-                </button>
             </div>
-        </div>
-
-        <div class="mt-8 flex justify-end">
-            <button
-                class="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
-                Save Changes
-            </button>
         </div>
     </div>
 </template>
-
-<script setup>
-</script>

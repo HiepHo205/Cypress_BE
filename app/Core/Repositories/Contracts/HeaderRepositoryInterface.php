@@ -10,4 +10,7 @@ interface HeaderRepositoryInterface
     public function updateLogo(array $image);
     public function getLogo();
     public function deleteMenu(int $id);
+    public function updateFavicon(array $image);
+
+    public function getFavicon();
 }
