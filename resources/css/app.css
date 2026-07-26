@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-
+@import 'tailwind-scrollbar-hide/v4';
 @source "../../app/Modules/**/*.vue";
 @source "../../resources/**/*.blade.php";
 @source "../../resources/**/*.js";

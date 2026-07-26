@@ -43,6 +43,16 @@ const {
         : undefined
 }));
 
+const currentUser = JSON.parse(
+    localStorage.getItem('user') || '{}'
+);
+
+function hasPermission(permission) {
+    return currentUser.permissions?.some(
+        p => p.code === permission
+    );
+}
+
 const users = computed(
     () => result.value?.users?.data ?? []
 );
@@ -215,12 +225,15 @@ async function deactivateUser(id) {
                         class="flex justify-end gap-3"
                     >
                         <router-link
+                            v-if="hasPermission('user.view')"
                             :to="`/admin/users/${item.id}`"
                             class="text-indigo-600"
                         >
                             Detail
                         </router-link>
+
                         <router-link
+                            v-if="hasPermission('user.update')"
                             :to="`/admin/users/${item.id}/edit`"
                             class="text-blue-600"
                         >
@@ -229,104 +242,24 @@ async function deactivateUser(id) {
 
                         <button
                             v-if="
-                                item.status === 'active'
+                                item.status === 'active' &&
+                                hasPermission('user.deactivate')
                             "
                             class="text-yellow-600"
-                            @click="
-                                deactivateUser(item.id)
-                            "
+                            @click="deactivateUser(item.id)"
                         >
                             Deactivate
                         </button>
 
                         <button
+                            v-if="hasPermission('user.delete')"
                             class="text-red-600"
-                            @click="
-                                deleteUser(item.id)
-                            "
+                            @click="deleteUser(item.id)"
                         >
                             Delete
                         </button>
                     </div>
                 </td>
-            </template>
-
-            <template #mobile="{ item }">
-                <div
-                    class="bg-white rounded-lg shadow border p-4"
-                >
-                    <div class="space-y-2">
-                        <p>
-                            <strong>ID:</strong>
-                            {{ item.id }}
-                        </p>
-
-                        <p>
-                            <strong>Name:</strong>
-                            {{ item.name }}
-                        </p>
-
-                        <p>
-                            <strong>Email:</strong>
-                            {{ item.email }}
-                        </p>
-
-                        <p>
-                            <strong>Status:</strong>
-
-                            <span
-                                class="ml-2 px-2 py-1 rounded-full text-xs"
-                                :class="
-                                    item.status ===
-                                    'active'
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-gray-100 text-gray-800'
-                                "
-                            >
-                                {{ item.status }}
-                            </span>
-                        </p>
-
-                        <p>
-                            <strong>Created:</strong>
-                            {{ formatDate(
-                                item.created_at
-                            ) }}
-                        </p>
-                    </div>
-
-                    <div
-                        class="flex flex-wrap gap-4 mt-4 pt-3 border-t"
-                    >
-                        <router-link
-                            :to="`/admin/users/${item.id}/edit`"
-                            class="text-blue-600"
-                        >
-                            Edit
-                        </router-link>
-
-                        <button
-                            v-if="
-                                item.status === 'active'
-                            "
-                            class="text-yellow-600"
-                            @click="
-                                deactivateUser(item.id)
-                            "
-                        >
-                            Deactivate
-                        </button>
-
-                        <button
-                            class="text-red-600"
-                            @click="
-                                deleteUser(item.id)
-                            "
-                        >
-                            Delete
-                        </button>
-                    </div>
-                </div>
             </template>
         </BaseTable>
 
