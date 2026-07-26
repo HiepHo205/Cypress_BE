@@ -6,6 +6,7 @@ import Dashboard from '@/views/Dashboard.vue';
 import UserList from '@/views/users/UserList.vue';
 import UserCreate from '@/views/users/UserCreate.vue';
 import UserEdit from '@/views/users/UserEdit.vue';
+import UserDetailView from '@/views/users/UserDetail.vue';
 import { useToast } from 'vue-toastification';
 import Header from '../views/cms/header/Header.vue';
 const routes = [
@@ -37,16 +38,24 @@ const routes = [
                 name: 'users.create',
                 component: UserCreate
             },
-            {
-                path: 'users/:id/edit',
-                name: 'users.edit',
-                component: UserEdit,
-                props: true
-            },
+
             {
                 path: 'roles',
                 name: 'role.management',
                 component: () => import('@/views/roles/RoleManagement.vue')
+
+            },
+            {
+                path: 'users/:id',
+                name: 'users.detail',
+                component: UserDetailView,
+                props: true
+            },
+                        {
+                path: 'users/:id/edit',
+                name: 'users.edit',
+                component: UserEdit,
+                props: true
             },
             {
                 path: 'header',

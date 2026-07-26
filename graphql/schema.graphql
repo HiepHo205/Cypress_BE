@@ -8,40 +8,89 @@ scalar Upload
 
 type Query {
     user(
-        id: ID @eq @rules(apply: ["prohibits:email", "required_without:email"])
+        id: ID
+            @eq
+            @rules(
+                apply: [
+                    "prohibits:email"
+                    "required_without:email"
+                ]
+            )
         email: String
             @eq
-            @rules(apply: ["prohibits:id", "required_without:id", "email"])
-    ): User @find
+            @rules(
+                apply: [
+                    "prohibits:id"
+                    "required_without:id"
+                    "email"
+                ]
+            )
+    ): User
+        @guard(with: ["api"])
+        @find
 
-    users(name: String @where(operator: "like")): [User!]!
+    users(
+        name: String @where(operator: "like")
+    ): [User!]!
+        @guard(with: ["api"])
         @paginate(defaultCount: 10)
 
     roles: [Role!]!
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\RoleQuery@roles"
+        )
+
+    permissions: [Permission!]!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\PermissionQuery@permissions"
         )
 }
 
 type Mutation {
     createUser(input: CreateUserInput!): CreateUserPayload!
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@create"
         )
 
     updateUser(id: ID!, input: UpdateUserInput!): UpdateUserPayload!
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@update"
         )
 
     deleteUser(id: ID!): DeleteUserPayload!
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@delete"
         )
 
     deactivateUser(id: ID!): DeactivateUserPayload!
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@deactivate"
+        )
+            @field(
+                resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@deactivate"
+            )
+    assignPermission(
+        userId: ID!
+        permissionId: ID!
+    ): Boolean!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PermissionMutation@assignPermission"
+        )
+
+    unassignPermission(
+        userId: ID!
+        permissionId: ID!
+    ): Boolean!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PermissionMutation@unassignPermission"
         )
 }
 
@@ -87,6 +136,7 @@ type User {
     status: String!
     role_id: ID
     role: Role @belongsTo
+    permissions: [Permission!]! @belongsToMany
 }
 
 extend type Mutation {
@@ -102,6 +152,12 @@ type Role {
     description: String
     created_at: DateTime
     updated_at: DateTime
+}
+
+type Permission {
+    id: ID!
+    code: String!
+    description: String
 }
 
 input LoginInput {

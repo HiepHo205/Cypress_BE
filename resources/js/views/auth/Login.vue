@@ -38,9 +38,16 @@ const handleLogin = async () => {
                 full_name
                 email
                 status
+
                 role {
                     id
                     role_name
+                }
+
+                permissions {
+                    id
+                    code
+                    description
                 }
             }
         }

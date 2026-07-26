@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-lg">
+  <div class="max-w-4xl mx-auto">
     <div class="mb-6">
       <router-link to="/admin/users" class="text-sm text-blue-600 hover:text-blue-800">
         &larr; Back to users

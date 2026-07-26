@@ -21,4 +21,12 @@ class Permission extends Model
             'role_id'
         );
     }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            User::class,
+            'user_permissions'
+        );
+    }
 }
