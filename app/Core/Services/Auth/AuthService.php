@@ -63,7 +63,10 @@ class AuthService
 
         $user = JWTAuth::user();
 
-        $user->load('role');
+        $user->load([
+            'role',
+            'permissions'
+        ]);
 
         $role = $user->role?->role_name;
 

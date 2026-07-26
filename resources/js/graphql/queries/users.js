@@ -37,6 +37,12 @@ export const GET_USER = gql`
                 id
                 role_name
             }
+
+            permissions {
+                id
+                code
+                description
+            }
         }
     }
 `;

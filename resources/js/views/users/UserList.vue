@@ -215,6 +215,12 @@ async function deactivateUser(id) {
                         class="flex justify-end gap-3"
                     >
                         <router-link
+                            :to="`/admin/users/${item.id}`"
+                            class="text-indigo-600"
+                        >
+                            Detail
+                        </router-link>
+                        <router-link
                             :to="`/admin/users/${item.id}/edit`"
                             class="text-blue-600"
                         >
