@@ -8,6 +8,7 @@ import UserCreate from '@/views/users/UserCreate.vue';
 import UserEdit from '@/views/users/UserEdit.vue';
 import { useToast } from 'vue-toastification';
 import Header from '../views/cms/header/Header.vue';
+import Footer from '../views/cms/footer/Footer.vue';
 const routes = [
     {
         path: '/login',
@@ -52,6 +53,11 @@ const routes = [
                 path: 'header',
                 name: 'cms.header',
                 component: Header
+            },
+            {
+                path: 'footer',
+                name: 'cms.footer',
+                component: Footer
             }
         ]
     }

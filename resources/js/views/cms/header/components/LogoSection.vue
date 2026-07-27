@@ -3,6 +3,13 @@ import { ref, onMounted } from "vue";
 import useHeaderLogo from "../../../../composables/header/useHeaderLogo";
 import LoadingOverlay from '@/components/common/LoadingOverlay.vue';
 
+const props = defineProps({
+    hideHeaderInfo: {
+        type: Boolean,
+        default: false
+    }
+});
+
 const fileInput = ref(null);
 const preview = ref("");
 const selectedFile = ref(null);
@@ -27,15 +34,14 @@ onMounted(async () => {
 const handleFileChange = (event) => {
     const file = event.target.files[0];
 
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
+    if (!file)
         return;
-    }
 
-    if (file.size > 2 * 1024 * 1024) {
+    if (!file.type.startsWith("image/"))
         return;
-    }
+
+    if (file.size > 2 * 1024 * 1024)
+        return;
 
     selectedFile.value = file;
     fileName.value = file.name;
@@ -67,19 +73,21 @@ const saveLogo = async () => {
 
         <div :class="pageLoading ? 'pointer-events-none opacity-50' : ''">
 
-            <h2 class="text-lg font-semibold text-gray-900">
-                Website Logo
-            </h2>
+            <template v-if="!props.hideHeaderInfo">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Website Logo
+                </h2>
 
-            <p class="mt-1 text-sm text-gray-500">
-                Configure the primary logo displayed in the website header.
-            </p>
+                <p class="mt-1 text-sm text-gray-500">
+                    Configure the primary logo displayed in the website header.
+                </p>
+            </template>
 
             <div class="mt-6 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 p-10">
                 <div class="flex flex-col items-center">
 
                     <img :src="preview || currentLogo || 'https://placehold.co/240x80?text=Cypress+Logo'"
-                        alt="Website Logo" class="h-20 object-contain" />
+                        alt="Website Logo" class="h-32 w-72 object-contain" />
 
                     <p class="mt-6 text-base font-semibold text-gray-700">
                         {{ fileName }}

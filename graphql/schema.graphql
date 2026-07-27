@@ -300,3 +300,29 @@ extend type Query {
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getCta"
         )
 }
+
+type FooterBranding {
+    logo: String
+    company_name: String
+    description: String
+}
+
+input FooterBrandingInput {
+    logo: Upload
+    company_name: String
+    description: String
+}
+
+extend type Query {
+    footerBranding: FooterBranding
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@footerBranding"
+        )
+}
+
+extend type Mutation {
+    updateFooterBranding(input: FooterBrandingInput!): FooterBranding
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\FooterMutation@updateFooterBranding"
+        )
+}
