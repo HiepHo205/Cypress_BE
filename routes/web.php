@@ -11,6 +11,8 @@ Route::prefix('admin')->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('admin.home');
     Route::get('/users', [UserController::class, 'index'])->name('admin.users');
     Route::get('/roles', [RoleController::class, 'index'])->name('admin.roles');
+    Route::get('/{any}', [AdminController::class, 'index'])
+    ->where('any', '.*');
     Route::get('/header', [HeaderController::class, 'index'])->name('admin.header');
     Route::get('/footer', [FooterController::class, 'index'])->name('admin.header');
 });

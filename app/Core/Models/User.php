@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -57,5 +58,21 @@ class User extends Authenticatable implements JWTSubject
     public function hasRole(string $role): bool
     {
         return $this->role?->role_name === $role;
+    }
+
+    public function permissions(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Permission::class,
+            'user_permissions'
+        );
+    }
+
+    public function hasPermission(
+        string $permissionCode
+    ): bool {
+        return $this->permissions()
+            ->where('code', $permissionCode)
+            ->exists();
     }
 }
