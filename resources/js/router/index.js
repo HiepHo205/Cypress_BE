@@ -44,7 +44,6 @@ const routes = [
                 path: 'roles',
                 name: 'role.management',
                 component: () => import('@/views/roles/RoleManagement.vue')
-
             },
             {
                 path: 'users/:id',
@@ -52,7 +51,7 @@ const routes = [
                 component: UserDetailView,
                 props: true
             },
-                        {
+            {
                 path: 'users/:id/edit',
                 name: 'users.edit',
                 component: UserEdit,
@@ -79,22 +78,20 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('token');
-
     const requiresAuth = to.matched.some((route) => route.meta.requiresAuth);
 
-    const toast = useToast();
-
     if (requiresAuth && !token) {
+        const toast = useToast();
+
         toast.warning('Please login to access this page.');
 
         return next('/login');
     }
 
-    if (to.path === '/login' && token) {
+    if (to.name === 'login' && token) {
         return next('/admin');
     }
 
     next();
 });
-
 export default router;

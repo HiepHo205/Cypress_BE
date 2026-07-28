@@ -8,30 +8,13 @@ scalar Upload
 
 type Query {
     user(
-        id: ID
-            @eq
-            @rules(
-                apply: [
-                    "prohibits:email"
-                    "required_without:email"
-                ]
-            )
+        id: ID @eq @rules(apply: ["prohibits:email", "required_without:email"])
         email: String
             @eq
-            @rules(
-                apply: [
-                    "prohibits:id"
-                    "required_without:id"
-                    "email"
-                ]
-            )
-    ): User
-        @guard(with: ["api"])
-        @find
+            @rules(apply: ["prohibits:id", "required_without:id", "email"])
+    ): User @guard(with: ["api"]) @find
 
-    users(
-        name: String @where(operator: "like")
-    ): [User!]!
+    users(name: String @where(operator: "like")): [User!]!
         @guard(with: ["api"])
         @paginate(defaultCount: 10)
 
@@ -48,7 +31,7 @@ type Query {
         )
 }
 
-type Mutation {
+extend type Mutation {
     createUser(input: CreateUserInput!): CreateUserPayload!
         @guard(with: ["api"])
         @field(
@@ -72,22 +55,13 @@ type Mutation {
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@deactivate"
         )
-            @field(
-                resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@deactivate"
-            )
-    assignPermission(
-        userId: ID!
-        permissionId: ID!
-    ): Boolean!
+    assignPermission(userId: ID!, permissionId: ID!): Boolean!
         @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PermissionMutation@assignPermission"
         )
 
-    unassignPermission(
-        userId: ID!
-        permissionId: ID!
-    ): Boolean!
+    unassignPermission(userId: ID!, permissionId: ID!): Boolean!
         @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PermissionMutation@unassignPermission"
@@ -318,6 +292,7 @@ input HeaderCTAInput {
     label: String
     href: String
 }
+
 input UpdateHeaderCountdownInput {
     enabled: Boolean!
     target_date: String
@@ -350,13 +325,18 @@ extend type Query {
         )
 }
 
+type HeaderCTA {
+    label: String
+    href: String
+}
+
 extend type Query {
     headerCta: HeaderCTA
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getCta"
         )
 }
-
+# Xử lý Footer
 type FooterBranding {
     logo: String
     company_name: String
@@ -376,9 +356,164 @@ extend type Query {
         )
 }
 
+type Footer {
+    branding: FooterBranding
+    socials: [FooterSocial]
+}
+
+type FooterSocial {
+    id: ID!
+    name: String
+    url: String
+    icon: String
+}
+
+input FooterSocialItemInput {
+    id: String
+    name: String!
+    url: String!
+    icon: Upload
+    icon_public_id: String
+}
+input FooterSocialCreateInput {
+    name: String!
+    url: String
+    icon: Upload
+}
+
+input FooterSocialInput {
+    socials: [FooterSocialItemInput!]!
+}
+
+type FooterSocialResponse {
+    socials: [FooterSocial!]!
+}
+
+extend type Query {
+    footer: Footer
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@footer"
+        )
+
+    footerSocials: [FooterSocial]
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@socials"
+        )
+}
+input FooterNavigationItemInput {
+    id: ID
+    group: String
+    title: String!
+    link: String!
+    type: String
+}
+
+input FooterNavigationInput {
+    navigations: [FooterNavigationItemInput!]!
+}
+
+type FooterNavigationItemResponse {
+    id: ID
+    group: String
+    title: String
+    link: String
+    type: String
+}
+
+type FooterNavigationResponse {
+    id: ID
+    navigations: [FooterNavigationItemResponse]
+}
+
 extend type Mutation {
     updateFooterBranding(input: FooterBrandingInput!): FooterBranding
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\FooterMutation@updateFooterBranding"
+        )
+    updateFooterSocial(input: FooterSocialInput!): FooterSocialResponse!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\FooterMutation@updateFooterSocial"
+        )
+    updateFooterNavigation(
+        input: FooterNavigationInput!
+    ): FooterNavigationResponse!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\FooterMutation@updateFooterNavigation"
+        )
+}
+
+extend type Query {
+    footerNavigation: FooterNavigationResponse
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@navigation"
+        )
+}
+
+input FooterNavigationInput {
+    navigations: [FooterNavigationItemInput!]!
+}
+
+type FooterNewsletter {
+    id: ID
+    title: String
+    description: String
+    placeholder: String
+    button_icon: String
+}
+
+extend type Query {
+    footerNewsletter: FooterNewsletter
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@footerNewsletter"
+        )
+}
+
+input FooterNewsletterInput {
+    title: String
+    description: String
+    placeholder: String
+    button_icon: Upload
+}
+
+extend type Mutation {
+    updateFooterNewsletter(input: FooterNewsletterInput!): FooterNewsletter
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\FooterMutation@updateFooterNewsletter"
+        )
+}
+
+type FooterBottomBarResponse {
+    id: ID!
+    copyright: String
+    legal_links: [FooterLegalLinkResponse!]!
+}
+
+type FooterLegalLinkResponse {
+    text: String!
+    url: String!
+}
+
+input FooterBottomBarInput {
+    copyright: String
+    legal_links: [FooterLegalLinkInput!]
+}
+
+input FooterLegalLinkInput {
+    text: String!
+    url: String!
+}
+extend type Query {
+    footerBottomBar: FooterBottomBarResponse
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@footerBottomBar"
+        )
+}
+
+extend type Mutation {
+    updateFooterBottomBar(
+        input: FooterBottomBarInput!
+    ): FooterBottomBarResponse
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\FooterMutation@updateFooterBottomBar"
         )
 }

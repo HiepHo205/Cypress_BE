@@ -6,7 +6,12 @@ import FooterSocialSection from './components/FooterSocialSection.vue';
 import FooterNavigationSection from './components/FooterNavigationSection.vue';
 import FooterNewsletterSection from './components/FooterNewsletterSection.vue';
 import FooterBottomBarSection from './components/FooterBottomBarSection.vue';
+
+import LoadingOverlay from '@/components/common/LoadingOverlay.vue';
+
 const activeTab = ref(1);
+const tabLoading = ref(false);
+const contentLoading = ref(false);
 
 const tabs = [
     {
@@ -43,10 +48,20 @@ const components = {
     4: FooterNewsletterSection,
     5: FooterBottomBarSection,
 };
+
 const currentComponent = computed(() => components[activeTab.value]);
 
-const saveChanges = () => {
-    console.log('Save Footer');
+const handleLoading = (status) => {
+    contentLoading.value = status;
+};
+
+const changeTab = async (id) => {
+    if (activeTab.value === id) return;
+
+    activeTab.value = id;
+    const changeTab = (id) => {
+        activeTab.value = id;
+    };
 };
 </script>
 
@@ -54,7 +69,6 @@ const saveChanges = () => {
     <div class="min-h-screen bg-gray-50 p-6">
 
         <div class="mb-6 flex items-center justify-between rounded-2xl bg-white p-6 shadow-sm">
-
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">
                     Footer Management
@@ -69,16 +83,14 @@ const saveChanges = () => {
         <div class="grid grid-cols-12 gap-6">
 
             <div class="col-span-3">
-
                 <div class="space-y-3 rounded-2xl bg-white p-4 shadow-sm">
 
-                    <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="[
+                    <button v-for="tab in tabs" :key="tab.id" @click="changeTab(tab.id)" :class="[
                         'flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition',
                         activeTab === tab.id
                             ? 'bg-blue-600 text-white'
                             : 'hover:bg-gray-100'
                     ]">
-
                         <div class="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 font-semibold">
                             {{ tab.id }}
                         </div>
@@ -94,16 +106,18 @@ const saveChanges = () => {
                                 {{ tab.description }}
                             </div>
                         </div>
-
                     </button>
 
                 </div>
-
             </div>
-            <div class="col-span-9 rounded-2xl bg-white p-6 shadow-sm">
+
+
+            <div class="relative col-span-9 rounded-2xl bg-white p-6 shadow-sm">
+
+                <LoadingOverlay :show="tabLoading || contentLoading" message="Loading footer..." :fullScreen="false" />
 
                 <KeepAlive>
-                    <component :is="currentComponent" />
+                    <component :is="currentComponent" :key="activeTab" @loading="handleLoading" />
                 </KeepAlive>
 
             </div>
