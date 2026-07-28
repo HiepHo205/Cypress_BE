@@ -9,6 +9,7 @@ import UserEdit from '@/views/users/UserEdit.vue';
 import UserDetailView from '@/views/users/UserDetail.vue';
 import { useToast } from 'vue-toastification';
 import Header from '../views/cms/header/Header.vue';
+import Footer from '../views/cms/footer/Footer.vue';
 const routes = [
     {
         path: '/login',
@@ -43,7 +44,6 @@ const routes = [
                 path: 'roles',
                 name: 'role.management',
                 component: () => import('@/views/roles/RoleManagement.vue')
-
             },
             {
                 path: 'users/:id',
@@ -51,7 +51,7 @@ const routes = [
                 component: UserDetailView,
                 props: true
             },
-                        {
+            {
                 path: 'users/:id/edit',
                 name: 'users.edit',
                 component: UserEdit,
@@ -61,6 +61,11 @@ const routes = [
                 path: 'header',
                 name: 'cms.header',
                 component: Header
+            },
+            {
+                path: 'footer',
+                name: 'cms.footer',
+                component: Footer
             }
         ]
     }
@@ -73,22 +78,20 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('token');
-
     const requiresAuth = to.matched.some((route) => route.meta.requiresAuth);
 
-    const toast = useToast();
-
     if (requiresAuth && !token) {
+        const toast = useToast();
+
         toast.warning('Please login to access this page.');
 
         return next('/login');
     }
 
-    if (to.path === '/login' && token) {
+    if (to.name === 'login' && token) {
         return next('/admin');
     }
 
     next();
 });
-
 export default router;

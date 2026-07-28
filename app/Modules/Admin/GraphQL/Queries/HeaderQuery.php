@@ -49,10 +49,6 @@ class HeaderQuery
                             FILTER_VALIDATE_BOOLEAN
                         ),
                         'target_date' => $meta->get('target_date'),
-                        'button' => [
-                            'label' => $meta->get('button_label'),
-                            'href' => $meta->get('button_href'),
-                        ],
                     ];
                     break;
 
@@ -81,6 +77,13 @@ class HeaderQuery
             }
         }
 
+        if ($countdown) {
+            $countdown['button'] = [
+                'label' => $cta['label'] ?? null,
+                'href' => $cta['href'] ?? null,
+            ];
+        }
+
         return [
             'logo' => $logo,
             'menus' => $menus,
@@ -88,7 +91,6 @@ class HeaderQuery
             'countdown' => $countdown,
         ];
     }
-
     public function getLogo()
     {
         $entry = Collection::where('api_endpoint', 'header')

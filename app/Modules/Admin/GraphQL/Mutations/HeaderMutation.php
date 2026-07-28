@@ -72,14 +72,19 @@ class HeaderMutation
             $args['logo']
         );
     }
-
     public function updateCountdown($_, array $args)
     {
         $service = app(HeaderService::class);
 
-        return $service->updateCountdown(
+        $countdown = $service->updateCountdown(
             $args['input']
         );
+
+        return [
+            'success' => true,
+            'message' => 'Countdown updated successfully',
+            'data' => $countdown
+        ];
     }
     public function updateFavicon($_, array $args)
     {

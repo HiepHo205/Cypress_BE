@@ -47,12 +47,21 @@
                     <transition enter-active-class="transition-all duration-300 ease-out"
                         leave-active-class="transition-all duration-300 ease-in">
                         <ul v-show="openStructure" class="mt-2 ml-6 space-y-1">
+
                             <li>
                                 <router-link to="/admin/header"
                                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition hover:bg-slate-800"
                                     active-class="bg-slate-800">
                                     <PanelTop :size="16" />
                                     <span>Header</span>
+                                </router-link>
+                            </li>
+                            <li>
+                                <router-link to="/admin/footer"
+                                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition hover:bg-slate-800"
+                                    active-class="bg-slate-800">
+                                    <PanelBottom :size="16" />
+                                    <span>Footer</span>
                                 </router-link>
                             </li>
                         </ul>
@@ -93,6 +102,7 @@ import {
     ShieldCheck,
     FolderTree,
     PanelTop,
+    PanelBottom,
     ChevronDown,
     ChevronRight
 } from "lucide-vue-next";
