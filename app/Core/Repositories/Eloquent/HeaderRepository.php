@@ -106,6 +106,10 @@ class HeaderRepository
                         'meta_key' => 'label',
                         'meta_value' => $child['label'],
                     ],
+                    [
+                        'meta_key' => 'url',
+                        'meta_value' => $child['url'] ?? null,
+                    ],
                 ]);
 
 
@@ -176,6 +180,10 @@ class HeaderRepository
                         'meta_key' => 'label',
                         'meta_value' => $child['label'],
                     ],
+                    [
+                        'meta_key' => 'url',
+                        'meta_value' => $child['url'] ?? null,
+                    ],
                 ]);
 
 
@@ -187,10 +195,36 @@ class HeaderRepository
             }
 
 
-            return $entry->fresh([
+            $entry = $entry->fresh([
                 'metas',
                 'childEntries.metas'
             ]);
+
+            $label = $entry->metas
+                ->where('meta_key', 'label')
+                ->first()?->meta_value;
+
+
+            $children = $entry->childEntries->map(function ($child) {
+
+                return [
+                    'id' => $child->id,
+                    'label' => $child->metas
+                        ->where('meta_key', 'label')
+                        ->first()?->meta_value,
+
+                    'url' => $child->metas
+                        ->where('meta_key', 'url')
+                        ->first()?->meta_value,
+                ];
+            })->values();
+
+
+            return [
+                'id' => $entry->id,
+                'label' => $label,
+                'children' => $children,
+            ];
         });
     }
 

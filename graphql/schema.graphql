@@ -183,6 +183,7 @@ extend type Mutation {
 
 extend type Query {
     header: Header
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@header"
         )
@@ -201,9 +202,9 @@ type Menu {
 }
 
 type MenuChild {
-    id: ID!
+    id: ID
     label: String
-    href: String
+    url: String
 }
 
 type CTA {
@@ -218,7 +219,15 @@ input HeaderMenuInput {
 
 input HeaderMenuChildInput {
     label: String!
+    url: String
 }
+extend type Mutation {
+    deleteHeaderSubMenu(id: ID!): MessageResponse!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@deleteHeaderSubMenu"
+        )
+}
+
 type HeaderMenuResponse {
     id: ID
     label: String
@@ -228,7 +237,7 @@ type HeaderMenuResponse {
 type HeaderMenuChildResponse {
     id: ID
     label: String
-    href: String
+    url: String
 }
 
 type DeleteResponse {
@@ -237,16 +246,19 @@ type DeleteResponse {
 
 extend type Mutation {
     createHeaderMenu(input: HeaderMenuInput!): HeaderMenuResponse
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@createHeaderMenu"
         )
 
     updateHeaderMenu(id: ID!, input: HeaderMenuInput!): HeaderMenuResponse
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@updateHeaderMenu"
         )
 
     deleteHeaderMenu(id: ID!): DeleteResponse
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@deleteHeaderMenu"
         )
@@ -254,6 +266,7 @@ extend type Mutation {
 
 extend type Mutation {
     updateLogo(logo: Upload!): HeaderLogo!
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@updateLogo"
         )
@@ -264,6 +277,7 @@ type HeaderLogo {
 
 extend type Query {
     getLogo: HeaderLogo
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getLogo"
         )
@@ -308,18 +322,28 @@ extend type Mutation {
 
 extend type Mutation {
     updateFavicon(favicon: Upload!): HeaderFavicon!
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@updateFavicon"
         )
 }
-
 type HeaderFavicon {
     url: String
     public_id: String
 }
 
+# Public
+extend type Query {
+    favicon: HeaderFavicon
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getFavicon"
+        )
+}
+
+# Admin CMS
 extend type Query {
     getFavicon: HeaderFavicon
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getFavicon"
         )
@@ -332,6 +356,7 @@ type HeaderCTA {
 
 extend type Query {
     headerCta: HeaderCTA
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getCta"
         )
@@ -348,14 +373,13 @@ input FooterBrandingInput {
     company_name: String
     description: String
 }
-
 extend type Query {
     footerBranding: FooterBranding
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@footerBranding"
         )
 }
-
 type Footer {
     branding: FooterBranding
     socials: [FooterSocial]
@@ -391,15 +415,17 @@ type FooterSocialResponse {
 
 extend type Query {
     footer: Footer
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@footer"
         )
-
     footerSocials: [FooterSocial]
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@socials"
         )
 }
+
 input FooterNavigationItemInput {
     id: ID
     group: String
@@ -463,6 +489,7 @@ type FooterNewsletter {
 
 extend type Query {
     footerNewsletter: FooterNewsletter
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@footerNewsletter"
         )
@@ -504,6 +531,7 @@ input FooterLegalLinkInput {
 }
 extend type Query {
     footerBottomBar: FooterBottomBarResponse
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@footerBottomBar"
         )
@@ -513,6 +541,7 @@ extend type Mutation {
     updateFooterBottomBar(
         input: FooterBottomBarInput!
     ): FooterBottomBarResponse
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\FooterMutation@updateFooterBottomBar"
         )

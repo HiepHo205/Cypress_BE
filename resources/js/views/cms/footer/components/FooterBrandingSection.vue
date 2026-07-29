@@ -16,52 +16,32 @@ const { getBranding, updateBranding } = useFooterBranding();
 
 
 onMounted(async () => {
-
-    emit('loading', true);
-
     try {
-
         const data = await getBranding();
-
         if (data) {
             form.company_name = data.company_name ?? '';
             form.description = data.description ?? '';
         }
-
     } catch (error) {
-
         console.error('Load footer branding error:', error);
-
     } finally {
 
         emit('loading', false);
-
     }
-
 });
 
 
 const saveBranding = async () => {
-
-    emit('loading', true);
-
     try {
-
         await updateBranding({
             company_name: form.company_name,
             description: form.description
         });
-
     } catch (error) {
-
         console.error('Save branding error:', error);
-
     } finally {
-
         emit('loading', false);
-
     }
-
 };
 </script>
 <template>

@@ -45,10 +45,8 @@ export function useRoleManagement(roles) {
             );
 
             if (adminIndex !== -1) {
-                // Chèn ngay sau admin
                 roles.value.splice(adminIndex + 1, 0, newRole);
             } else {
-                // Nếu không có admin thì thêm đầu danh sách
                 roles.value.unshift(newRole);
             }
 

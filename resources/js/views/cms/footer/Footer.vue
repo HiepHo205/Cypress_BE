@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 import FooterBrandingSection from './components/FooterBrandingSection.vue';
 import FooterSocialSection from './components/FooterSocialSection.vue';
@@ -9,59 +10,87 @@ import FooterBottomBarSection from './components/FooterBottomBarSection.vue';
 
 import LoadingOverlay from '@/components/common/LoadingOverlay.vue';
 
-const activeTab = ref(1);
+
+const route = useRoute();
+const router = useRouter();
+
+
 const tabLoading = ref(false);
 const contentLoading = ref(false);
 
+
 const tabs = [
     {
-        id: 1,
+        id: 'branding',
         title: 'Branding',
-        description: 'Logo & Company',
+        description: 'Logo & Company'
     },
     {
-        id: 2,
+        id: 'social',
         title: 'Social Links',
-        description: 'Social media',
+        description: 'Social media'
     },
     {
-        id: 3,
+        id: 'navigation',
         title: 'Footer Navigation',
-        description: 'Company & Contact',
+        description: 'Company & Contact'
     },
     {
-        id: 4,
+        id: 'newsletter',
         title: 'Newsletter',
-        description: 'Subscription',
+        description: 'Subscription'
     },
     {
-        id: 5,
+        id: 'bottom-bar',
         title: 'Bottom Bar',
-        description: 'Copyright',
-    },
+        description: 'Copyright'
+    }
 ];
 
+
 const components = {
-    1: FooterBrandingSection,
-    2: FooterSocialSection,
-    3: FooterNavigationSection,
-    4: FooterNewsletterSection,
-    5: FooterBottomBarSection,
+    branding: FooterBrandingSection,
+    social: FooterSocialSection,
+    navigation: FooterNavigationSection,
+    newsletter: FooterNewsletterSection,
+    'bottom-bar': FooterBottomBarSection
 };
 
-const currentComponent = computed(() => components[activeTab.value]);
+
+const activeTab = computed(() => {
+    return route.query.tab || 'branding';
+});
+
+
+const currentComponent = computed(() => {
+    return components[activeTab.value] || FooterBrandingSection;
+});
+
+
+onMounted(() => {
+    if (!route.query.tab) {
+        router.replace({
+            path: '/admin/footer',
+            query: {
+                tab: 'branding'
+            }
+        });
+    }
+});
+
 
 const handleLoading = (status) => {
     contentLoading.value = status;
 };
 
-const changeTab = async (id) => {
-    if (activeTab.value === id) return;
 
-    activeTab.value = id;
-    const changeTab = (id) => {
-        activeTab.value = id;
-    };
+const changeTab = (id) => {
+    router.push({
+        path: '/admin/footer',
+        query: {
+            tab: id
+        }
+    });
 };
 </script>
 
@@ -92,7 +121,7 @@ const changeTab = async (id) => {
                             : 'hover:bg-gray-100'
                     ]">
                         <div class="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 font-semibold">
-                            {{ tab.id }}
+                            {{ tabs.indexOf(tab) + 1 }}
                         </div>
 
                         <div>

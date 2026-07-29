@@ -21,7 +21,6 @@ const {
 } = useHeaderLogo();
 
 onMounted(async () => {
-    emit("loading", true);
 
     try {
         await getLogo();
@@ -51,8 +50,6 @@ const saveLogo = async () => {
     if (!selectedFile.value) {
         return;
     }
-
-    emit("loading", true);
 
     try {
         const result = await updateLogo(selectedFile.value);
