@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
+import { useToast } from "vue-toastification";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-vue-next";
 import ConfirmModal from "@/components/common/ConfirmModal.vue";
 import useHeaderMenu from "@/composables/header/useHeaderMenu";
@@ -12,33 +13,66 @@ const {
     deleteMenu: handleDeleteMenu
 } = useHeaderMenu();
 
+const toast = useToast();
+
 const showForm = ref(false);
 const editId = ref(null);
 const showDeleteModal = ref(false);
 const deleteId = ref(null);
 const emit = defineEmits(["loading"]);
+
 const newMenu = ref({
     label: "",
     children: [
         {
-            label: ""
+            label: "",
+            url: ""
         }
     ]
 });
 
 const addMenu = () => {
+    resetForm();
     showForm.value = true;
-    editId.value = null;
 };
 
 const addSubMenu = () => {
     newMenu.value.children.push({
-        label: ""
+        label: "",
+        url: ""
     });
 };
 
-const removeSubMenu = (index) => {
-    newMenu.value.children.splice(index, 1);
+const removeSubMenu = async (child, index) => {
+    if (!child.id) {
+        newMenu.value.children.splice(index, 1);
+        return;
+    }
+
+    try {
+        const children = newMenu.value.children
+            .filter(item => item.id !== child.id)
+            .map(item => ({
+                label: item.label,
+                url: item.url
+            }));
+
+        const success = await handleUpdateMenu(
+            editId.value,
+            {
+                label: newMenu.value.label,
+                children
+            },
+            "Deleting submenu..."
+        );
+
+        if (success) {
+            newMenu.value.children = children;
+        }
+
+    } finally {
+        emit("loading", false);
+    }
 };
 
 const resetForm = () => {
@@ -49,24 +83,39 @@ const resetForm = () => {
         label: "",
         children: [
             {
-                label: ""
+                label: "",
+                url: ""
             }
         ]
     };
 };
 
 const saveMenu = async () => {
-    emit("loading", true);
+    const children = newMenu.value.children
+        .filter(item => item.label)
+        .map(item => ({
+            label: item.label,
+            url: item.url
+        }));
+
+    if (!newMenu.value.label.trim()) {
+        return toast.error("Please enter menu name");
+    }
+
+    if (children.length === 0) {
+        return toast.error("Please add at least one submenu");
+    }
 
     try {
         const success = await createMenu({
             label: newMenu.value.label,
-            children: newMenu.value.children.filter(item => item.label)
+            children
         });
 
         if (success) {
             resetForm();
         }
+
     } finally {
         emit("loading", false);
     }
@@ -78,37 +127,54 @@ const editMenu = (menu) => {
     newMenu.value = {
         label: menu.label,
         children: menu.children.map(item => ({
-            label: item.label
+            id: item.id,
+            label: item.label,
+            url: item.url || ""
         }))
     };
 };
+
 const updateMenu = async () => {
-    emit("loading", true);
+    const children = newMenu.value.children
+        .filter(item => item.label)
+        .map(item => ({
+            label: item.label,
+            url: item.url
+        }));
+
+    if (!newMenu.value.label.trim()) {
+        return toast.error("Please enter menu name");
+    }
+
+    if (children.length === 0) {
+        return toast.error("Please add at least one submenu");
+    }
 
     try {
         const success = await handleUpdateMenu(editId.value, {
             label: newMenu.value.label,
-            children: newMenu.value.children.filter(item => item.label)
+            children
         });
 
         if (success) {
             resetForm();
         }
+
     } finally {
         emit("loading", false);
     }
 };
+
 const openDeleteModal = (id) => {
     deleteId.value = id;
     showDeleteModal.value = true;
 };
+
 const confirmDelete = async () => {
     const id = deleteId.value;
 
     showDeleteModal.value = false;
     deleteId.value = null;
-
-    emit("loading", true);
 
     try {
         await handleDeleteMenu(id);
@@ -140,7 +206,6 @@ onMounted(async () => {
                 <h2 class="text-lg font-semibold text-gray-900">
                     Header Menu
                 </h2>
-
                 <p class="mt-1 text-sm text-gray-500">
                     Manage the navigation menu displayed in the website header.
                 </p>
@@ -151,42 +216,37 @@ onMounted(async () => {
                 Add Menu
             </button>
         </div>
+
         <div class="mt-8 max-h-[600px] overflow-y-auto rounded-t-2xl border border-gray-100 bg-white scrollbar-hide">
             <table class="min-w-full border-collapse">
                 <thead class="sticky top-0 bg-gradient-to-r from-[#6C9ADB] to-[#2B71D3]">
                     <tr>
-                        <th class="border-r border-gray-100 px-3 py-2 text-center text-lg text-white">
+                        <th class="w-1/4 border-r border-gray-100 px-3 py-2 text-center text-lg text-white">
                             Menu
                         </th>
 
-                        <th class="border-r border-gray-100 px-3 py-2 text-center text-lg text-white">
+                        <th class="w-1/2 border-r border-gray-100 px-3 py-2 text-center text-lg text-white">
                             Submenus
                         </th>
 
-                        <th class="px-3 py-2 text-center text-lg text-white">
+                        <th class="w-1/4 px-3 py-2 text-center text-lg text-white">
                             Actions
                         </th>
                     </tr>
                 </thead>
 
                 <tbody class="divide-y divide-gray-100">
+
                     <tr v-if="!showForm && menus.length === 0">
                         <td colspan="3" class="px-6 py-12 text-center text-gray-400">
-                            <div class="flex flex-col items-center">
-                                <p class="text-lg font-medium">
-                                    No data available
-                                </p>
-
-                                <p class="mt-1 text-sm">
-                                    There are no header menus yet.
-                                </p>
-                            </div>
+                            No data available
                         </td>
                     </tr>
+
                     <tr v-if="showForm && !editId">
                         <td class="border-r border-gray-100 px-3 py-2">
                             <input v-model="newMenu.label" placeholder="Menu name"
-                                class="w-full rounded-lg border border-gray-100 px-3 py-2" />
+                                class="w-full rounded-lg border px-3 py-2" />
                         </td>
 
                         <td class="border-r border-gray-100 px-3 py-2">
@@ -194,9 +254,13 @@ onMounted(async () => {
                                 <div v-for="(child, index) in newMenu.children" :key="index"
                                     class="flex items-center gap-2">
                                     <input v-model="child.label" placeholder="Submenu name"
-                                        class="flex-1 rounded-lg border border-gray-100 px-3 py-2" />
+                                        class="flex-1 rounded-lg border px-3 py-2" />
 
-                                    <button @click="removeSubMenu(index)" class="rounded bg-red-500 p-1.5 text-white">
+                                    <input v-model="child.url" placeholder="/submenu"
+                                        class="flex-1 rounded-lg border px-3 py-2" />
+
+                                    <button @click="removeSubMenu(child, index)"
+                                        class="rounded bg-red-500 p-1.5 text-white">
                                         <X :size="8" />
                                     </button>
                                 </div>
@@ -223,23 +287,30 @@ onMounted(async () => {
                     </tr>
 
                     <template v-for="menu in menus" :key="menu.id">
+
                         <tr v-if="editId === menu.id">
+
                             <td class="border-r border-gray-100 px-3 py-2">
-                                <input v-model="newMenu.label" placeholder="Menu name"
-                                    class="w-full rounded-lg border border-gray-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                <input v-model="newMenu.label" class="w-full rounded-lg border px-3 py-2" />
                             </td>
 
                             <td class="border-r border-gray-100 px-3 py-2">
                                 <div class="space-y-2">
+
                                     <div v-for="(child, index) in newMenu.children" :key="index"
                                         class="flex items-center gap-2">
-                                        <input v-model="child.label" placeholder="Submenu name"
-                                            class="flex-1 rounded-lg border border-gray-100 px-3 py-2" />
 
-                                        <button @click="removeSubMenu(index)"
+                                        <input v-model="child.label" placeholder="Submenu name"
+                                            class="flex-1 rounded-lg border px-3 py-2" />
+
+                                        <input v-model="child.url" placeholder="/submenu"
+                                            class="flex-1 rounded-lg border px-3 py-2" />
+
+                                        <button @click="removeSubMenu(child, index)"
                                             class="rounded bg-red-500 p-1.5 text-white">
                                             <X :size="8" />
                                         </button>
+
                                     </div>
 
                                     <div class="flex justify-end">
@@ -247,11 +318,13 @@ onMounted(async () => {
                                             <Plus :size="8" />
                                         </button>
                                     </div>
+
                                 </div>
                             </td>
 
                             <td class="px-3 py-2">
                                 <div class="flex justify-center gap-2">
+
                                     <button @click="updateMenu" class="rounded bg-blue-500 p-2 text-white">
                                         <Check :size="15" />
                                     </button>
@@ -259,29 +332,45 @@ onMounted(async () => {
                                     <button @click="resetForm" class="rounded bg-red-500 p-2 text-white">
                                         <X :size="15" />
                                     </button>
+
                                 </div>
                             </td>
+
                         </tr>
 
                         <tr v-else>
+
                             <td class="border-r border-gray-100 px-4 py-2 text-center">
                                 {{ menu.label }}
                             </td>
 
-                            <td class="border-r border-gray-100 px-4 py-2 text-center">
+                            <td class="border-r border-gray-100 px-4 py-3">
+
                                 <div v-if="menu.children.length" class="space-y-2">
-                                    <div v-for="child in menu.children" :key="child.id">
-                                        {{ child.label }}
+
+                                    <div v-for="child in menu.children" :key="child.id"
+                                        class="grid grid-cols-2 rounded-lg bg-gray-50 px-3 py-2">
+                                        <span>
+                                            {{ child.label }}
+                                        </span>
+
+                                        <span>
+                                            {{ child.url || '-' }}
+                                        </span>
+
                                     </div>
+
                                 </div>
 
-                                <span v-else class="text-gray-400">
+                                <span v-else class="block text-center text-gray-400">
                                     —
                                 </span>
+
                             </td>
 
-                            <td class="px-3 py-2 text-center">
+                            <td class="px-3 py-2">
                                 <div class="flex justify-center gap-2">
+
                                     <button @click="editMenu(menu)" class="rounded bg-blue-500 p-2 text-white">
                                         <Pencil :size="15" />
                                     </button>
@@ -289,15 +378,20 @@ onMounted(async () => {
                                     <button @click="openDeleteModal(menu.id)" class="rounded bg-red-500 p-2 text-white">
                                         <Trash2 :size="15" />
                                     </button>
+
                                 </div>
                             </td>
+
                         </tr>
+
                     </template>
+
                 </tbody>
             </table>
         </div>
 
         <ConfirmModal :show="showDeleteModal" title="Delete Menu" message="Are you sure you want to delete this menu?"
             @confirm="confirmDelete" @cancel="cancelDelete" />
+
     </div>
 </template>

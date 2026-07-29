@@ -7,9 +7,12 @@ import UserList from '@/views/users/UserList.vue';
 import UserCreate from '@/views/users/UserCreate.vue';
 import UserEdit from '@/views/users/UserEdit.vue';
 import UserDetailView from '@/views/users/UserDetail.vue';
+
+import Header from '@/views/cms/header/Header.vue';
+import Footer from '@/views/cms/footer/Footer.vue';
+
 import { useToast } from 'vue-toastification';
-import Header from '../views/cms/header/Header.vue';
-import Footer from '../views/cms/footer/Footer.vue';
+
 const routes = [
     {
         path: '/login',
@@ -23,17 +26,22 @@ const routes = [
         meta: {
             requiresAuth: true
         },
+
         children: [
+            // Dashboard
             {
                 path: '',
                 name: 'dashboard',
                 component: Dashboard
             },
+
+            // User management
             {
                 path: 'users',
                 name: 'users.list',
                 component: UserList
             },
+
             {
                 path: 'users/create',
                 name: 'users.create',
@@ -41,27 +49,38 @@ const routes = [
             },
 
             {
-                path: 'roles',
-                name: 'role.management',
-                component: () => import('@/views/roles/RoleManagement.vue')
-            },
-            {
                 path: 'users/:id',
                 name: 'users.detail',
                 component: UserDetailView,
                 props: true
             },
+
             {
                 path: 'users/:id/edit',
                 name: 'users.edit',
                 component: UserEdit,
                 props: true
             },
+
+            {
+                path: 'roles',
+                name: 'role.management',
+                component: () => import('@/views/roles/RoleManagement.vue')
+            },
+
+            // Header CMS
+            // URL:
+            // /admin/header?tab=logo
+            // /admin/header?tab=favicon
+            // /admin/header?tab=menu
+            // /admin/header?tab=countdown
             {
                 path: 'header',
                 name: 'cms.header',
                 component: Header
             },
+
+            // Footer CMS
             {
                 path: 'footer',
                 name: 'cms.footer',
@@ -76,8 +95,10 @@ const router = createRouter({
     routes
 });
 
+// Check authentication
 router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('token');
+
     const requiresAuth = to.matched.some((route) => route.meta.requiresAuth);
 
     if (requiresAuth && !token) {
@@ -88,10 +109,12 @@ router.beforeEach((to, from, next) => {
         return next('/login');
     }
 
+    // Nếu đã login mà vào login thì quay về admin
     if (to.name === 'login' && token) {
         return next('/admin');
     }
 
     next();
 });
+
 export default router;

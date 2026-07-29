@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { useApolloClient } from '@vue/apollo-composable';
+import { useApolloClient, useMutation } from '@vue/apollo-composable';
 import { useToast } from 'vue-toastification';
 
 import { GET_HEADER_MENU } from '@/graphql/queries/header';
@@ -16,6 +16,10 @@ export default function useHeaderMenu() {
     const { resolveClient } = useApolloClient();
     const toast = useToast();
 
+    const { mutate: createMenuMutation } = useMutation(CREATE_HEADER_MENU);
+    const { mutate: updateMenuMutation } = useMutation(UPDATE_HEADER_MENU);
+    const { mutate: deleteMenuMutation } = useMutation(DELETE_HEADER_MENU);
+
     const getHeaderMenu = async () => {
         if (loaded.value) {
             return;
@@ -28,7 +32,6 @@ export default function useHeaderMenu() {
             });
 
             menus.value = [...response.data.header.menus];
-
             loaded.value = true;
         } catch (error) {
             console.error(error);
@@ -42,11 +45,8 @@ export default function useHeaderMenu() {
         });
 
         try {
-            const response = await resolveClient().mutate({
-                mutation: CREATE_HEADER_MENU,
-                variables: {
-                    input: data
-                }
+            const response = await createMenuMutation({
+                input: data
             });
 
             const newMenu = response?.data?.createHeaderMenu;
@@ -81,26 +81,24 @@ export default function useHeaderMenu() {
         }
     };
 
-    const updateMenu = async (id, data) => {
-        const toastId = toast.info('Updating menu...', {
+    const updateMenu = async (id, data, message = 'Updating menu...') => {
+        const toastId = toast.info(message, {
             timeout: false
         });
 
         try {
-            await resolveClient().mutate({
-                mutation: UPDATE_HEADER_MENU,
-                variables: {
-                    id,
-                    input: data
-                }
+            await updateMenuMutation({
+                id,
+                input: data
             });
 
             loaded.value = false;
-
             await getHeaderMenu();
 
             toast.update(toastId, {
-                content: 'Menu updated successfully',
+                content: message.includes('Deleting')
+                    ? 'Submenu deleted successfully'
+                    : 'Menu updated successfully',
                 options: {
                     type: 'success',
                     timeout: 3000
@@ -112,7 +110,60 @@ export default function useHeaderMenu() {
             console.error(error);
 
             toast.update(toastId, {
-                content: 'Failed to update menu',
+                content: message.includes('Deleting')
+                    ? 'Failed to delete submenu'
+                    : 'Failed to update menu',
+                options: {
+                    type: 'error',
+                    timeout: 3000
+                }
+            });
+
+            return false;
+        }
+    };
+
+    const deleteSubMenu = async (menuId, submenuId) => {
+        const toastId = toast.info('Deleting submenu...', {
+            timeout: false
+        });
+
+        try {
+            const menu = menus.value.find((item) => item.id === menuId);
+
+            if (!menu) {
+                throw new Error('Menu not found');
+            }
+
+            const children = menu.children.filter(
+                (child) => child.id !== submenuId
+            );
+
+            await updateMenuMutation({
+                id: menuId,
+                input: {
+                    label: menu.label,
+                    children
+                }
+            });
+
+            loaded.value = false;
+            await getHeaderMenu();
+
+            toast.update(toastId, {
+                content: 'Submenu deleted successfully',
+                options: {
+                    type: 'success',
+                    timeout: 3000
+                }
+            });
+
+            return true;
+        } catch (error) {
+            console.error(error);
+
+            toast.update(toastId, {
+                content: 'Failed to delete submenu',
                 options: {
                     type: 'error',
                     timeout: 3000
@@ -129,11 +180,8 @@ export default function useHeaderMenu() {
         });
 
         try {
-            await resolveClient().mutate({
-                mutation: DELETE_HEADER_MENU,
-                variables: {
-                    id
-                }
+            await deleteMenuMutation({
+                id
             });
 
             menus.value = menus.value.filter((item) => item.id !== id);
@@ -167,6 +215,7 @@ export default function useHeaderMenu() {
         getHeaderMenu,
         createMenu,
         updateMenu,
+        deleteSubMenu,
         deleteMenu
     };
 }

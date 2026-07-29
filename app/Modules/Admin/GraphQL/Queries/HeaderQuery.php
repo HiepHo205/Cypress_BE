@@ -63,7 +63,7 @@ class HeaderQuery
                         $children[] = [
                             'id' => (string) $child->id,
                             'label' => $childMeta->get('label'),
-                            'href' => $childMeta->get('href'),
+                            'url' => $childMeta->get('url'),
                         ];
                     }
 

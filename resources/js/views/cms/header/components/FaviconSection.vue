@@ -51,7 +51,6 @@ const save = async () => {
     if (!file.value) {
         return;
     }
-    emit("loading", true);
     try {
         const result = await updateFavicon(file.value);
         if (result?.url) {

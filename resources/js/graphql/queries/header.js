@@ -9,7 +9,7 @@ export const GET_HEADER_MENU = gql`
                 children {
                     id
                     label
-                    href
+                    url
                 }
             }
         }

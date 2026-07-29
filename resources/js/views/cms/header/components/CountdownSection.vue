@@ -21,7 +21,6 @@ onMounted(async () => {
         currentTime.value = new Date();
     }, 1000);
 
-    emit("loading", true);
 
     try {
         const data = await getCountdown();
@@ -97,7 +96,6 @@ const countdown = computed(() => {
     };
 });
 const save = async () => {
-    emit("loading", true);
 
     const payload = {
         enabled: form.enabled,

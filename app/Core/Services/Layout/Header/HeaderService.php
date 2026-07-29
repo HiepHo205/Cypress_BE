@@ -50,7 +50,7 @@ class HeaderService
                         $children[] = [
                             'id' => $child->id,
                             'label' => $childMeta['label'] ?? null,
-                            'href' => $childMeta['href'] ?? null,
+                            'url' => $childMeta['url'] ?? null,
                         ];
                     }
 
@@ -59,6 +59,7 @@ class HeaderService
                         'label' => $meta['label'] ?? null,
                         'children' => $children,
                     ];
+
                     break;
             }
         }
