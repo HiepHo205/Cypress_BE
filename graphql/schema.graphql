@@ -29,6 +29,24 @@ type Query {
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\PermissionQuery@permissions"
         )
+
+    plans: [Plan!]!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\PlanQuery@plans"
+        )
+
+    plan(id: ID!): Plan
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\PlanQuery@plan"
+        )
+
+    features: [PlanFeature!]!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\PlanQuery@features"
+        )
 }
 
 extend type Mutation {
@@ -359,6 +377,73 @@ extend type Query {
         @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getCta"
+        )
+}
+
+type PlanBenefit {
+    id: ID!
+    value: String!
+}
+
+type PlanFeature {
+    id: ID!
+    name: String!
+    group: String!
+    benefits: [PlanBenefit!]!
+}
+
+type Plan {
+    id: ID!
+    plan_name: String!
+    price: String!
+    features: [PlanFeature!]!
+}
+
+input BenefitInput {
+    id: ID
+    value: String!
+}
+
+input FeatureInput {
+    id: ID!
+    benefits: [BenefitInput!]!
+}
+
+input CreatePlanInput {
+    plan_name: String!
+    price: String!
+
+    features: [FeatureInput!]!
+}
+
+input UpdatePlanInput {
+    plan_name: String!
+    price: String!
+
+    features: [FeatureInput!]!
+}
+
+extend type Mutation {
+    createPlan(
+        input: CreatePlanInput!
+    ): Plan!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PlanMutation@create"
+        )
+
+    updatePlan(
+        id: ID!
+        input: UpdatePlanInput!
+    ): Plan!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PlanMutation@update"
+        )
+
+    deletePlan(
+        id: ID!
+    ): Boolean!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PlanMutation@delete"
         )
 }
 # Xử lý Footer
