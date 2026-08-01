@@ -3,9 +3,11 @@
 namespace App\Modules\Admin\GraphQL\Mutations;
 
 use App\Core\Services\Layout\Header\HeaderService;
+use Exception;
 
 class HeaderMutation
 {
+
     public function createHeaderMenu($_, array $args, $context)
     {
         $service = app(HeaderService::class);
@@ -31,7 +33,7 @@ class HeaderMutation
             $children[] = [
                 'id' => (string)$child->id,
                 'label' => $childMeta['label'] ?? null,
-                'href' => $childMeta['href'] ?? null,
+                'url' => $childMeta['url'] ?? null,
             ];
         }
 
@@ -72,14 +74,19 @@ class HeaderMutation
             $args['logo']
         );
     }
-
     public function updateCountdown($_, array $args)
     {
         $service = app(HeaderService::class);
 
-        return $service->updateCountdown(
+        $countdown = $service->updateCountdown(
             $args['input']
         );
+
+        return [
+            'success' => true,
+            'message' => 'Countdown updated successfully',
+            'data' => $countdown
+        ];
     }
     public function updateFavicon($_, array $args)
     {

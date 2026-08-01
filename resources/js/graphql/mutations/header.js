@@ -8,7 +8,7 @@ export const CREATE_HEADER_MENU = gql`
             children {
                 id
                 label
-                href
+                url
             }
         }
     }
@@ -22,7 +22,7 @@ export const UPDATE_HEADER_MENU = gql`
             children {
                 id
                 label
-                href
+                url
             }
         }
     }
@@ -49,6 +49,13 @@ export const UPDATE_HEADER_FAVICON = gql`
         updateFavicon(favicon: $favicon) {
             url
             public_id
+        }
+    }
+`;
+export const DELETE_HEADER_SUBMENU = gql`
+    mutation DeleteHeaderSubMenu($id: ID!) {
+        deleteHeaderSubMenu(id: $id) {
+            message
         }
     }
 `;

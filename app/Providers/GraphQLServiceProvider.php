@@ -31,7 +31,7 @@ class GraphQLServiceProvider extends ServiceProvider
             config([
                 'lighthouse.route.middleware' => [
                     'web',
-                    \Nuwave\Lighthouse\Support\Http\Middleware\AcceptJson::class,
+                    \Nuwave\Lighthouse\Http\Middleware\AcceptJson::class,
                 ],
             ]);
             config(['lighthouse.guard' => 'web']);
@@ -39,7 +39,7 @@ class GraphQLServiceProvider extends ServiceProvider
             config([
                 'lighthouse.route.middleware' => [
                     'api',
-                    \Nuwave\Lighthouse\Support\Http\Middleware\AcceptJson::class,
+                    \Nuwave\Lighthouse\Http\Middleware\AcceptJson::class,
                 ],
             ]);
             config(['lighthouse.guard' => 'api']);

@@ -32,7 +32,6 @@ export function useLogout() {
                     'Logout failed.'
             );
         } finally {
-            // ✅ LUÔN XOÁ TOKEN
             localStorage.removeItem('token');
 
             router.push('/login');
