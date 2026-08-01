@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-lg">
+  <div class="max-w-4xl mx-auto">
     <div class="mb-6">
       <router-link to="/admin/users" class="text-sm text-blue-600 hover:text-blue-800">
         &larr; Back to users
@@ -41,6 +41,33 @@
           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
+      <div>
+        <label
+          for="role"
+          class="block text-sm font-medium text-gray-700 mb-1"
+        >
+          Role
+        </label>
+
+        <select
+          id="role"
+          v-model="form.role_id"
+          required
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="" disabled>
+            Select a role
+          </option>
+
+          <option
+            v-for="role in roles"
+            :key="role.id"
+            :value="role.id"
+          >
+            {{ role.role_name }}
+          </option>
+        </select>
+      </div>
 
       <div
         v-if="errorMessages.length"
@@ -63,10 +90,15 @@
 <script setup>
 import { computed, reactive } from 'vue';
 import { useRouter } from 'vue-router';
-import { useMutation } from '@vue/apollo-composable';
+import { useMutation, useQuery } from '@vue/apollo-composable';
 import { CREATE_USER } from '@/graphql/mutations/users';
 import { GET_USERS } from '@/graphql/queries/users';
 import { getGraphQLErrorMessages } from '@/utils/graphqlErrors';
+import { GET_ROLES } from '@/graphql/queries/role';
+
+const { result: roleResult } = useQuery(GET_ROLES);
+
+const roles = computed(() => roleResult.value?.roles ?? []);
 
 const router = useRouter();
 
@@ -74,6 +106,7 @@ const form = reactive({
   name: '',
   email: '',
   password: '',
+  role_id: '',
 });
 
 const { mutate: createUser, loading, error } = useMutation(CREATE_USER, {
@@ -89,6 +122,7 @@ async function submit() {
         name: form.name,
         email: form.email,
         password: form.password,
+        role_id: form.role_id,
       },
     });
 

@@ -11,16 +11,40 @@ class CollectionSeeder extends Seeder
     {
         DB::table('collections')->insert([
             [
-                'id' => 1,
-                'collection_name' => 'subscription_plans',
-                'display_name' => 'Subscription Plans',
-                'api_endpoint' => 'subscription-plans',
-                'description' => 'Subscription packages',
-                'is_system' => false,
-                'is_active' => true,
+                'collection_name' => 'companies',
+                'api_endpoint' => 'companies',
+                'is_system_type' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ],
+            [
+                'collection_name' => 'plans',
+                'api_endpoint' => 'plans',
+                'is_system_type' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'collection_name' => 'subscriptions',
+                'api_endpoint' => 'subscriptions',
+                'is_system_type' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'collection_name' => 'features',
+                'api_endpoint' => 'features',
+                'is_system_type' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'collection_name' => 'benefits',
+                'api_endpoint' => 'benefits',
+                'is_system_type' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

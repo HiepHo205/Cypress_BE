@@ -1,4 +1,4 @@
-console.log("APP JS LOADED");
+console.log('APP JS LOADED');
 import { createApp } from 'vue';
 import App from './app.vue';
 import router from './router';

@@ -3,51 +3,128 @@
 scalar DateTime
     @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
 
+scalar Upload
+    @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Upload")
+
 type Query {
     user(
-        id: ID @eq @rules(apply: ["prohibits:email", "required_without:email"])
+        id: ID
+            @eq
+            @rules(
+                apply: [
+                    "prohibits:email"
+                    "required_without:email"
+                ]
+            )
         email: String
             @eq
-            @rules(apply: ["prohibits:id", "required_without:id", "email"])
-    ): User @find
+            @rules(
+                apply: [
+                    "prohibits:id"
+                    "required_without:id"
+                    "email"
+                ]
+            )
+    ): User
+        @guard(with: ["api"])
+        @find
 
-    users(name: String @where(operator: "like")): [User!]!
+    users(
+        name: String @where(operator: "like")
+    ): [User!]!
+        @guard(with: ["api"])
         @paginate(defaultCount: 10)
+
+    roles: [Role!]!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\RoleQuery@roles"
+        )
+
+    permissions: [Permission!]!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\PermissionQuery@permissions"
+        )
+
+    plans: [Plan!]!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\PlanQuery@plans"
+        )
+
+    plan(id: ID!): Plan
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\PlanQuery@plan"
+        )
+
+    features: [PlanFeature!]!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\PlanQuery@features"
+        )
 }
 
 type Mutation {
     createUser(input: CreateUserInput!): CreateUserPayload!
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@create"
         )
 
     updateUser(id: ID!, input: UpdateUserInput!): UpdateUserPayload!
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@update"
         )
 
     deleteUser(id: ID!): DeleteUserPayload!
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@delete"
         )
 
     deactivateUser(id: ID!): DeactivateUserPayload!
+        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@deactivate"
+        )
+            @field(
+                resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\UserMutation@deactivate"
+            )
+    assignPermission(
+        userId: ID!
+        permissionId: ID!
+    ): Boolean!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PermissionMutation@assignPermission"
+        )
+
+    unassignPermission(
+        userId: ID!
+        permissionId: ID!
+    ): Boolean!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PermissionMutation@unassignPermission"
         )
 }
 
 input CreateUserInput {
-    name: String! @rules(apply: ["required", "string", "min:2"])
-    email: String! @rules(apply: ["required", "email", "unique:users,email"])
-    password: String! @rules(apply: ["required", "min:8"])
+    name: String!
+    email: String!
+    password: String!
+    role_id: ID!
 }
 
 input UpdateUserInput {
-    name: String @rules(apply: ["string", "min:2"])
-    email: String @rules(apply: ["email"])
-    password: String @rules(apply: ["min:8"])
-    status: String @rules(apply: ["in:active,unactive"])
+    name: String
+    email: String
+    password: String
+    status: String
+    role_id: ID
 }
 
 type CreateUserPayload {
@@ -75,7 +152,9 @@ type User {
     created_at: DateTime!
     updated_at: DateTime!
     status: String!
-    roles: [Role!]! @belongsToMany
+    role_id: ID
+    role: Role @belongsTo
+    permissions: [Permission!]! @belongsToMany
 }
 
 extend type Mutation {
@@ -87,7 +166,16 @@ extend type Mutation {
 
 type Role {
     id: ID!
-    name: String!
+    role_name: String!
+    description: String
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+type Permission {
+    id: ID!
+    code: String!
+    description: String
 }
 
 input LoginInput {
@@ -102,4 +190,254 @@ type LoginResponse {
     token_type: String
     expires_in: Int
     user: User
+}
+
+type LogoutResponse {
+    status: Boolean!
+    message: String!
+}
+
+extend type Mutation {
+    logout: LogoutResponse!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\AdminAuthMutation@logout"
+        )
+}
+
+extend type Mutation {
+    createRole(role_name: String!, description: String): Role!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@createRole"
+        )
+
+    updateRole(id: ID!, role_name: String!, description: String): Role!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@update"
+        )
+
+    deleteRole(id: ID!): Boolean!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\RoleMutation@delete"
+        )
+}
+
+extend type Query {
+    header: Header
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@header"
+        )
+}
+
+type Header {
+    logo: String
+    menus: [Menu]
+    cta: CTA
+}
+
+type Menu {
+    id: ID!
+    label: String
+    children: [MenuChild]
+}
+
+type MenuChild {
+    id: ID!
+    label: String
+    href: String
+}
+
+type CTA {
+    label: String
+    href: String
+}
+
+input HeaderMenuInput {
+    label: String!
+    children: [HeaderMenuChildInput!]
+}
+
+input HeaderMenuChildInput {
+    label: String!
+}
+type HeaderMenuResponse {
+    id: ID
+    label: String
+    children: [HeaderMenuChildResponse]
+}
+
+type HeaderMenuChildResponse {
+    id: ID
+    label: String
+    href: String
+}
+
+type DeleteResponse {
+    message: String
+}
+
+extend type Mutation {
+    createHeaderMenu(input: HeaderMenuInput!): HeaderMenuResponse
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@createHeaderMenu"
+        )
+
+    updateHeaderMenu(id: ID!, input: HeaderMenuInput!): HeaderMenuResponse
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@updateHeaderMenu"
+        )
+
+    deleteHeaderMenu(id: ID!): DeleteResponse
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@deleteHeaderMenu"
+        )
+}
+
+extend type Mutation {
+    updateLogo(logo: Upload!): HeaderLogo!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@updateLogo"
+        )
+}
+type HeaderLogo {
+    logo: String
+}
+
+extend type Query {
+    getLogo: HeaderLogo
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getLogo"
+        )
+}
+type HeaderCountdownButton {
+    label: String
+    href: String
+}
+
+type HeaderCountdown {
+    enabled: Boolean!
+    target_date: DateTime
+    button: HeaderCountdownButton
+}
+
+type Response {
+    success: Boolean!
+    message: String!
+}
+
+extend type Header {
+    countdown: HeaderCountdown
+}
+
+input HeaderCTAInput {
+    label: String
+    href: String
+}
+input UpdateHeaderCountdownInput {
+    enabled: Boolean!
+    target_date: String
+    cta: HeaderCTAInput
+}
+
+extend type Mutation {
+    updateHeaderCountdown(input: UpdateHeaderCountdownInput!): Response!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@updateCountdown"
+        )
+}
+
+extend type Mutation {
+    updateFavicon(favicon: Upload!): HeaderFavicon!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HeaderMutation@updateFavicon"
+        )
+}
+
+type HeaderFavicon {
+    url: String
+    public_id: String
+}
+
+extend type Query {
+    getFavicon: HeaderFavicon
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getFavicon"
+        )
+}
+
+extend type Query {
+    headerCta: HeaderCTA
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getCta"
+        )
+}
+
+type PlanBenefit {
+    id: ID!
+    value: String!
+}
+
+type PlanFeature {
+    id: ID!
+    name: String!
+    group: String!
+    benefits: [PlanBenefit!]!
+}
+
+type Plan {
+    id: ID!
+    plan_name: String!
+    price: String!
+    features: [PlanFeature!]!
+}
+
+input BenefitInput {
+    id: ID
+    value: String!
+}
+
+input FeatureInput {
+    id: ID!
+    benefits: [BenefitInput!]!
+}
+
+input CreatePlanInput {
+    plan_name: String!
+    price: String!
+
+    features: [FeatureInput!]!
+}
+
+input UpdatePlanInput {
+    plan_name: String!
+    price: String!
+
+    features: [FeatureInput!]!
+}
+
+extend type Mutation {
+    createPlan(
+        input: CreatePlanInput!
+    ): Plan!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PlanMutation@create"
+        )
+
+    updatePlan(
+        id: ID!
+        input: UpdatePlanInput!
+    ): Plan!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PlanMutation@update"
+        )
+
+    deletePlan(
+        id: ID!
+    ): Boolean!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PlanMutation@delete"
+        )
 }

@@ -26,26 +26,25 @@ class AuthService
             throw new Exception('Email already exists.');
         }
 
-        $user = $this->userRepo->create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-        ]);
-
-        $role = Role::where('name', 'user')->first();
+        $role = Role::where('role_name', 'user')->first();
 
         if (!$role) {
             throw new Exception('Default role "user" not found.');
         }
 
-        $user->roles()->sync([$role->id]);
+        $user = $this->userRepo->create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'role_id' => $role->id,
+        ]);
 
-        $user->load('roles');
+        $user->load('role');
 
         return [
             'status' => true,
             'message' => 'Registration completed successfully.',
-            'user' => $user->load('roles'),
+            'user' => $user,
         ];
     }
 
@@ -64,18 +63,34 @@ class AuthService
 
         $user = JWTAuth::user();
 
-        $role = $user->roles->first()?->name;
+        $user->load([
+            'role',
+            'permissions'
+        ]);
+
+        $role = $user->role?->role_name;
 
         return [
             'status' => true,
             'message' =>
-                $role === 'admin'
-                    ? 'Admin login successful.'
-                    : 'User login successful.',
+            $role === 'admin'
+                ? 'Admin login successful.'
+                : 'User login successful.',
             'access_token' => $token,
             'token_type' => 'Bearer',
             'expires_in' => JWTAuth::factory()->getTTL(),
             'user' => $user,
         ];
+    }
+
+    public function logout(): void
+    {
+        $token = JWTAuth::getToken();
+
+        if (!$token) {
+            throw new Exception('Token not provided');
+        }
+
+        JWTAuth::invalidate($token);
     }
 }

@@ -19,9 +19,14 @@ class DatabaseSeeder extends Seeder
         $this->call([
             // UserSeeder::class,
             CollectionSeeder::class,
-            CollectionFieldSeeder::class,
-            EntrySeeder::class,
-            EntryMetaSeeder::class,
+            PlanSeeder::class,
+            CompanySeeder::class,
+            SubscriptionSeeder::class,
+        ]);
+
+        $this->call([
+            PermissionSeeder::class,
+            UserSeeder::class,
         ]);
     }
 }
