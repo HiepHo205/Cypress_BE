@@ -20,7 +20,6 @@ const selectedPackage = ref<any>(null);
 watch(
     businessGrowth,
     (value) => {
-        console.log('BUSINESS GROWTH DATA:', value);
 
         if (!value) {
             return;

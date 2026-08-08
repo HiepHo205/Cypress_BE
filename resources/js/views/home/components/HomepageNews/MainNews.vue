@@ -15,13 +15,20 @@ const showDeleteModal = ref(false);
 const selectedNews = computed(() => {
     return (
         mainNews.value.find(
-            item => String(item.id) === String(selectedId.value)
+            (item) => String(item.id) === String(selectedId.value)
         ) || null
     );
 });
 const loadMainNews = () => {
     const data = newsSection.value;
+
     if (!data) return;
+
+    sectionForm.value = {
+        label: data.label ?? '',
+        title: data.title ?? ''
+    };
+
     mainNews.value = (data.news ?? []).map((item: any) => ({
         id: item.id,
         category: item.category ?? '',
@@ -41,9 +48,7 @@ const selectNews = (item: any) => {
 };
 
 const generateNewsId = (): string => {
-    return `temp-${Date.now()}-${Math.random()
-        .toString(36)
-        .substring(2, 10)}`;
+    return `temp-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
 };
 
 const addNews = () => {
@@ -55,7 +60,7 @@ const addNews = () => {
         description: '',
         image: null,
         imageFile: null,
-        imagePreview: null,
+        imagePreview: null
     };
 
     mainNews.value.push(newNews);
@@ -102,19 +107,17 @@ const saveChanges = async () => {
         const item = selectedNews.value;
 
         const input = {
-            id: String(item.id).startsWith('temp-')
-                ? null
-                : String(item.id),
+            id: String(item.id).startsWith('temp-') ? null : String(item.id),
             category: item.category ?? '',
             date: item.date ?? '',
             title: item.title ?? '',
-            description: item.description ?? '',
+            description: item.description ?? ''
         };
 
         await saveSection(
             'news',
             {
-                news: [input],
+                news: [input]
             },
             item.imageFile ?? null
         );
@@ -129,7 +132,10 @@ const saveChanges = async () => {
 const openFilePicker = () => {
     fileInput.value?.click();
 };
-
+const sectionForm = ref({
+    label: '',
+    title: ''
+});
 const handleUpload = (event: Event) => {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
@@ -153,13 +159,59 @@ watch(
 <template>
     <section class="space-y-4">
         <div>
-            <h2 class="text-2xl font-bold text-gray-900">
-                Main News Management
-            </h2>
+            <div class="rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <div class="border-b border-gray-100 p-6">
+                    <h2 class="text-xl font-semibold text-gray-900">
+                        Main News Information
+                    </h2>
 
-            <p class="mt-2 text-sm text-gray-500">
-                Manage the main news displayed on homepage.
-            </p>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Configure the content displayed above the main news.
+                    </p>
+                </div>
+
+                <div class="space-y-5 p-6">
+                    <div>
+                        <label class="mb-2 block text-sm font-medium">
+                            Label
+                        </label>
+
+                        <input
+                            v-model="sectionForm.label"
+                            class="h-12 w-full rounded-xl border border-gray-200 px-4 focus:border-blue-600 focus:outline-none"
+                            placeholder="Enter label"
+                        />
+                    </div>
+
+                    <div>
+                        <label class="mb-2 block text-sm font-medium">
+                            Title
+                        </label>
+
+                        <input
+                            v-model="sectionForm.title"
+                            class="h-12 w-full rounded-xl border border-gray-200 px-4 focus:border-blue-600 focus:outline-none"
+                            placeholder="Enter title"
+                        />
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button
+                            type="button"
+                            @click="
+                                saveSection('news', {
+                                    label: sectionForm.label,
+                                    title: sectionForm.title
+                                })
+                            "
+                            :disabled="loading"
+                            class="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-white disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <Save :size="17" />
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div
@@ -224,10 +276,6 @@ watch(
                                 <p class="truncate font-semibold">
                                     {{ item.title || 'Untitled' }}
                                 </p>
-
-                                <p class="truncate text-xs text-gray-500">
-                                    {{ item.description }}
-                                </p>
                             </div>
                         </button>
                     </div>
@@ -238,8 +286,8 @@ watch(
                     <div v-if="selectedNews">
                         <h3 class="text-xl font-semibold">Edit Main News</h3>
 
-                        <div class="mt-6 grid grid-cols-3 gap-6">
-                            <div>
+                        <div class="mt-6 grid grid-cols-5 gap-6">
+                            <div class="col-span-2">
                                 <input
                                     ref="fileInput"
                                     type="file"
@@ -262,7 +310,7 @@ watch(
                                 </div>
                             </div>
 
-                            <div class="col-span-2 space-y-4">
+                            <div class="col-span-3 space-y-4">
                                 <input
                                     v-model="selectedNews.category"
                                     placeholder="Category"
@@ -278,13 +326,6 @@ watch(
                                 <input
                                     v-model="selectedNews.title"
                                     placeholder="Title"
-                                    class="w-full rounded-lg border px-3 py-2"
-                                />
-
-                                <textarea
-                                    v-model="selectedNews.description"
-                                    rows="5"
-                                    placeholder="Description"
                                     class="w-full rounded-lg border px-3 py-2"
                                 />
                             </div>

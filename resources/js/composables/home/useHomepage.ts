@@ -37,49 +37,35 @@ export function useHomepage() {
         section: string,
         input: any,
         image: File | null = null,
-        logo: File | null = null,
         action: 'create' | 'update' | 'delete' = 'update'
     ) => {
         loading.value = true;
-
         const message =
             action === 'create'
                 ? 'Creating new data...'
                 : action === 'delete'
                   ? 'Deleting data...'
                   : 'Updating data...';
-
         const successMessage =
             action === 'create'
                 ? 'Created successfully!'
                 : action === 'delete'
                   ? 'Deleted successfully!'
                   : 'Updated successfully!';
-
-        const toastId = toast.info(message, {
-            timeout: false
-        });
-
+        const toastId = toast.info(message, { timeout: false });
         try {
             const response = await updateSection({
                 section,
                 input: JSON.stringify(input),
-                image,
-                logo
+                image
             });
-
             await refetch();
-
             toast.dismiss(toastId);
-
             toast.success(successMessage);
-
             const data = response?.data?.updateHomepageSection;
-
             return typeof data === 'string' ? JSON.parse(data) : data;
         } catch (error) {
             toast.dismiss(toastId);
-
             toast.error(
                 action === 'create'
                     ? 'Create failed!'
@@ -87,7 +73,6 @@ export function useHomepage() {
                       ? 'Delete failed!'
                       : 'Update failed!'
             );
-
             throw error;
         } finally {
             loading.value = false;

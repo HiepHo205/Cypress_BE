@@ -850,9 +850,10 @@ type HomepageGeneralInformationItem {
 # =========================
 
 type HomepageNewsResponse {
+    label: String
+    title: String
     news: [HomepageNews]
 }
-
 type HomepageNews {
     id: ID
     category: String

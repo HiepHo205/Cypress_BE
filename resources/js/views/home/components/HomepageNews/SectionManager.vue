@@ -77,11 +77,22 @@ const editSection = (section) => {
 const addItem = () => {
     if (!selectedSection.value) return;
 
-    selectedSection.value.items.push({
-        id: `temp-${Date.now()}`,
+    const index = sections.value.findIndex(
+        section => section.id === selectedSection.value.id
+    );
 
-        title: ''
-    });
+    if (index === -1) return;
+
+    sections.value[index] = {
+        ...sections.value[index],
+        items: [
+            ...(sections.value[index].items ?? []),
+            {
+                id: `temp-${Date.now()}`,
+                title: ''
+            }
+        ]
+    };
 };
 
 const removeLocalItem = (item: any) => {
@@ -138,11 +149,11 @@ const confirmDelete = async () => {
     if (String(id).startsWith('temp-')) {
         sections.value = sections.value.filter((item) => item.id !== id);
     } else {
-        await removeItem('news', 'sections', id);
-
-        sections.value = sections.value.filter((item) => item.id !== id);
+        await removeItem('newsSections', 'sections', id); // Gọi API để xóa mục
+        loadData(); // Tải lại dữ liệu từ backend để cập nhật UI
     }
 
+    // Sau khi xóa, chọn mục đầu tiên còn lại hoặc null nếu không còn mục nào.
     selectedId.value = sections.value[0]?.id ?? null;
 
     deletingSection.value = null;
@@ -218,16 +229,16 @@ watch(
 
                     <div class="mt-5 space-y-3">
                         <button
-    v-for="section in sections"
-    :key="section.id"
-    @click="editSection(section)"
-    :class="[
-        'w-full rounded-xl border p-4 text-left transition',
-        selectedId === section.id
-            ? 'border-blue-600 bg-blue-50'
-            : 'border-gray-200'
-    ]"
->
+                            v-for="section in sections"
+                            :key="section.id"
+                            @click="editSection(section)"
+                            :class="[
+                                'w-full rounded-xl border p-4 text-left transition',
+                                selectedId === section.id
+                                    ? 'border-blue-600 bg-blue-50'
+                                    : 'border-gray-200'
+                            ]"
+                        >
                             <p class="font-semibold">
                                 {{ section.title || 'Untitled' }}
                             </p>
@@ -243,9 +254,13 @@ watch(
             <div class="xl:col-span-8">
                 <div class="rounded-3xl border bg-white p-8 shadow-sm">
                     <div v-if="selectedSection">
-                      <h3 class="text-xl font-semibold">
-    {{ mode === 'create' ? 'Create Section' : 'Edit Section' }}
-</h3>
+                        <h3 class="text-xl font-semibold">
+                            {{
+                                mode === 'create'
+                                    ? 'Create Section'
+                                    : 'Edit Section'
+                            }}
+                        </h3>
 
                         <div class="mt-5">
                             <label class="text-sm font-medium"> Title </label>

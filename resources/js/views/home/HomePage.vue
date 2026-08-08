@@ -12,7 +12,7 @@ import {
     HomepageCaseStudy,
     HomepagePricing,
     HomepageSuccessStories,
-    SectionGeneralInformation,
+    // SectionGeneralInformation,
     HomepageOffer,
     HomepageContact,
     HomepageNews
@@ -67,12 +67,12 @@ const tabs = [
         description: 'Manage success stories list.',
         component: HomepageSuccessStories
     },
-    {
-        id: 'general-information',
-        title: 'General Information',
-        description: 'Reusable section information.',
-        component: SectionGeneralInformation
-    },
+    // {
+    //     id: 'general-information',
+    //     title: 'General Information',
+    //     description: 'Reusable section information.',
+    //     component: SectionGeneralInformation
+    // },
     {
         id: 'offer',
         title: 'Launch Offer',
