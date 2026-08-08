@@ -18,6 +18,7 @@ export default function useFooterBottomBarManager() {
         copyright: '',
         legal_links: []
     });
+
     const setForm = (data) => {
         form.copyright = data?.copyright ?? '';
 
@@ -37,9 +38,7 @@ export default function useFooterBottomBarManager() {
 
         if (data) {
             setForm(data);
-
             saveBackup();
-
             hasData.value = true;
         } else {
             hasData.value = false;
@@ -48,7 +47,6 @@ export default function useFooterBottomBarManager() {
 
     const editBottomBar = () => {
         saveBackup();
-
         editing.value = true;
     };
 
@@ -99,6 +97,10 @@ export default function useFooterBottomBarManager() {
 
             console.log(error);
 
+            if (error?.message === 'Unauthenticated.') {
+                return;
+            }
+
             toast.error('Remove failed');
         }
     };
@@ -137,11 +139,16 @@ export default function useFooterBottomBarManager() {
 
             console.log(error);
 
+            if (error?.message === 'Unauthenticated.') {
+                return;
+            }
+
             toast.error(error.message || 'Update failed');
         } finally {
             saving.value = false;
         }
     };
+
     return {
         form,
         saving,

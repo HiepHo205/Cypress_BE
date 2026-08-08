@@ -12,32 +12,36 @@ export default function useFooterNavigationManager() {
     const { getNavigation, saveNavigation } = useFooterNavigation();
 
     const loadNavigation = async () => {
-        const response = await getNavigation();
-        const items = response?.navigations ?? [];
+        try {
+            const response = await getNavigation();
+            const items = response?.navigations ?? [];
 
-        const groups = {};
+            const groups = {};
 
-        items.forEach((item) => {
-            const groupName = item.group || 'Company';
+            items.forEach((item) => {
+                const groupName = item.group || 'Company';
 
-            if (!groups[groupName]) {
-                groups[groupName] = {
+                if (!groups[groupName]) {
+                    groups[groupName] = {
+                        id: item.id,
+                        name: groupName,
+                        items: []
+                    };
+                }
+
+                groups[groupName].items.push({
                     id: item.id,
-                    name: groupName,
-                    items: []
-                };
-            }
-
-            groups[groupName].items.push({
-                id: item.id,
-                title: item.title ?? '',
-                link: item.link ?? '',
-                type: item.type ?? 'link'
+                    title: item.title ?? '',
+                    link: item.link ?? '',
+                    type: item.type ?? 'link'
+                });
             });
-        });
 
-        navigationGroups.splice(0);
-        navigationGroups.push(...Object.values(groups));
+            navigationGroups.splice(0);
+            navigationGroups.push(...Object.values(groups));
+        } finally {
+            pageLoading.value = false;
+        }
     };
 
     const addGroup = () => {
@@ -88,7 +92,7 @@ export default function useFooterNavigationManager() {
     };
 
     const removeGroup = async (group = selectedGroup.value) => {
-        const groups = navigationGroups.filter((g) => g.id !== group.id);
+        const groups = navigationGroups.filter((item) => item.id !== group.id);
 
         const payload = groups.flatMap((group) =>
             group.items.map((item) => ({

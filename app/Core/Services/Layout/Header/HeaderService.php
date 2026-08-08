@@ -112,4 +112,8 @@ class HeaderService
     {
         return $this->repository->updateCountdown($input);
     }
+    public function deleteSubMenu($id): bool
+    {
+        return $this->repository->deleteSubMenu($id);
+    }
 }

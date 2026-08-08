@@ -4,8 +4,19 @@ import { useToast } from 'vue-toastification';
 import { UPDATE_LOGO } from '@/graphql/mutations/logo';
 import { GET_LOGO } from '@/graphql/queries/logo';
 
+const logo = ref(null);
+
+const isUnauthenticated = (error) => {
+    const errors =
+        error?.graphQLErrors ||
+        error?.errors ||
+        error?.networkError?.result?.errors ||
+        [];
+
+    return errors.some((e) => e.message === 'Unauthenticated.');
+};
+
 export default function useHeaderLogo() {
-    const logo = ref(null);
     const loading = ref(false);
     const toast = useToast();
     const { resolveClient } = useApolloClient();
@@ -23,8 +34,15 @@ export default function useHeaderLogo() {
 
             return logo.value;
         } catch (error) {
-            console.error(error);
-            return null;
+            console.error('Get logo error:', error);
+
+            if (isUnauthenticated(error)) {
+                return logo.value;
+            }
+
+            toast.error('Failed to load logo');
+
+            return logo.value;
         } finally {
             loading.value = false;
         }
@@ -38,14 +56,14 @@ export default function useHeaderLogo() {
         loading.value = true;
 
         try {
-            const result = await resolveClient().mutate({
+            const response = await resolveClient().mutate({
                 mutation: UPDATE_LOGO,
                 variables: {
                     logo: file
                 }
             });
 
-            logo.value = result.data.updateLogo.logo;
+            logo.value = response.data.updateLogo.logo;
 
             toast.update(toastId, {
                 content: 'Logo updated successfully',
@@ -57,7 +75,16 @@ export default function useHeaderLogo() {
 
             return logo.value;
         } catch (error) {
-            console.error(error);
+            console.error('Update logo error:', error);
+
+            const isUnauthenticated = error?.graphQLErrors?.some(
+                (err) => err.message === 'Unauthenticated.'
+            );
+
+            if (isUnauthenticated) {
+                toast.dismiss(toastId);
+                return null;
+            }
 
             toast.update(toastId, {
                 content: 'Failed to update logo',
@@ -72,7 +99,6 @@ export default function useHeaderLogo() {
             loading.value = false;
         }
     };
-
     return {
         logo,
         loading,

@@ -96,4 +96,14 @@ class HeaderMutation
             $args['favicon']
         );
     }
+    public function deleteHeaderSubMenu($_, array $args)
+    {
+        $service = app(HeaderService::class);
+
+        $service->deleteSubMenu($args['id']);
+
+        return [
+            'message' => 'Sub menu deleted successfully'
+        ];
+    }
 }

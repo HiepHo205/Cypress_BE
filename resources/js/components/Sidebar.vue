@@ -20,11 +20,19 @@ const structureRoutes = [
     "/admin/header",
     "/admin/footer"
 ];
+const openPage = ref(false);
+const pageRoutes = [
+    "/admin/homepage"
+];
 watch(
     () => route.path,
     (path) => {
-        openStructure.value = structureRoutes.some(
-            (routeItem) => path.startsWith(routeItem)
+        openStructure.value = structureRoutes.some(routeItem =>
+            path.startsWith(routeItem)
+        );
+
+        openPage.value = pageRoutes.some(routeItem =>
+            path.startsWith(routeItem)
         );
     },
     {
@@ -102,6 +110,14 @@ async function confirmLogout() {
                             </li>
                         </ul>
                     </transition>
+                </li>
+                <li>
+                    <router-link to="/admin/homepage"
+                        class="flex items-center gap-3 px-4 py-3 rounded-lg transition hover:bg-slate-800"
+                        exact-active-class="bg-slate-800">
+                        <FolderTree :size="18" />
+                        <span>Page</span>
+                    </router-link>
                 </li>
             </ul>
         </nav>

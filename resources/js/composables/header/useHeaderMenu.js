@@ -12,6 +12,11 @@ import {
 const menus = ref([]);
 const loaded = ref(false);
 
+const isUnauthenticated = (error) => {
+    const errors = error?.graphQLErrors || [];
+    return errors.some((e) => e.message === 'Unauthenticated.');
+};
+
 export default function useHeaderMenu() {
     const { resolveClient } = useApolloClient();
     const toast = useToast();
@@ -22,7 +27,7 @@ export default function useHeaderMenu() {
 
     const getHeaderMenu = async () => {
         if (loaded.value) {
-            return;
+            return menus.value;
         }
 
         try {
@@ -33,9 +38,16 @@ export default function useHeaderMenu() {
 
             menus.value = [...response.data.header.menus];
             loaded.value = true;
+
+            return menus.value;
         } catch (error) {
-            console.error(error);
-            toast.error('Failed to load header menu');
+            console.error('Get header menu error:', error);
+
+            if (!isUnauthenticated(error)) {
+                toast.error('Failed to load header menu');
+            }
+
+            return menus.value;
         }
     };
 
@@ -69,6 +81,10 @@ export default function useHeaderMenu() {
         } catch (error) {
             console.error(error);
 
+            if (isUnauthenticated(error)) {
+                return false;
+            }
+
             toast.update(toastId, {
                 content: 'Failed to create menu',
                 options: {
@@ -96,9 +112,7 @@ export default function useHeaderMenu() {
             await getHeaderMenu();
 
             toast.update(toastId, {
-                content: message.includes('Deleting')
-                    ? 'Submenu deleted successfully'
-                    : 'Menu updated successfully',
+                content: 'Menu updated successfully',
                 options: {
                     type: 'success',
                     timeout: 3000
@@ -107,7 +121,16 @@ export default function useHeaderMenu() {
 
             return true;
         } catch (error) {
-            console.error(error);
+            console.error('Update menu error:', error);
+
+            const isUnauthenticated = error?.graphQLErrors?.some(
+                (err) => err.message === 'Unauthenticated.'
+            );
+
+            if (isUnauthenticated) {
+                toast.dismiss(toastId);
+                return false;
+            }
 
             toast.update(toastId, {
                 content: message.includes('Deleting')
@@ -160,7 +183,16 @@ export default function useHeaderMenu() {
 
             return true;
         } catch (error) {
-            console.error(error);
+            console.error('Delete submenu error:', error);
+
+            const isUnauthenticated = error?.graphQLErrors?.some(
+                (err) => err.message === 'Unauthenticated.'
+            );
+
+            if (isUnauthenticated) {
+                toast.dismiss(toastId);
+                return false;
+            }
 
             toast.update(toastId, {
                 content: 'Failed to delete submenu',
@@ -196,7 +228,16 @@ export default function useHeaderMenu() {
 
             return true;
         } catch (error) {
-            console.error(error);
+            console.error('Delete menu error:', error);
+
+            const isUnauthenticated = error?.graphQLErrors?.some(
+                (err) => err.message === 'Unauthenticated.'
+            );
+
+            if (isUnauthenticated) {
+                toast.dismiss(toastId);
+                return false;
+            }
 
             toast.update(toastId, {
                 content: 'Failed to delete menu',

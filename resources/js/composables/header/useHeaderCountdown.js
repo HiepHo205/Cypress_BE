@@ -9,9 +9,20 @@ import { UPDATE_HEADER_COUNTDOWN } from '@/graphql/mutations/header';
 const countdown = ref(null);
 const loaded = ref(false);
 
+const isUnauthenticated = (error) => {
+    const errors =
+        error?.graphQLErrors ||
+        error?.errors ||
+        error?.networkError?.result?.errors ||
+        [];
+
+    return errors.some((e) => e.message === 'Unauthenticated.');
+};
+
 export default function useHeaderCountdown() {
     const { resolveClient } = useApolloClient();
     const toast = useToast();
+
     const getCountdown = async () => {
         if (loaded.value) {
             return countdown.value;
@@ -30,9 +41,13 @@ export default function useHeaderCountdown() {
         } catch (error) {
             console.error('Get countdown error:', error);
 
+            if (isUnauthenticated(error)) {
+                return countdown.value;
+            }
+
             toast.error('Failed to load countdown');
 
-            return null;
+            return countdown.value;
         }
     };
 
@@ -47,11 +62,14 @@ export default function useHeaderCountdown() {
         } catch (error) {
             console.error('Get CTA error:', error);
 
-            toast.error('Failed to load CTA');
+            if (!isUnauthenticated(error)) {
+                return countdown.value;
+            }
 
             return null;
         }
     };
+
     const updateCountdown = async (data) => {
         const toastId = toast.info('Updating countdown...', {
             timeout: false
@@ -60,7 +78,6 @@ export default function useHeaderCountdown() {
         try {
             const response = await resolveClient().mutate({
                 mutation: UPDATE_HEADER_COUNTDOWN,
-
                 variables: {
                     input: data
                 }
@@ -72,7 +89,6 @@ export default function useHeaderCountdown() {
 
             toast.update(toastId, {
                 content: 'Countdown updated successfully',
-
                 options: {
                     type: 'success',
                     timeout: 3000
@@ -83,9 +99,17 @@ export default function useHeaderCountdown() {
         } catch (error) {
             console.error('Update countdown error:', error);
 
+            const isUnauthenticated = error?.graphQLErrors?.some(
+                (err) => err.message === 'Unauthenticated.'
+            );
+
+            if (isUnauthenticated) {
+                toast.dismiss(toastId);
+                return null;
+            }
+
             toast.update(toastId, {
                 content: 'Failed to update countdown',
-
                 options: {
                     type: 'error',
                     timeout: 3000
@@ -98,11 +122,8 @@ export default function useHeaderCountdown() {
 
     return {
         countdown,
-
         getCountdown,
-
         getCta,
-
         updateCountdown
     };
 }
