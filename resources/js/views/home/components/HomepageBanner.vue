@@ -244,7 +244,6 @@ const handleCancel = () => {
             </div>
 
             <div class="grid gap-6 lg:grid-cols-2">
-                <!-- Primary Button -->
                 <div class="rounded-xl border border-gray-200 bg-gray-50 p-5">
                     <div class="mb-5 flex items-center justify-between">
                         <div>
@@ -297,7 +296,6 @@ const handleCancel = () => {
                     </div>
                 </div>
 
-                <!-- Secondary Button -->
                 <div class="rounded-xl border border-gray-200 bg-gray-50 p-5">
                     <div class="mb-5 flex items-center justify-between">
                         <div>

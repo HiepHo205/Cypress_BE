@@ -24,6 +24,7 @@ const caseStudySection = getSection('caseStudies');
 
 const normalizeCaseStudy = (item) => ({
     id: item.id ?? `temp-${Date.now()}`,
+    label: item.label ?? '', 
     title: item.title ?? '',
     summary: item.summary ?? '',
     planTitle: item.planTitle ?? '',
@@ -32,10 +33,10 @@ const normalizeCaseStudy = (item) => ({
     learnMoreUrl: item.learnMoreUrl ?? '',
     active: item.active ?? true,
     logo: item.logo ?? null,
-    logoPreview: item.logo?.url ?? null, // Khởi tạo với URL logo hiện có
+    logoPreview: item.logo?.url ?? null, 
     logoFile: null,
     image: item.image ?? null,
-    imagePreview: item.image?.url ?? null, // Khởi tạo với URL ảnh hiện có
+    imagePreview: item.image?.url ?? null,
     imageFile: null
 });
 

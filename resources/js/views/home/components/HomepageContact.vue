@@ -4,7 +4,7 @@ import { Save, Upload, Trash2, Plus, X } from 'lucide-vue-next';
 
 import { useHomepage } from '../../../composables/home/useHomepage';
 
-const { loading, getSection, saveSection,removeItem } = useHomepage();
+const { loading, getSection, saveSection, removeItem } = useHomepage();
 
 const contact = ref<any>({
     title: '',
@@ -65,11 +65,11 @@ const loadData = () => {
         termsText: data.termsText ?? '',
         termsLabel: data.termsLabel ?? '',
         termsUrl: data.termsUrl ?? '',
-    buttonText: data.buttonText ?? '',
-    buttonUrl: data.buttonUrl ?? '',
+        buttonText: data.buttonText ?? '',
+        buttonUrl: data.buttonUrl ?? '',
 
-    linkButtonText: data.linkButtonText ?? '',
-    linkButtonUrl: data.linkButtonUrl ?? '',
+        linkButtonText: data.linkButtonText ?? '',
+        linkButtonUrl: data.linkButtonUrl ?? '',
         image: data.image ?? null,
 
         labels: (data.labels ?? []).map((item: any) => ({
@@ -120,67 +120,34 @@ const addLabel = () => {
 };
 
 const removeLabel = async (id: any) => {
-    const label = contact.value.labels.find(
-        (item: any) => item.id === id
-    );
+    const label = contact.value.labels.find((item: any) => item.id === id);
 
     if (!label) return;
-
-
-    // Label mới chưa lưu database
     if (String(id).startsWith('temp-')) {
+        contact.value.labels = contact.value.labels.filter(
+            (item: any) => item.id !== id
+        );
 
-        contact.value.labels =
-            contact.value.labels.filter(
-                (item: any) => item.id !== id
-            );
-
-        selectedLabelId.value =
-            contact.value.labels[0]?.id ?? null;
+        selectedLabelId.value = contact.value.labels[0]?.id ?? null;
 
         return;
     }
-
-
     try {
-
-        await removeItem(
-            'contact',
-            'labels',
-            String(id)
+        await removeItem('contact', 'labels', String(id));
+        contact.value.labels = contact.value.labels.filter(
+            (item: any) => item.id !== id
         );
-
-
-        // cập nhật UI sau khi xóa
-        contact.value.labels =
-            contact.value.labels.filter(
-                (item: any) => item.id !== id
-            );
-
-
-        selectedLabelId.value =
-            contact.value.labels[0]?.id ?? null;
-
-
+        selectedLabelId.value = contact.value.labels[0]?.id ?? null;
     } catch (error) {
-
-        console.error(
-            'Delete label error:',
-            error
-        );
-
+        console.error('Delete label error:', error);
     }
 };
 
 const uploadImage = (event: Event) => {
     const target = event.target as HTMLInputElement;
-
     const file = target.files?.[0];
-
     if (!file) return;
-
     contact.value.image = file;
-
     previewImage.value = URL.createObjectURL(file);
 };
 
@@ -194,16 +161,10 @@ const save = async () => {
             termsText: contact.value.termsText,
             termsLabel: contact.value.termsLabel,
             termsUrl: contact.value.termsUrl,
-
-
-            // ADD HERE
             buttonText: contact.value.buttonText,
             buttonUrl: contact.value.buttonUrl,
-
             labels: contact.value.labels.map((item: any) => ({
-                id: String(item.id).startsWith('temp')
-                    ? null
-                    : item.id,
+                id: String(item.id).startsWith('temp') ? null : item.id,
 
                 title: item.title,
                 placeholder: item.placeholder,
@@ -217,10 +178,7 @@ const save = async () => {
             }))
         },
 
-
-        contact.value.image instanceof File
-            ? contact.value.image
-            : null
+        contact.value.image instanceof File ? contact.value.image : null
     );
 };
 const addOption = () => {
@@ -247,7 +205,6 @@ const removeOption = (index: number) => {
 </script>
 <template>
     <section class="space-y-6">
-        <!-- Header -->
         <div>
             <h2 class="text-2xl font-bold text-gray-900">Contact Management</h2>
 
@@ -255,8 +212,6 @@ const removeOption = (index: number) => {
                 Manage contact information displayed on homepage.
             </p>
         </div>
-
-        <!-- Contact Information -->
         <div class="rounded-xl border border-gray-200 bg-white p-6">
             <h3 class="mb-5 text-lg font-semibold">Contact Information</h3>
 
@@ -321,30 +276,29 @@ const removeOption = (index: number) => {
                         class="w-full rounded-lg border border-gray-200 px-3 py-2 outline-none focus:border-blue-600"
                     />
                 </div>
-<div>
-    <label class="mb-2 block text-sm font-medium">
-        Button Text
-    </label>
+                <div>
+                    <label class="mb-2 block text-sm font-medium">
+                        Button Text
+                    </label>
 
-    <input
-        v-model="contact.buttonText"
-        placeholder="Get Started"
-        class="w-full rounded-lg border border-gray-200 px-3 py-2 outline-none focus:border-blue-600"
-    />
-</div>
+                    <input
+                        v-model="contact.buttonText"
+                        placeholder="Get Started"
+                        class="w-full rounded-lg border border-gray-200 px-3 py-2 outline-none focus:border-blue-600"
+                    />
+                </div>
 
+                <div>
+                    <label class="mb-2 block text-sm font-medium">
+                        Button URL
+                    </label>
 
-<div>
-    <label class="mb-2 block text-sm font-medium">
-        Button URL
-    </label>
-
-    <input
-        v-model="contact.buttonUrl"
-        placeholder="/contact"
-        class="w-full rounded-lg border border-gray-200 px-3 py-2 outline-none focus:border-blue-600"
-    />
-</div>
+                    <input
+                        v-model="contact.buttonUrl"
+                        placeholder="/contact"
+                        class="w-full rounded-lg border border-gray-200 px-3 py-2 outline-none focus:border-blue-600"
+                    />
+                </div>
             </div>
         </div>
         <div class="grid grid-cols-12 gap-6">
@@ -384,8 +338,6 @@ const removeOption = (index: number) => {
                         />
                     </label>
                 </div>
-
-                <!-- Labels -->
                 <div>
                     <div class="mb-4 flex items-center justify-between">
                         <div>
@@ -488,8 +440,6 @@ const removeOption = (index: number) => {
                                 <option value="select">Select</option>
                             </select>
                         </div>
-
-                        <!-- Select Options -->
                         <div
                             v-if="selectedLabel.type === 'select'"
                             class="space-y-3"

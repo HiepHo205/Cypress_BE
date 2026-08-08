@@ -27,21 +27,13 @@ class HomepageService
             $defaults,
             $this->homepageRepository->getSection($section)
         );
-
-
-        /**
-         * Success Stories
-         */
         if (
             $section === 'success_stories' &&
             isset($data['successStories'])
         ) {
-
             $data['successStories'] = collect($data['successStories'])
                 ->filter(fn($item) => is_array($item))
                 ->map(function ($item) {
-
-
                     if (
                         isset($item['categories']) &&
                         is_string($item['categories'])
@@ -52,13 +44,10 @@ class HomepageService
                             explode(',', $item['categories'])
                         );
                     }
-
-
                     if (empty($item['id'])) {
 
                         $item['id'] = (string) Str::uuid();
                     }
-
 
                     return $item;
                 })
@@ -66,11 +55,6 @@ class HomepageService
                 ->toArray();
         }
 
-
-
-        /**
-         * News Sections
-         */
         if (
             $section === 'news_sections' &&
             isset($data['sections'])
@@ -78,21 +62,15 @@ class HomepageService
 
             $changed = false;
 
-
             $data['sections'] = collect($data['sections'])
                 ->filter(fn($item) => is_array($item))
                 ->map(function ($item) use (&$changed) {
-
-
                     if (empty($item['id'])) {
 
                         $item['id'] = (string) Str::uuid();
 
                         $changed = true;
                     }
-
-
-
                     if (
                         isset($item['items']) &&
                         is_array($item['items'])
@@ -111,22 +89,15 @@ class HomepageService
 
                                     $changed = true;
                                 }
-
-
                                 return $child;
                             })
                             ->values()
                             ->toArray();
                     }
-
-
                     return $item;
                 })
                 ->values()
                 ->toArray();
-
-
-
             if ($changed) {
 
                 $this->homepageRepository
@@ -139,29 +110,16 @@ class HomepageService
                     );
             }
         }
-
-
-
-
-        /**
-         * General Information
-         * FIX lỗi Cannot return null for non-nullable field id
-         */
         if (
             $section === 'general_information' &&
             isset($data['generalInformations'])
         ) {
-
-
             $changed = false;
-
 
             $data['generalInformations'] =
                 collect($data['generalInformations'])
                 ->filter(fn($item) => is_array($item))
                 ->map(function ($item) use (&$changed) {
-
-
 
                     if (empty($item['id'])) {
 
@@ -934,199 +892,84 @@ class HomepageService
     //     return $input;
     // }
 
-   public function updateItem(
-    string $section,
-    string $field,
-    array $input,
-    ?array $uploadFields = null,
-    ?string $folder = null,
-    ?UploadedFile $image = null,
-    ?UploadedFile $logo = null
-): array {
+    public function updateItem(
+        string $section,
+        string $field,
+        array $input,
+        ?array $uploadFields = null,
+        ?string $folder = null,
+        ?UploadedFile $image = null,
+        ?UploadedFile $logo = null
+    ): array {
 
 
-    /**
-     * Frontend section key -> Database section key
-     */
-    $sectionMap = [
-        'generalInformation' => 'general_information',
-        'successStories' => 'success_stories',
-        'caseStudies' => 'case_studies',
-        'businessGrowth' => 'business_growth',
-        'whyChooseCypress' => 'why_choose_cypress',
-        'sideNews' => 'side_news',
-        'newsSections' => 'news_sections',
-        'news' => 'news',
-        'contact' => 'contact',
-        'launchOffer' => 'launch_offer',
-        'banner' => 'banner',
-        'introduction' => 'introduction',
-        'pricing' => 'pricing',
-    ];
+        /**
+         * Frontend section key -> Database section key
+         */
+        $sectionMap = [
+            'generalInformation' => 'general_information',
+            'successStories' => 'success_stories',
+            'caseStudies' => 'case_studies',
+            'businessGrowth' => 'business_growth',
+            'whyChooseCypress' => 'why_choose_cypress',
+            'sideNews' => 'side_news',
+            'newsSections' => 'news_sections',
+            'news' => 'news',
+            'contact' => 'contact',
+            'launchOffer' => 'launch_offer',
+            'banner' => 'banner',
+            'introduction' => 'introduction',
+            'pricing' => 'pricing',
+        ];
 
 
-    if (isset($sectionMap[$section])) {
-        $section = $sectionMap[$section];
-    }
-
-
-
-    /**
-     * Get old section data
-     */
-    $data = $this->getSection(
-        $section,
-        [
-            $field => []
-        ]
-    );
-
-
-    $items = $data[$field] ?? [];
-
-
-    if (!is_array($items)) {
-        $items = [];
-    }
-
-
-
-    /**
-     * Upload multiple fields
-     *
-     * Example:
-     * [
-     *   'icon' => UploadedFile,
-     *   'avatar' => UploadedFile
-     * ]
-     */
-    if ($uploadFields) {
-
-        foreach ($uploadFields as $key => $file) {
-
-            if ($file instanceof UploadedFile) {
-
-                $input[$key] =
-                    $this->uploadImage(
-                        $file,
-                        $folder ?? "homepage/$section"
-                    );
-            }
+        if (isset($sectionMap[$section])) {
+            $section = $sectionMap[$section];
         }
-    }
 
 
 
-
-    /**
-     * Upload image
-     */
-    if ($image instanceof UploadedFile) {
-
-        $input['image'] =
-            $this->uploadImage(
-                $image,
-                $folder ?? "homepage/$section"
-            );
-    }
+        /**
+         * Get old section data
+         */
+        $data = $this->getSection(
+            $section,
+            [
+                $field => []
+            ]
+        );
 
 
+        $items = $data[$field] ?? [];
 
 
-    /**
-     * Upload logo
-     */
-    if ($logo instanceof UploadedFile) {
-
-        $input['logo'] =
-            $this->uploadImage(
-                $logo,
-                $folder ?? "homepage/$section"
-            );
-    }
+        if (!is_array($items)) {
+            $items = [];
+        }
 
 
 
+        /**
+         * Upload multiple fields
+         *
+         * Example:
+         * [
+         *   'icon' => UploadedFile,
+         *   'avatar' => UploadedFile
+         * ]
+         */
+        if ($uploadFields) {
 
-    /**
-     * CREATE ITEM
-     */
-    if (empty($input['id'])) {
+            foreach ($uploadFields as $key => $file) {
 
+                if ($file instanceof UploadedFile) {
 
-        $input['id'] =
-            (string) Str::uuid();
-
-
-        $items[] = $input;
-
-    }
-
-
-
-
-    /**
-     * UPDATE ITEM
-     */
-    else {
-
-
-        $updated = false;
-
-
-        foreach ($items as $index => $item) {
-
-
-
-            if (
-                isset($item['id']) &&
-                (string)$item['id'] === (string)$input['id']
-            ) {
-
-
-
-                /**
-                 * Keep old images
-                 */
-                foreach (
-                    [
-                        'image',
-                        'logo',
-                        'avatar',
-                        'icon'
-                    ] as $fileField
-                ) {
-
-
-
-                    if (
-                        !isset($input[$fileField]) &&
-                        isset($item[$fileField])
-                    ) {
-
-
-                        $input[$fileField] =
-                            $item[$fileField];
-                    }
+                    $input[$key] =
+                        $this->uploadImage(
+                            $file,
+                            $folder ?? "homepage/$section"
+                        );
                 }
-
-
-
-
-                /**
-                 * Merge old data + new data
-                 */
-                $items[$index] =
-                    array_merge(
-                        $item,
-                        $input
-                    );
-
-
-                $updated = true;
-
-
-                break;
             }
         }
 
@@ -1134,38 +977,151 @@ class HomepageService
 
 
         /**
-         * ID không tồn tại
-         * => create new item
+         * Upload image
          */
-        if (!$updated) {
+        if ($image instanceof UploadedFile) {
+
+            $input['image'] =
+                $this->uploadImage(
+                    $image,
+                    $folder ?? "homepage/$section"
+                );
+        }
+
+
+
+
+        /**
+         * Upload logo
+         */
+        if ($logo instanceof UploadedFile) {
+
+            $input['logo'] =
+                $this->uploadImage(
+                    $logo,
+                    $folder ?? "homepage/$section"
+                );
+        }
+
+
+
+
+        /**
+         * CREATE ITEM
+         */
+        if (empty($input['id'])) {
+
+
+            $input['id'] =
+                (string) Str::uuid();
 
 
             $items[] = $input;
-
         }
+
+
+
+
+        /**
+         * UPDATE ITEM
+         */
+        else {
+
+
+            $updated = false;
+
+
+            foreach ($items as $index => $item) {
+
+
+
+                if (
+                    isset($item['id']) &&
+                    (string)$item['id'] === (string)$input['id']
+                ) {
+
+
+
+                    /**
+                     * Keep old images
+                     */
+                    foreach (
+                        [
+                            'image',
+                            'logo',
+                            'avatar',
+                            'icon'
+                        ] as $fileField
+                    ) {
+
+
+
+                        if (
+                            !isset($input[$fileField]) &&
+                            isset($item[$fileField])
+                        ) {
+
+
+                            $input[$fileField] =
+                                $item[$fileField];
+                        }
+                    }
+
+
+
+
+                    /**
+                     * Merge old data + new data
+                     */
+                    $items[$index] =
+                        array_merge(
+                            $item,
+                            $input
+                        );
+
+
+                    $updated = true;
+
+
+                    break;
+                }
+            }
+
+
+
+
+            /**
+             * ID không tồn tại
+             * => create new item
+             */
+            if (!$updated) {
+
+
+                $items[] = $input;
+            }
+        }
+
+
+
+
+        /**
+         * Save section
+         */
+        $data[$field] =
+            array_values($items);
+
+
+
+        $this->homepageRepository
+            ->updateSection(
+                $section,
+                $data
+            );
+
+
+
+        return $input;
     }
-
-
-
-
-    /**
-     * Save section
-     */
-    $data[$field] =
-        array_values($items);
-
-
-
-    $this->homepageRepository
-        ->updateSection(
-            $section,
-            $data
-        );
-
-
-
-    return $input;
-}
     public function deleteItem(
         string $section,
         string $field,
