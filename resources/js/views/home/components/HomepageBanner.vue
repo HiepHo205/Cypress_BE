@@ -6,6 +6,11 @@ import { useHomepage } from '../../../composables/home/useHomepage';
 
 const toast = useToast();
 
+const emit = defineEmits<{
+    (e: 'loading', value: boolean): void;
+    (e: 'auth-error'): void;
+}>();
+
 const image = ref<File | null>(null);
 const imagePreview = ref<string | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -23,10 +28,25 @@ const { saveSection, getSection } = useHomepage();
 
 const banner = getSection('banner');
 
+const initialized = ref(false);
+
+const isAuthError = (error: any) => {
+    const message = error?.message?.toLowerCase?.() ?? '';
+
+    return (
+        message.includes('unauthenticated') ||
+        message.includes('unauthorized') ||
+        message.includes('jwt') ||
+        message.includes('token')
+    );
+};
+
 watch(
     banner,
     (data) => {
-        if (!data) return;
+        if (!data) {
+            return;
+        }
 
         title.value = data.title ?? '';
 
@@ -47,6 +67,11 @@ watch(
         if (data.image?.url) {
             imagePreview.value = data.image.url;
         }
+
+        if (!initialized.value) {
+            initialized.value = true;
+            emit('loading', false);
+        }
     },
     {
         immediate: true,
@@ -60,20 +85,31 @@ const openFilePicker = () => {
 
 const handleFileChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
-
     const file = target.files?.[0];
 
-    if (!file) return;
+    if (!file) {
+        return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+        toast.error('Please select an image file.');
+        return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+        toast.error('Image size must be less than 2MB.');
+        return;
+    }
 
     image.value = file;
-
     imagePreview.value = URL.createObjectURL(file);
 };
 
 const handleSave = async () => {
-    try {
+    emit('loading', true);
 
-        await saveSection(
+    try {
+        const result = await saveSection(
             'banner',
             {
                 title: title.value,
@@ -86,8 +122,25 @@ const handleSave = async () => {
             image.value
         );
 
-    } catch (error) {
+        if (!result) {
+            return;
+        }
+
+        image.value = null;
+
+        if (fileInput.value) {
+            fileInput.value.value = '';
+        }
+
+        toast.success('Banner updated successfully.');
+    } catch (error: any) {
         console.error(error);
+
+        if (isAuthError(error)) {
+            emit('auth-error');
+        }
+    } finally {
+        emit('loading', false);
     }
 };
 
@@ -97,11 +150,15 @@ const handleCancel = () => {
     if (fileInput.value) {
         fileInput.value.value = '';
     }
+
+    if (banner.value?.image?.url) {
+        imagePreview.value = banner.value.image.url;
+    }
 };
 </script>
 
 <template>
-    <div class="rounded-2xl bg-white p-8 shadow-sm">
+    <div class="relative rounded-2xl">
         <div class="mb-8">
             <h2 class="text-3xl font-semibold text-gray-900">
                 Homepage Banner
@@ -135,6 +192,7 @@ const handleCancel = () => {
                     <img
                         v-if="imagePreview"
                         :src="imagePreview"
+                        alt="Banner"
                         class="max-h-full max-w-full rounded-lg object-contain"
                     />
 
@@ -239,6 +297,7 @@ const handleCancel = () => {
                     </div>
                 </div>
 
+                <!-- Secondary Button -->
                 <div class="rounded-xl border border-gray-200 bg-gray-50 p-5">
                     <div class="mb-5 flex items-center justify-between">
                         <div>

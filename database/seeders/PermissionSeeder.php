@@ -47,6 +47,18 @@ class PermissionSeeder extends Seeder
                 'code' => 'role.delete',
                 'description' => 'Delete roles',
             ],
+            [
+                'code' => 'plan.create',
+                'description' => 'Create plans',
+            ],
+            [
+                'code' => 'plan.update',
+                'description' => 'Update plans',
+            ],
+            [
+                'code' => 'plan.delete',
+                'description' => 'Delete plans',
+            ],
         ]);
     }
 }

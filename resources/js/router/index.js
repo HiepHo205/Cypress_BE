@@ -12,6 +12,8 @@ import Header from '@/views/cms/header/Header.vue';
 import Footer from '@/views/cms/footer/Footer.vue';
 
 import { useToast } from 'vue-toastification';
+import PlanList from '@/views/plans/PlanList.vue';
+import PlanDetail from '@/views/plans/PlanDetail.vue';
 import HomePage from '../views/home/HomePage.vue';
 
 const routes = [
@@ -70,6 +72,20 @@ const routes = [
                 name: 'cms.header',
                 component: Header
             },
+            {
+                path: 'plans',
+                name: 'plans.list',
+                component: () =>
+                    import('@/views/plans/PlanList.vue')
+            },
+            {
+                path: 'plans/:id',
+                name: 'plans.detail',
+                component: () =>
+                    import('@/views/plans/PlanDetail.vue'),
+                props: true
+            },
+            // Footer CMS
             {
                 path: 'footer',
                 name: 'cms.footer',

@@ -1,7 +1,6 @@
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-
 import LoadingOverlay from "@/components/common/LoadingOverlay.vue";
 
 
@@ -22,7 +21,7 @@ import {
 const route = useRoute();
 const router = useRouter();
 
-const loading = ref(false);
+const loading = ref(true);
 const isAuthError = ref(false);
 
 const tabs = [
@@ -105,8 +104,8 @@ const currentComponent = computed(() => {
     );
 });
 
-const handleLoading = (value) => {
-    loading.value = Boolean(value);
+const handleLoading = (value: boolean) => {
+    loading.value = value;
 };
 
 const handleAuthError = () => {
@@ -114,25 +113,27 @@ const handleAuthError = () => {
     isAuthError.value = true;
 };
 
-const changeTab = async (id) => {
+const changeTab = async (id: string) => {
     if (id === activeTab.value) {
         return;
     }
 
-    loading.value = false;
     isAuthError.value = false;
 
-    await router.push({
-        query: {
-            ...route.query,
-            tab: id
-        }
-    });
+    try {
+        await router.push({
+            query: {
+                ...route.query,
+                tab: id
+            }
+        });
+    } catch (error) {
+        console.error(error);
+    }
 };
-
-onMounted(() => {
+onMounted(async () => {
     if (!route.query.tab) {
-        router.replace({
+        await router.replace({
             query: {
                 ...route.query,
                 tab: 'banner'
@@ -144,6 +145,7 @@ onMounted(() => {
 
 <template>
     <div class="min-h-screen bg-gray-50 p-6">
+        <!-- Header -->
         <div class="mb-6 rounded-2xl bg-white p-6 shadow-sm">
             <h1 class="text-2xl font-bold text-gray-900">
                 Homepage Management
@@ -155,6 +157,7 @@ onMounted(() => {
         </div>
 
         <div class="grid grid-cols-12 gap-6">
+            <!-- Tabs -->
             <div class="col-span-3">
                 <div class="space-y-3 rounded-2xl bg-white p-4 shadow-sm">
                     <button
@@ -195,6 +198,7 @@ onMounted(() => {
                 </div>
             </div>
 
+            <!-- Content -->
             <div
                 class="relative col-span-9 rounded-2xl bg-white p-6 shadow-sm"
             >
@@ -204,6 +208,7 @@ onMounted(() => {
                     message="Loading..."
                 />
 
+                <!-- Auth error -->
                 <div
                     v-if="isAuthError"
                     class="flex h-64 items-center justify-center"
@@ -213,6 +218,7 @@ onMounted(() => {
                     </p>
                 </div>
 
+                <!-- Current tab -->
                 <KeepAlive v-else>
                     <component
                         :is="currentComponent"

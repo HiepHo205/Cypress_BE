@@ -78,6 +78,17 @@ async function confirmLogout() {
                     </router-link>
                 </li>
                 <li>
+                    <router-link
+                        to="/admin/plans"
+                        class="flex items-center gap-3 px-4 py-3 rounded-lg transition hover:bg-slate-800"
+                        exact-active-class="bg-slate-800"
+                    >
+                        <CreditCard :size="18" />
+                        <span>Subscriptions</span>
+                    </router-link>
+                </li>
+
+                <li>
                     <button @click="openStructure = !openStructure"
                         class="w-full flex items-center justify-between px-4 py-3 rounded-lg transition hover:bg-slate-800">
                         <div class="flex items-center gap-3">
