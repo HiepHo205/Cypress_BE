@@ -762,6 +762,182 @@ class HomepageService
 
         /**
          * =========================================================
+         * CONTACT LABELS
+         * =========================================================
+         */
+        if (
+            $section === 'contact' &&
+            isset($data['labels']) &&
+            is_array($data['labels'])
+        ) {
+            $oldData = $this->homepageRepository
+                ->getSection('contact');
+
+            $oldLabels = $oldData['labels'] ?? [];
+
+            if (!is_array($oldLabels)) {
+                $oldLabels = [];
+            }
+
+            $processedLabels = [];
+            foreach ($data['labels'] as &$incomingLabel) {
+                if (!is_array($incomingLabel)) {
+                    continue;
+                }
+
+                // Ensure new labels get an ID
+                if (empty($incomingLabel['id'])) {
+                    $incomingLabel['id'] = (string) Str::uuid();
+                }
+
+                $incomingLabelId = (string) $incomingLabel['id'];
+
+                $oldLabelIndex = collect($oldLabels)
+                    ->search(function ($oldLabel) use ($incomingLabelId) {
+                        return is_array($oldLabel)
+                            && isset($oldLabel['id'])
+                            && (string) $oldLabel['id'] === $incomingLabelId;
+                    });
+
+                $currentLabel = $incomingLabel; // Start with incoming data
+
+                if ($oldLabelIndex !== false) {
+                    // Merge with existing label data
+                    $currentLabel = array_merge(
+                        $oldLabels[$oldLabelIndex],
+                        $incomingLabel
+                    );
+                }
+
+                // Process options within the current label
+                if (isset($currentLabel['options']) && is_array($currentLabel['options'])) {
+                    $oldOptions = ($oldLabelIndex !== false && isset($oldLabels[$oldLabelIndex]['options']) && is_array($oldLabels[$oldLabelIndex]['options']))
+                        ? $oldLabels[$oldLabelIndex]['options']
+                        : [];
+
+                    $processedOptions = [];
+                    foreach ($currentLabel['options'] as &$incomingOption) {
+                        if (!is_array($incomingOption)) {
+                            continue;
+                        }
+
+                        // Ensure new options get an ID
+                        if (empty($incomingOption['id'])) {
+                            $incomingOption['id'] = (string) Str::uuid();
+                        }
+
+                        $incomingOptionId = (string) $incomingOption['id'];
+
+                        $oldOptionIndex = collect($oldOptions)
+                            ->search(function ($oldOption) use ($incomingOptionId) {
+                                return is_array($oldOption)
+                                    && isset($oldOption['id'])
+                                    && (string) $oldOption['id'] === $incomingOptionId;
+                            });
+
+                        $processedOptions[] = ($oldOptionIndex !== false) ? array_merge($oldOptions[$oldOptionIndex], $incomingOption) : $incomingOption;
+                    }
+                    unset($incomingOption); // Break the reference
+                    $currentLabel['options'] = array_values($processedOptions);
+                }
+
+                $processedLabels[] = $currentLabel;
+            }
+            unset($incomingLabel); // Break the reference
+
+            $data['labels'] = array_values($processedLabels);
+        }
+
+        /**
+         * =========================================================
+         * CONTACT LABELS
+         * =========================================================
+         */
+        if (
+            $section === 'contact' &&
+            isset($data['labels']) &&
+            is_array($data['labels'])
+        ) {
+            $oldData = $this->homepageRepository
+                ->getSection('contact');
+
+            $oldLabels = $oldData['labels'] ?? [];
+
+            if (!is_array($oldLabels)) {
+                $oldLabels = [];
+            }
+
+            $processedLabels = [];
+            foreach ($data['labels'] as &$incomingLabel) {
+                if (!is_array($incomingLabel)) {
+                    continue;
+                }
+
+                // Ensure new labels get an ID
+                if (empty($incomingLabel['id'])) {
+                    $incomingLabel['id'] = (string) Str::uuid();
+                }
+
+                $incomingLabelId = (string) $incomingLabel['id'];
+
+                $oldLabelIndex = collect($oldLabels)
+                    ->search(function ($oldLabel) use ($incomingLabelId) {
+                        return is_array($oldLabel)
+                            && isset($oldLabel['id'])
+                            && (string) $oldLabel['id'] === $incomingLabelId;
+                    });
+
+                $currentLabel = $incomingLabel; // Start with incoming data
+
+                if ($oldLabelIndex !== false) {
+                    // Merge with existing label data
+                    $currentLabel = array_merge(
+                        $oldLabels[$oldLabelIndex],
+                        $incomingLabel
+                    );
+                }
+
+                // Process options within the current label
+                if (isset($currentLabel['options']) && is_array($currentLabel['options'])) {
+                    $oldOptions = ($oldLabelIndex !== false && isset($oldLabels[$oldLabelIndex]['options']) && is_array($oldLabels[$oldLabelIndex]['options']))
+                        ? $oldLabels[$oldLabelIndex]['options']
+                        : [];
+
+                    $processedOptions = [];
+                    foreach ($currentLabel['options'] as &$incomingOption) {
+                        if (!is_array($incomingOption)) {
+                            continue;
+                        }
+
+                        // Ensure new options get an ID
+                        if (empty($incomingOption['id'])) {
+                            $incomingOption['id'] = (string) Str::uuid();
+                        }
+
+                        $incomingOptionId = (string) $incomingOption['id'];
+
+                        $oldOptionIndex = collect($oldOptions)
+                            ->search(function ($oldOption) use ($incomingOptionId) {
+                                return is_array($oldOption)
+                                    && isset($oldOption['id'])
+                                    && (string) $oldOption['id'] === $incomingOptionId;
+                            });
+
+                        $processedOptions[] = ($oldOptionIndex !== false) ? array_merge($oldOptions[$oldOptionIndex], $incomingOption) : $incomingOption;
+                    }
+                    unset($incomingOption); // Break the reference
+                    $currentLabel['options'] = array_values($processedOptions);
+                }
+
+                $processedLabels[] = $currentLabel;
+            }
+            unset($incomingLabel); // Break the reference
+
+            $data['labels'] = array_values($processedLabels);
+        }
+
+        /**
+         * =========================================================
          * SAVE
          * =========================================================
          */
