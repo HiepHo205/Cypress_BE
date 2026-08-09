@@ -21,6 +21,7 @@ const {
 } = useHeaderLogo();
 
 onMounted(async () => {
+    emit("loading", true);
 
     try {
         await getLogo();
@@ -73,7 +74,7 @@ const saveLogo = async () => {
 
 <template>
     <div class="relative rounded-2xl">
-
+        <LoadingOverlay :show="componentLoading" :fullScreen="false" message="Loading logo..." />
 
         <template v-if="!props.hideHeaderInfo">
             <h2 class="text-lg font-semibold text-gray-900">

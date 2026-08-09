@@ -1,38 +1,106 @@
-import { watch } from 'vue';
-import { useMutation, useQuery } from '@vue/apollo-composable';
+import { ref } from 'vue';
+import { useApolloClient } from '@vue/apollo-composable';
+
 import { GET_FOOTER_BOTTOM_BAR } from '@/graphql/queries/footer';
 import { UPDATE_FOOTER_BOTTOM_BAR } from '@/graphql/mutations/footer';
 
+const bottomBar = ref(null);
+const loaded = ref(false);
+
+const isUnauthenticated = (error) => {
+    const errors =
+        error?.graphQLErrors ||
+        error?.errors ||
+        error?.networkError?.result?.errors ||
+        [];
+
+    return errors.some((e) => e.message === 'Unauthenticated.');
+};
+
 export default function useFooterBottomBar() {
-    const { result, loading } = useQuery(GET_FOOTER_BOTTOM_BAR);
+    const { resolveClient } = useApolloClient();
 
-    const { mutate: updateBottomBarMutation } = useMutation(
-        UPDATE_FOOTER_BOTTOM_BAR
-    );
+    const getBottomBar = async () => {
+        if (loaded.value) {
+            return bottomBar.value;
+        }
 
-    const getBottomBar = () => {
-        return new Promise((resolve) => {
-            const stop = watch(
-                [result, loading],
-                ([value, isLoading]) => {
-                    if (isLoading) return;
-                    stop();
-                    resolve(value?.footerBottomBar ?? null);
-                },
-                {
-                    immediate: true
-                }
-            );
-        });
+        try {
+            const response = await resolveClient().query({
+                query: GET_FOOTER_BOTTOM_BAR,
+                fetchPolicy: 'network-only'
+            });
+
+            bottomBar.value = response.data?.footerBottomBar ?? null;
+
+            loaded.value = true;
+
+            return bottomBar.value;
+        } catch (error) {
+            console.error('Get footer bottom bar error:', error);
+
+            if (isUnauthenticated(error)) {
+                return bottomBar.value;
+            }
+
+            return bottomBar.value;
+        }
     };
 
     const updateBottomBar = async (data) => {
-        return await updateBottomBarMutation({
-            input: data
+        const toast = useToast();
+
+        const toastId = toast.info('Updating bottom bar...', {
+            timeout: false
         });
+
+        try {
+            const response = await resolveClient().mutate({
+                mutation: UPDATE_FOOTER_BOTTOM_BAR,
+                variables: {
+                    input: data
+                }
+            });
+
+            loaded.value = false;
+
+            await getBottomBar();
+
+            toast.update(toastId, {
+                content: 'Bottom bar updated successfully',
+                options: {
+                    type: 'success',
+                    timeout: 3000
+                }
+            });
+
+            return response.data;
+        } catch (error) {
+            console.error('Update footer bottom bar error:', error);
+
+            const isUnauthenticated = error?.graphQLErrors?.some(
+                (err) => err.message === 'Unauthenticated.'
+            );
+
+            if (isUnauthenticated) {
+                toast.dismiss(toastId);
+                return null;
+            }
+
+            toast.update(toastId, {
+                content: 'Failed to update bottom bar',
+                options: {
+                    type: 'error',
+                    timeout: 3000
+                }
+            });
+
+            return null;
+        }
     };
 
     return {
+        bottomBar,
         getBottomBar,
         updateBottomBar
     };

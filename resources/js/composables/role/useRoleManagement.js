@@ -14,19 +14,35 @@ export function useRoleManagement(roles) {
     const { mutate: updateRoleMutation } = useMutation(UPDATE_ROLE);
     const { mutate: deleteRoleMutation } = useMutation(DELETE_ROLE);
 
-    const getAuthContext = () => ({
-        context: {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-            }
+    const getAuthContext = () => {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            return {};
         }
-    });
+
+        return {
+            context: {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        };
+    };
+
+    const isUnauthenticated = (error) => {
+        const errors =
+            error?.graphQLErrors ||
+            error?.errors ||
+            error?.networkError?.result?.errors ||
+            [];
+
+        return errors.some((err) => err.message === 'Unauthenticated.');
+    };
 
     async function createRole(payload) {
         const toastId = toast.info('Creating role...', {
-            timeout: false,
-            closeOnClick: false,
-            draggable: false
+            timeout: false
         });
 
         try {
@@ -50,25 +66,38 @@ export function useRoleManagement(roles) {
                 roles.value.unshift(newRole);
             }
 
-            toast.dismiss(toastId);
-            toast.success('Role created successfully');
-        } catch (err) {
-            toast.dismiss(toastId);
+            toast.update(toastId, {
+                content: 'Role created successfully',
+                options: {
+                    type: 'success',
+                    timeout: 3000
+                }
+            });
 
-            toast.error(
-                err?.graphQLErrors?.[0]?.message ||
-                    err?.networkError?.message ||
-                    err.message ||
-                    'Create role failed'
-            );
+            return newRole;
+        } catch (error) {
+            console.error('Create role error:', error);
+
+            if (isUnauthenticated(error)) {
+                toast.dismiss(toastId);
+                return null;
+            }
+
+            toast.update(toastId, {
+                content: 'Failed to create role',
+                options: {
+                    type: 'error',
+                    timeout: 3000
+                }
+            });
+
+            return null;
         }
     }
 
     async function updateRole(payload) {
         const toastId = toast.info('Updating role...', {
-            timeout: false,
-            closeOnClick: false,
-            draggable: false
+            timeout: false
         });
 
         try {
@@ -89,29 +118,42 @@ export function useRoleManagement(roles) {
                 roles.value[index] = data.updateRole;
             }
 
-            toast.dismiss(toastId);
-            toast.success('Role updated successfully');
-        } catch (err) {
-            toast.dismiss(toastId);
+            toast.update(toastId, {
+                content: 'Role updated successfully',
+                options: {
+                    type: 'success',
+                    timeout: 3000
+                }
+            });
 
-            toast.error(
-                err?.graphQLErrors?.[0]?.message ||
-                    err?.networkError?.message ||
-                    err.message ||
-                    'Update role failed'
-            );
+            return data.updateRole;
+        } catch (error) {
+            console.error('Update role error:', error);
+
+            if (isUnauthenticated(error)) {
+                toast.dismiss(toastId);
+                return null;
+            }
+
+            toast.update(toastId, {
+                content: 'Failed to update role',
+                options: {
+                    type: 'error',
+                    timeout: 3000
+                }
+            });
+
+            return null;
         }
     }
 
     async function deleteRole(role) {
         const toastId = toast.info('Deleting role...', {
-            timeout: false,
-            closeOnClick: false,
-            draggable: false
+            timeout: false
         });
 
         try {
-            await deleteRoleMutation(
+            const response = await deleteRoleMutation(
                 {
                     id: role.id
                 },
@@ -120,17 +162,32 @@ export function useRoleManagement(roles) {
 
             roles.value = roles.value.filter((item) => item.id !== role.id);
 
-            toast.dismiss(toastId);
-            toast.success('Role deleted successfully');
-        } catch (err) {
-            toast.dismiss(toastId);
+            toast.update(toastId, {
+                content: 'Role deleted successfully',
+                options: {
+                    type: 'success',
+                    timeout: 3000
+                }
+            });
 
-            toast.error(
-                err?.graphQLErrors?.[0]?.message ||
-                    err?.networkError?.message ||
-                    err.message ||
-                    'Delete role failed'
-            );
+            return response.data;
+        } catch (error) {
+            console.error('Delete role error:', error);
+
+            if (isUnauthenticated(error)) {
+                toast.dismiss(toastId);
+                return null;
+            }
+
+            toast.update(toastId, {
+                content: 'Failed to delete role',
+                options: {
+                    type: 'error',
+                    timeout: 3000
+                }
+            });
+
+            return null;
         }
     }
 

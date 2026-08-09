@@ -4,6 +4,7 @@ namespace App\Core\Repositories\Eloquent;
 
 use App\Core\Repositories\Contracts\BaseRepositoryInterface;
 use Illuminate\Database\Eloquent\Model;
+use App\Core\Models\Collection as CollectionModel;
 use Illuminate\Database\Eloquent\Collection;
 
 abstract class BaseRepository implements BaseRepositoryInterface
@@ -55,5 +56,17 @@ abstract class BaseRepository implements BaseRepositoryInterface
             return $result->delete();
         }
         return false;
+    }
+    protected function getCollection()
+    {
+        return CollectionModel::firstOrCreate(
+            [
+                'api_endpoint' => 'cms',
+            ],
+            [
+                'collection_name' => 'CMS',
+                'is_system_type' => true,
+            ]
+        );
     }
 }

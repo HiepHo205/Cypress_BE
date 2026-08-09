@@ -17,10 +17,11 @@ const currentTime = ref(new Date());
 let timer = null;
 
 onMounted(async () => {
+    emit("loading", true);
+
     timer = setInterval(() => {
         currentTime.value = new Date();
     }, 1000);
-
 
     try {
         const data = await getCountdown();
@@ -34,6 +35,7 @@ onMounted(async () => {
         form.enabled = data.enabled;
         form.button_label = data.button?.label ?? "";
         form.button_href = data.button?.href ?? "";
+
     } finally {
         emit("loading", false);
     }

@@ -14,6 +14,7 @@ import Footer from '@/views/cms/footer/Footer.vue';
 import { useToast } from 'vue-toastification';
 import PlanList from '@/views/plans/PlanList.vue';
 import PlanDetail from '@/views/plans/PlanDetail.vue';
+import HomePage from '../views/home/HomePage.vue';
 
 const routes = [
     {
@@ -30,14 +31,11 @@ const routes = [
         },
 
         children: [
-            // Dashboard
             {
                 path: '',
                 name: 'dashboard',
                 component: Dashboard
             },
-
-            // User management
             {
                 path: 'users',
                 name: 'users.list',
@@ -69,13 +67,6 @@ const routes = [
                 name: 'role.management',
                 component: () => import('@/views/roles/RoleManagement.vue')
             },
-
-            // Header CMS
-            // URL:
-            // /admin/header?tab=logo
-            // /admin/header?tab=favicon
-            // /admin/header?tab=menu
-            // /admin/header?tab=countdown
             {
                 path: 'header',
                 name: 'cms.header',
@@ -99,6 +90,11 @@ const routes = [
                 path: 'footer',
                 name: 'cms.footer',
                 component: Footer
+            },
+            {
+                path: 'homepage',
+                name: 'cms.homepage',
+                component: HomePage
             }
         ]
     }
@@ -108,8 +104,6 @@ const router = createRouter({
     history: createWebHistory(),
     routes
 });
-
-// Check authentication
 router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('token');
 
@@ -122,8 +116,6 @@ router.beforeEach((to, from, next) => {
 
         return next('/login');
     }
-
-    // Nếu đã login mà vào login thì quay về admin
     if (to.name === 'login' && token) {
         return next('/admin');
     }

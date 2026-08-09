@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             PlanSeeder::class,
             CompanySeeder::class,
             SubscriptionSeeder::class,
+            HomepageSeeder::class,
         ]);
 
         $this->call([

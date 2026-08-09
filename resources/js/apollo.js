@@ -24,7 +24,7 @@ const authLink = setContext((_, { headers }) => {
 
 let isLoggingOut = false;
 
-const errorLink = onError(({ graphQLErrors, networkError }) => {
+const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
     const toast = useToast();
 
     const handleLogout = () => {
@@ -36,25 +36,32 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 
         toast.warning('Your session has expired. Please log in again.');
 
-        window.location.href = '/login';
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 1000);
     };
-
-    if (graphQLErrors) {
-        graphQLErrors.forEach((err) => {
-            if (
-                err.message === 'Unauthenticated.' ||
-                err.message === 'Unauthenticated'
-            ) {
-                handleLogout();
-            }
-        });
+    const isMutation = operation.query.definitions.some(
+        (def) =>
+            def.kind === 'OperationDefinition' && def.operation === 'mutation'
+    );
+    if (!isMutation) {
+        return;
     }
 
-    if (networkError && networkError.statusCode === 401) {
+    graphQLErrors?.forEach((err) => {
+        if (err.message === 'Unauthenticated.') {
+            handleLogout();
+        }
+    });
+
+    if (
+        networkError &&
+        'statusCode' in networkError &&
+        networkError.statusCode === 401
+    ) {
         handleLogout();
     }
 });
-
 export const apolloClient = new ApolloClient({
     link: errorLink.concat(authLink.concat(uploadLink)),
     cache: new InMemoryCache()

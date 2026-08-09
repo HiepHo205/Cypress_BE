@@ -5,6 +5,7 @@ scalar DateTime
 
 scalar Upload
     @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Upload")
+scalar JSON @scalar(class: "MLL\\GraphQLScalars\\JSON")
 
 type Query {
     user(
@@ -15,11 +16,9 @@ type Query {
     ): User @guard(with: ["api"]) @find
 
     users(name: String @where(operator: "like")): [User!]!
-        @guard(with: ["api"])
         @paginate(defaultCount: 10)
 
     roles: [Role!]!
-        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\RoleQuery@roles"
         )
@@ -201,7 +200,6 @@ extend type Mutation {
 
 extend type Query {
     header: Header
-        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@header"
         )
@@ -238,6 +236,9 @@ input HeaderMenuInput {
 input HeaderMenuChildInput {
     label: String!
     url: String
+}
+type MessageResponse {
+    message: String!
 }
 extend type Mutation {
     deleteHeaderSubMenu(id: ID!): MessageResponse!
@@ -295,7 +296,6 @@ type HeaderLogo {
 
 extend type Query {
     getLogo: HeaderLogo
-        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getLogo"
         )
@@ -361,7 +361,6 @@ extend type Query {
 # Admin CMS
 extend type Query {
     getFavicon: HeaderFavicon
-        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HeaderQuery@getFavicon"
         )
@@ -630,4 +629,309 @@ extend type Mutation {
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\FooterMutation@updateFooterBottomBar"
         )
+}
+
+type CloudinaryImage {
+    url: String
+    public_id: String
+}
+
+# =========================
+# Homepage Root
+# =========================
+
+type Homepage {
+    banner: HomepageBanner
+    businessGrowth: HomepageBusinessGrowth
+    introduction: HomepageIntroduction
+    whyChooseCypress: HomepageWhyChooseCypress
+    caseStudies: HomepageCaseStudiesResponse
+    pricing: HomepagePricing
+    successStories: HomepageSuccessStories
+    generalInformation: HomepageGeneralInformation
+    news: HomepageNewsResponse
+    sideNews: HomepageSideNewsResponse
+    newsSections: HomepageNewsSectionsResponse
+    launchOffer: HomepageLaunchOffer
+    contact: HomepageContactSection
+}
+
+type HomepageLaunchOffer {
+    title: String
+    subtitle: String
+    buttonText: String
+    buttonUrl: String
+    expiryDate: String
+    seats: String
+}
+
+extend type Query {
+    homepage: Homepage!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HomepageQuery@homepage"
+        )
+
+    homepageSection(section: String!): JSON!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\HomepageQuery@homepageSection"
+        )
+}
+
+extend type Mutation @guard(with: ["api"]) {
+    updateHomepageSection(
+        section: String!
+        input: JSON!
+        image: Upload
+        logo: Upload
+    ): JSON!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HomepageMutation@updateHomepageSection"
+        )
+
+    updateHomepageItem(
+        section: String!
+        field: String!
+        input: JSON!
+        uploadFields: String
+        image: Upload
+        logo: Upload
+        folder: String
+    ): JSON!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HomepageMutation@updateHomepageItem"
+        )
+
+    deleteHomepageItem(section: String!, field: String!, id: ID!): Boolean!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\HomepageMutation@deleteHomepageItem"
+        )
+}
+
+# =========================
+# Banner
+# =========================
+
+type HomepageBanner {
+    image: CloudinaryImage
+    title: String
+    description: String
+    primary_button_text: String
+    primary_button_url: String
+    secondary_button_text: String
+    secondary_button_url: String
+}
+
+# =========================
+# Business Growth
+# =========================
+
+type HomepageBusinessGrowth {
+    label: String
+    title: String
+    description: String
+
+    packages: [HomepageBusinessGrowthPackage]
+}
+
+type HomepageBusinessGrowthPackage {
+    id: ID
+    number: String
+    title: String
+    packageName: String
+    headline: String
+    description: String
+    color: String
+    active: Boolean
+}
+
+# =========================
+# Introduction
+# =========================
+
+type HomepageIntroduction {
+    image: CloudinaryImage
+    title: String
+    description: String
+    author: String
+    position: String
+    showQuoteIcon: Boolean
+    showAuthor: Boolean
+}
+
+# =========================
+# Why Choose Cypress
+# =========================
+
+type HomepageWhyChooseCypress {
+    badge: String
+    title: String
+    description: String
+    benefits: [HomepageWhyChooseCypressBenefit]
+}
+
+type HomepageWhyChooseCypressBenefit {
+    id: ID!
+    icon: CloudinaryImage
+    title: String
+    description: String
+    active: Boolean
+}
+
+# =========================
+# Case Studies
+# =========================
+
+type HomepageCaseStudiesResponse {
+    caseStudies: [CaseStudy!]!
+}
+
+type CaseStudy {
+    id: ID!
+    label: String
+    title: String
+    subtitle: String
+    summary: String
+    company: String
+    planTitle: String
+    seriesTags: String
+    learnMoreText: String
+    learnMoreUrl: String
+    active: Boolean
+
+    logo: CloudinaryImage
+    image: CloudinaryImage
+}
+# =========================
+# Pricing
+# =========================
+
+type HomepagePricing {
+    title: String
+    description: String
+    button_text: String
+    button_link: String
+}
+
+# =========================
+# Success Stories
+# =========================
+
+type HomepageSuccessStories {
+    successStories: [HomepageSuccessStory]
+}
+
+type HomepageSuccessStory {
+    id: ID
+    name: String
+    categories: [String]
+    role: String
+    company: String
+    quote: String
+    avatar: CloudinaryImage
+}
+
+# =========================
+# General Information
+# =========================
+
+type HomepageGeneralInformation {
+    generalInformations: [HomepageGeneralInformationItem]
+}
+
+type HomepageGeneralInformationItem {
+    id: ID!
+    badge: String
+    title: String
+    description: String
+}
+
+# =========================
+# News
+# =========================
+
+type HomepageNewsResponse {
+    label: String
+    title: String
+    news: [HomepageNews]
+}
+type HomepageNews {
+    id: ID
+    category: String
+    date: String
+    title: String
+    description: String
+    active: Boolean
+    image: CloudinaryImage
+}
+
+# =========================
+# Side News
+# =========================
+
+type HomepageSideNewsResponse {
+    sideNews: [HomepageSideNews]
+}
+
+type HomepageSideNews {
+    id: ID!
+    description: String
+    image: CloudinaryImage
+}
+
+# =========================
+# News Sections
+# =========================
+
+type HomepageNewsSectionsResponse {
+    sections: [HomepageNewsSection]
+}
+
+type HomepageNewsSection {
+    id: ID!
+    key: String
+    title: String
+
+    buttonText: String
+    buttonUrl: String
+
+    items: [HomepageNewsSectionItem]
+}
+type HomepageNewsSectionItem {
+    id: ID!
+    title: String
+}
+
+# =========================
+# Contact
+# =========================
+
+type HomepageContactSection {
+    id: ID
+
+    title: String
+    description: String
+
+    image: CloudinaryImage
+
+    termsText: String
+    termsLabel: String
+    termsUrl: String
+
+    buttonText: String
+    buttonUrl: String
+
+    labels: [HomepageContactLabel]
+}
+
+type HomepageContactLabel {
+    id: ID
+    title: String
+    placeholder: String
+    type: String
+    options: [HomepageContactOption]
+}
+
+type HomepageContactOption {
+    id: ID
+    value: String
 }

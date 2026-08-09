@@ -7,7 +7,7 @@ export function useRoleTable(emit) {
     const creating = ref(false);
 
     const newRole = ref({
-        name: '',
+        role_name: '',
         description: ''
     });
 
@@ -26,10 +26,11 @@ export function useRoleTable(emit) {
         creating.value = true;
 
         newRole.value = {
-            name: '',
+            role_name: '',
             description: ''
         };
     }
+
     function saveCreate() {
         if (
             !newRole.value.role_name.trim() ||
@@ -39,14 +40,21 @@ export function useRoleTable(emit) {
             return;
         }
 
-        emit('create', { ...newRole.value });
+        emit('create', {
+            role_name: newRole.value.role_name,
+            description: newRole.value.description
+        });
 
         cancelCreate();
     }
 
     function cancelCreate() {
         creating.value = false;
-        newRole.value = { name: '', description: '' };
+
+        newRole.value = {
+            role_name: '',
+            description: ''
+        };
     }
 
     function edit(role) {

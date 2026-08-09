@@ -394,4 +394,14 @@ class HeaderRepository
             ...$data,
         ];
     }
+    public function deleteSubMenu($id): bool
+    {
+        $submenu = Entry::findOrFail($id);
+
+        $submenu->metas()->delete();
+
+        $submenu->delete();
+
+        return true;
+    }
 }

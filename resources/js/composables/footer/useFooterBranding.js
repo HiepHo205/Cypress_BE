@@ -1,5 +1,6 @@
-import { computed } from 'vue';
-import { useQuery, useMutation } from '@vue/apollo-composable';
+import { ref, computed } from 'vue';
+import { useApolloClient } from '@vue/apollo-composable';
+import { useToast } from 'vue-toastification';
 
 import {
     GET_FOOTER_BRANDING,
@@ -11,71 +12,157 @@ import {
     UPDATE_FOOTER_LOGO
 } from '../../graphql/mutations/footer';
 
-export default function useFooterBranding() {
-    const {
-        result: brandingResult,
-        loading: brandingLoading,
-        refetch: refetchBranding
-    } = useQuery(GET_FOOTER_BRANDING);
+const branding = ref(null);
+const logo = ref(null);
 
-    const {
-        result: logoResult,
-        loading: logoLoading,
-        refetch: refetchLogo
-    } = useQuery(GET_FOOTER_LOGO);
-
-    const { mutate: updateBrandingMutation } = useMutation(
-        UPDATE_FOOTER_BRANDING
+const isUnauthenticated = (error) => {
+    return error?.graphQLErrors?.some(
+        (err) => err.message === 'Unauthenticated.'
     );
+};
 
-    const { mutate: updateLogoMutation } = useMutation(UPDATE_FOOTER_LOGO);
+export default function useFooterBranding() {
+    const { resolveClient } = useApolloClient();
+    const toast = useToast();
 
-    const branding = computed(() => {
-        return brandingResult.value?.footerBranding ?? null;
-    });
-
-    const logo = computed(() => {
-        return logoResult.value?.footerLogo ?? null;
-    });
-
-    const loading = computed(() => {
-        return brandingLoading.value || logoLoading.value;
-    });
+    const loading = ref(false);
 
     const getBranding = async () => {
-        const response = await refetchBranding();
+        try {
+            const response = await resolveClient().query({
+                query: GET_FOOTER_BRANDING,
+                fetchPolicy: 'network-only'
+            });
 
-        return response?.data?.footerBranding ?? null;
+            branding.value = response.data?.footerBranding ?? null;
+
+            return branding.value;
+        } catch (error) {
+            console.error('Get footer branding error:', error);
+
+            if (isUnauthenticated(error)) {
+                return branding.value;
+            }
+
+            return branding.value;
+        }
     };
 
     const getLogo = async () => {
-        const response = await refetchLogo();
+        try {
+            const response = await resolveClient().query({
+                query: GET_FOOTER_LOGO,
+                fetchPolicy: 'network-only'
+            });
 
-        return response?.data?.footerLogo ?? null;
+            logo.value = response.data?.footerLogo ?? null;
+
+            return logo.value;
+        } catch (error) {
+            console.error('Get footer logo error:', error);
+
+            if (isUnauthenticated(error)) {
+                return logo.value;
+            }
+
+            return logo.value;
+        }
     };
 
     const updateBranding = async (data) => {
-        const response = await updateBrandingMutation({
-            input: {
-                company_name: data.company_name,
-                description: data.description
-            }
+        const toastId = toast.info('Updating branding...', {
+            timeout: false
         });
 
-        return response?.data?.updateFooterBranding ?? null;
+        try {
+            const response = await resolveClient().mutate({
+                mutation: UPDATE_FOOTER_BRANDING,
+                variables: {
+                    input: {
+                        company_name: data.company_name,
+                        description: data.description
+                    }
+                }
+            });
+
+            branding.value = response.data?.updateFooterBranding ?? null;
+
+            toast.update(toastId, {
+                content: 'Branding updated successfully',
+                options: {
+                    type: 'success',
+                    timeout: 3000
+                }
+            });
+
+            return branding.value;
+        } catch (error) {
+            console.error('Update footer branding error:', error);
+
+            if (isUnauthenticated(error)) {
+                toast.dismiss(toastId);
+                return null;
+            }
+
+            toast.update(toastId, {
+                content: 'Failed to update branding',
+                options: {
+                    type: 'error',
+                    timeout: 3000
+                }
+            });
+
+            return null;
+        }
     };
 
     const updateLogo = async (file) => {
-        const response = await updateLogoMutation({
-            logo: file
+        const toastId = toast.info('Updating footer logo...', {
+            timeout: false
         });
 
-        return response?.data?.updateFooterLogo ?? null;
+        try {
+            const response = await resolveClient().mutate({
+                mutation: UPDATE_FOOTER_LOGO,
+                variables: {
+                    logo: file
+                }
+            });
+
+            logo.value = response.data?.updateFooterLogo ?? null;
+
+            toast.update(toastId, {
+                content: 'Footer logo updated successfully',
+                options: {
+                    type: 'success',
+                    timeout: 3000
+                }
+            });
+
+            return logo.value;
+        } catch (error) {
+            console.error('Update footer logo error:', error);
+
+            if (isUnauthenticated(error)) {
+                toast.dismiss(toastId);
+                return null;
+            }
+
+            toast.update(toastId, {
+                content: 'Failed to update footer logo',
+                options: {
+                    type: 'error',
+                    timeout: 3000
+                }
+            });
+
+            return null;
+        }
     };
 
     return {
-        branding,
-        logo,
+        branding: computed(() => branding.value),
+        logo: computed(() => logo.value),
         loading,
         getBranding,
         getLogo,
