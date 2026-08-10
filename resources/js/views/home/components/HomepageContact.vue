@@ -1,37 +1,26 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { Save, Upload, Trash2, Plus, X } from 'lucide-vue-next';
-
 import { useHomepage } from '../../../composables/home/useHomepage';
-
 const { loading, getSection, saveSection, removeItem } = useHomepage();
-
 const contact = ref<any>({
     title: '',
     description: '',
-
     termsText: '',
     termsLabel: '',
     termsUrl: '',
-
     buttonText: '',
     buttonUrl: '',
-
     image: null,
     labels: []
 });
-
 const previewImage = ref<string | null>(null);
-
 const selectedLabelId = ref<string | number | null>(null);
-
 const contactSection = getSection('contact');
-
 const selectedLabel = computed(() => {
     if (!selectedLabelId.value) {
         return null;
     }
-
     return (
         contact.value.labels.find(
             (item: any) => String(item.id) === String(selectedLabelId.value)
@@ -41,24 +30,9 @@ const selectedLabel = computed(() => {
 
 const loadData = () => {
     const data = contactSection.value;
-
     if (!data) return;
-
-    console.log('CONTACT RAW:', data);
-
-    console.log('LABELS RAW:', data.labels);
-
     data.labels?.forEach((item: any) => {
-        console.log('LABEL:', item);
-
-        console.log('OPTIONS:', item.options);
-
-        console.log(
-            'OPTION TYPES:',
-            item.options?.map((opt: any) => typeof opt)
-        );
     });
-
     contact.value = {
         title: data.title ?? '',
         description: data.description ?? '',
@@ -67,20 +41,14 @@ const loadData = () => {
         termsUrl: data.termsUrl ?? '',
         buttonText: data.buttonText ?? '',
         buttonUrl: data.buttonUrl ?? '',
-
         linkButtonText: data.linkButtonText ?? '',
         linkButtonUrl: data.linkButtonUrl ?? '',
         image: data.image ?? null,
-
         labels: (data.labels ?? []).map((item: any) => ({
             id: item.id,
-
             title: item.title ?? '',
-
             placeholder: item.placeholder ?? '',
-
             type: item.type ?? 'input',
-
             options: Array.isArray(item.options)
                 ? item.options.map((opt: any) => ({
                       id: opt.id ?? null,
@@ -89,11 +57,7 @@ const loadData = () => {
                 : []
         }))
     };
-
-    console.log('CONTACT AFTER MAP:', contact.value);
-
     previewImage.value = data.image?.url ?? null;
-
     selectedLabelId.value = contact.value.labels[0]?.id ?? null;
 };
 watch(
@@ -121,15 +85,12 @@ const addLabel = () => {
 
 const removeLabel = async (id: any) => {
     const label = contact.value.labels.find((item: any) => item.id === id);
-
     if (!label) return;
     if (String(id).startsWith('temp-')) {
         contact.value.labels = contact.value.labels.filter(
             (item: any) => item.id !== id
         );
-
         selectedLabelId.value = contact.value.labels[0]?.id ?? null;
-
         return;
     }
     try {
@@ -157,7 +118,6 @@ const save = async () => {
         {
             title: contact.value.title,
             description: contact.value.description,
-
             termsText: contact.value.termsText,
             termsLabel: contact.value.termsLabel,
             termsUrl: contact.value.termsUrl,
@@ -165,7 +125,6 @@ const save = async () => {
             buttonUrl: contact.value.buttonUrl,
             labels: contact.value.labels.map((item: any) => ({
                 id: String(item.id).startsWith('temp') ? null : item.id,
-
                 title: item.title,
                 placeholder: item.placeholder,
                 type: item.type,
@@ -183,11 +142,9 @@ const save = async () => {
 };
 const addOption = () => {
     if (!selectedLabel.value) return;
-
     if (!Array.isArray(selectedLabel.value.options)) {
         selectedLabel.value.options = [];
     }
-
     selectedLabel.value.options.push({
         id: null,
         value: ''
@@ -196,7 +153,6 @@ const addOption = () => {
 
 const removeOption = (index: number) => {
     if (!selectedLabel.value) return;
-
     selectedLabel.value.options = [
         ...selectedLabel.value.options.slice(0, index),
         ...selectedLabel.value.options.slice(index + 1)
@@ -207,14 +163,12 @@ const removeOption = (index: number) => {
     <section class="space-y-6">
         <div>
             <h2 class="text-2xl font-bold text-gray-900">Contact Management</h2>
-
             <p class="mt-2 text-sm text-gray-500">
                 Manage contact information displayed on homepage.
             </p>
         </div>
         <div class="rounded-xl border border-gray-200 bg-white p-6">
             <h3 class="mb-5 text-lg font-semibold">Contact Information</h3>
-
             <div class="grid grid-cols-2 gap-6">
                 <div>
                     <label class="mb-2 block text-sm font-medium">
@@ -232,7 +186,6 @@ const removeOption = (index: number) => {
                     <label class="mb-2 block text-sm font-medium">
                         Terms Text
                     </label>
-
                     <input
                         v-model="contact.termsText"
                         placeholder="I agree with"

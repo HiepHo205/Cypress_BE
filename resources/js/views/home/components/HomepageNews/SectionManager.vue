@@ -71,8 +71,6 @@ const editSection = (section) => {
     mode.value = 'update';
 
     selectedId.value = section.id;
-
-    selectedSection.value = structuredClone(section);
 };
 const addItem = () => {
     if (!selectedSection.value) return;
