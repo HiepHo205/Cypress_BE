@@ -386,7 +386,10 @@ class HomepageSeeder extends Seeder
                 'title' => 'Business support',
                 'description' => 'Handling mail, printing, and hospitality services.',
                 'active' => true,
-                'icon' => null,
+                'icon' => [
+                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1786331080/homepage/introduction/xvqiphormskizeysibvv.webp',
+                    'public_id' => 'homepage/why_choose_cypress/xvqiphormskizeysibvv',
+                ],
             ],
         ];
 
@@ -479,18 +482,20 @@ class HomepageSeeder extends Seeder
         foreach ($caseStudies as $caseStudy) {
             $entryId = $this->createEntry($collectionId);
 
-            foreach ([
-                'label',
-                'title',
-                'subtitle',
-                'summary',
-                'company',
-                'plan_title',
-                'series_tags',
-                'learn_more_text',
-                'learn_more_url',
-                'active',
-            ] as $key) {
+            foreach (
+                [
+                    'label',
+                    'title',
+                    'subtitle',
+                    'summary',
+                    'company',
+                    'plan_title',
+                    'series_tags',
+                    'learn_more_text',
+                    'learn_more_url',
+                    'active',
+                ] as $key
+            ) {
                 $this->addMeta(
                     $entryId,
                     $key,
@@ -749,13 +754,15 @@ class HomepageSeeder extends Seeder
         foreach ($news as $item) {
             $newsId = $this->createEntry($newsCollectionId);
 
-            foreach ([
-                'category',
-                'date',
-                'title',
-                'description',
-                'active',
-            ] as $key) {
+            foreach (
+                [
+                    'category',
+                    'date',
+                    'title',
+                    'description',
+                    'active',
+                ] as $key
+            ) {
                 $this->addMeta(
                     $newsId,
                     $key,
@@ -1028,12 +1035,6 @@ class HomepageSeeder extends Seeder
                 ],
             ],
             [
-                'title' => 'Label Information',
-                'placeholder' => 'Label Information',
-                'type' => 'textarea',
-                'options' => [],
-            ],
-            [
                 'title' => 'Email *',
                 'placeholder' => 'Enter your email',
                 'type' => 'input',
@@ -1065,7 +1066,7 @@ class HomepageSeeder extends Seeder
             [
                 'title' => 'Message',
                 'placeholder' => 'Tell us more about your needs',
-                'type' => 'input',
+                'type' => 'textarea',
                 'options' => [],
             ],
         ];

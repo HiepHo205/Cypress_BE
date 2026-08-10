@@ -33,74 +33,6 @@ class HomepageMutation
     }
 
 
-//     public function updateHomepageItem(
-//     $_,
-//     array $args
-// ) {
-
-//     $input = [];
-
-//     if (isset($args['input'])) {
-
-//         $input = json_decode(
-//             json_encode($args['input']),
-//             true
-//         );
-//     }
-
-
-//     $uploadFields = null;
-
-
-//     if (isset($args['uploadFields'])) {
-
-
-//         if (is_string($args['uploadFields'])) {
-
-//             $uploadFields = json_decode(
-//                 $args['uploadFields'],
-//                 true
-//             );
-
-//         } else {
-
-//             $uploadFields = json_decode(
-//                 json_encode($args['uploadFields']),
-//                 true
-//             );
-//         }
-
-
-//         // FIX uploadFields bị nested array
-//         if (is_array($uploadFields)) {
-
-//             $uploadFields = collect($uploadFields)
-//                 ->map(function ($item) {
-
-//                     if (is_array($item)) {
-
-//                         return array_key_first($item);
-//                     }
-
-//                     return $item;
-
-//                 })
-//                 ->filter()
-//                 ->values()
-//                 ->toArray();
-//         }
-//     }
-
-
-//     return $this->homepageService->updateItem(
-//         $args['section'],
-//         $args['field'],
-//         $input,
-//         $uploadFields,
-//         $args['folder'] ?? null
-//     );
-// }
-
 public function updateHomepageItem(
     $_,
     array $args
@@ -135,7 +67,6 @@ public function updateHomepageItem(
             );
         }
     }
-
 
     return $this->homepageService->updateItem(
         $args['section'],
