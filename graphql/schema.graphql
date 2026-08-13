@@ -423,24 +423,17 @@ input UpdatePlanInput {
 }
 
 extend type Mutation {
-    createPlan(
-        input: CreatePlanInput!
-    ): Plan!
+    createPlan(input: CreatePlanInput!): Plan!
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PlanMutation@create"
         )
 
-    updatePlan(
-        id: ID!
-        input: UpdatePlanInput!
-    ): Plan!
+    updatePlan(id: ID!, input: UpdatePlanInput!): Plan!
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PlanMutation@update"
         )
 
-    deletePlan(
-        id: ID!
-    ): Boolean!
+    deletePlan(id: ID!): Boolean!
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PlanMutation@delete"
         )
@@ -459,7 +452,6 @@ input FooterBrandingInput {
 }
 extend type Query {
     footerBranding: FooterBranding
-        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@footerBranding"
         )
@@ -499,12 +491,11 @@ type FooterSocialResponse {
 
 extend type Query {
     footer: Footer
-        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@footer"
         )
+
     footerSocials: [FooterSocial]
-        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@socials"
         )
@@ -573,7 +564,6 @@ type FooterNewsletter {
 
 extend type Query {
     footerNewsletter: FooterNewsletter
-        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@footerNewsletter"
         )
@@ -615,7 +605,6 @@ input FooterLegalLinkInput {
 }
 extend type Query {
     footerBottomBar: FooterBottomBarResponse
-        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@footerBottomBar"
         )
@@ -635,7 +624,62 @@ type CloudinaryImage {
     url: String
     public_id: String
 }
+# =========================
+# News page CMS
+# =========================
 
+type NewsPageItem {
+    id: ID!
+    title: String
+    description: String
+    category: String
+    date: String
+    status: String
+    featured: Boolean
+    image: CloudinaryImage
+}
+
+type NewsPostCategory {
+    id: ID!
+    title: String
+    description: String
+}
+
+type NewsPage {
+    banner: JSON
+    newsletter: JSON
+    latest: [NewsPageItem!]!
+    featured: [NewsPageItem!]!
+    postCategories: [NewsPostCategory!]!
+}
+
+extend type Query {
+    newsPage: NewsPage!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\NewsPageQuery"
+        )
+}
+
+extend type Mutation {
+    updateNewsPage(
+        collection: String!
+        input: JSON!
+        image: Upload
+    ): JSON!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\NewsPageMutation@update"
+        )
+
+    deleteNewsPageItem(
+        collection: String!
+        id: ID!
+    ): Boolean!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\NewsPageMutation@deleteItem"
+        )
+}
 # =========================
 # Homepage Root
 # =========================

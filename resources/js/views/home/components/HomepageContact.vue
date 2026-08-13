@@ -220,7 +220,8 @@ const removeOption = (index: number) => {
 
                 <div>
                     <label class="mb-2 block text-sm font-medium">
-                        Terms URL
+                        Terms Label
+
                     </label>
 
                     <input

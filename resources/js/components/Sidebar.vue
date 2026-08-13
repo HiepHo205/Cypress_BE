@@ -9,6 +9,8 @@ import {
     FolderTree,
     PanelTop,
     PanelBottom,
+    CreditCard,
+    Newspaper,
     ChevronDown,
     ChevronRight
 } from "lucide-vue-next";
@@ -128,6 +130,14 @@ async function confirmLogout() {
                         exact-active-class="bg-slate-800">
                         <FolderTree :size="18" />
                         <span>Page</span>
+                    </router-link>
+                </li>
+                <li>
+                    <router-link to="/admin/news"
+                        class="flex items-center gap-3 px-4 py-3 rounded-lg transition hover:bg-slate-800"
+                        exact-active-class="bg-slate-800">
+                        <Newspaper :size="18" />
+                        <span>News</span>
                     </router-link>
                 </li>
             </ul>

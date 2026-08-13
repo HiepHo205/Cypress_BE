@@ -16,7 +16,7 @@ class CompanySeeder extends Seeder
         $companyId = DB::table('entries')->insertGetId([
             'collection_id' => $companyCollectionId,
             'status' => 'published',
-            'created_by' => 6,
+            'created_by' => 2,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
