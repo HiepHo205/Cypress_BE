@@ -15,6 +15,7 @@ import { useToast } from 'vue-toastification';
 import PlanList from '@/views/plans/PlanList.vue';
 import PlanDetail from '@/views/plans/PlanDetail.vue';
 import HomePage from '../views/home/HomePage.vue';
+import NewsManagement from '../views/news/components/NewsManagement.vue';
 
 const routes = [
     {
@@ -85,7 +86,6 @@ const routes = [
                     import('@/views/plans/PlanDetail.vue'),
                 props: true
             },
-            // Footer CMS
             {
                 path: 'footer',
                 name: 'cms.footer',
@@ -95,6 +95,11 @@ const routes = [
                 path: 'homepage',
                 name: 'cms.homepage',
                 component: HomePage
+            },
+            {
+                path: 'news',
+                name: 'news.management',
+                component: NewsManagement
             }
         ]
     }
