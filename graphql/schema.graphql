@@ -655,26 +655,17 @@ type NewsPage {
 
 extend type Query {
     newsPage: NewsPage!
-        @field(
-            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\NewsPageQuery"
-        )
+        @field(resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\NewsPageQuery")
 }
 
 extend type Mutation {
-    updateNewsPage(
-        collection: String!
-        input: JSON!
-        image: Upload
-    ): JSON!
+    updateNewsPage(collection: String!, input: JSON!, image: Upload): JSON!
         @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\NewsPageMutation@update"
         )
 
-    deleteNewsPageItem(
-        collection: String!
-        id: ID!
-    ): Boolean!
+    deleteNewsPageItem(collection: String!, id: ID!): Boolean!
         @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\NewsPageMutation@deleteItem"
@@ -978,4 +969,45 @@ type HomepageContactLabel {
 type HomepageContactOption {
     id: ID
     value: String
+}
+type CaseStudyPageResponse {
+    banner: JSON!
+    categories: JSON!
+    caseStudies: [CaseStudyPageItem!]!
+}
+
+type CaseStudyPageItem {
+    id: ID!
+    title: String
+    description: String
+    categories: [String!]
+    active: Boolean
+    image: CloudinaryImage
+}
+
+extend type Query {
+    caseStudyPage: CaseStudyPageResponse!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\CaseStudyPageQuery"
+        )
+}
+
+extend type Mutation {
+    updateCaseStudy(
+        section: String!
+        input: JSON!
+        image: Upload
+        action: String
+        id: ID
+    ): JSON!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\CaseStudyPageMutation@updateCaseStudy"
+        )
+
+    deleteCaseStudy(section: String!, id: ID!): Boolean!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\CaseStudyPageMutation@deleteCaseStudy"
+        )
 }

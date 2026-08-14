@@ -108,10 +108,6 @@ class NewsPageService
             ->values()
             ->toArray();
     }
-
-    /**
-     * Update categories, banner, newsletter.
-     */
     public function updateSection(
         string $collection,
         array $input,
@@ -122,12 +118,6 @@ class NewsPageService
         if (!is_array($data)) {
             $data = [];
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Categories
-        |--------------------------------------------------------------------------
-        */
 
         if ($collection === 'categories') {
             $categories = $data['categories'] ?? [];
@@ -188,28 +178,15 @@ class NewsPageService
             }
 
             $data['categories'] = array_values($categories);
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Banner
-        |--------------------------------------------------------------------------
-        */ elseif ($collection === 'banner') {
+        } elseif ($collection === 'banner') {
             $oldBanner = $data['banner'] ?? [];
 
             if (!is_array($oldBanner)) {
                 $oldBanner = [];
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Có upload ảnh mới
-            |--------------------------------------------------------------------------
-            */
-
             if ($image instanceof UploadedFile) {
 
-                // Xóa ảnh banner cũ trên Cloudinary
                 if (
                     isset($oldBanner['background_image']['public_id']) &&
                     !empty($oldBanner['background_image']['public_id'])
@@ -219,7 +196,6 @@ class NewsPageService
                     );
                 }
 
-                // Upload ảnh mới
                 $uploadedImage = $this->uploadService->uploadImage(
                     $image,
                     'news/page/banner'
@@ -229,32 +205,18 @@ class NewsPageService
                     'url' => $uploadedImage['url'] ?? null,
                     'public_id' => $uploadedImage['public_id'] ?? null,
                 ];
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Không upload ảnh mới
-            | Giữ nguyên ảnh cũ
-            |--------------------------------------------------------------------------
-            */ else {
+            } else {
                 if (isset($oldBanner['background_image'])) {
                     $input['background_image'] =
                         $oldBanner['background_image'];
                 }
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Merge banner cũ + dữ liệu mới
-            |--------------------------------------------------------------------------
-            */
-
             $data['banner'] = array_merge(
                 $oldBanner,
                 $input
             );
-        }
- elseif ($collection === 'newsletter') {
+        } elseif ($collection === 'newsletter') {
             $oldNewsletter = $data['newsletter'] ?? [];
 
             if (!is_array($oldNewsletter)) {

@@ -13,6 +13,7 @@ class HomepageRepository extends BaseRepository implements HomepageRepositoryInt
     {
         return Entry::class;
     }
+
     protected function getHomepageEntry(): Entry
     {
         $collection = $this->getCollection();
@@ -24,44 +25,93 @@ class HomepageRepository extends BaseRepository implements HomepageRepositoryInt
             })
             ->first();
 
-
         if (!$entry) {
-
             $entry = $collection->entries()->create([
                 'status' => 'published',
             ]);
+
             $entry->metas()->create([
                 'meta_key' => 'type',
                 'meta_value' => 'homepage',
             ]);
         }
+
         return $entry;
     }
+
+    protected function getCaseStudyEntry(): Entry
+    {
+        $collection = DB::table('collections')
+            ->where('api_endpoint', 'case-study')
+            ->first();
+
+        if (!$collection) {
+            throw new \RuntimeException(
+                'Case Study collection not found.'
+            );
+        }
+
+        $entry = Entry::where('collection_id', $collection->id)
+            ->where('status', 'published')
+            ->first();
+
+        if (!$entry) {
+            $entry = Entry::create([
+                'collection_id' => $collection->id,
+                'status' => 'published',
+            ]);
+        }
+
+        return $entry;
+    }
+
+    protected function getEntryBySection(string $key): Entry
+    {
+        if ($key === 'case_study_page') {
+            return $this->getCaseStudyEntry();
+        }
+
+        return $this->getHomepageEntry();
+    }
+
     public function getSection(string $key): array
     {
-        $entry = $this->getHomepageEntry();
+        $entry = $this->getEntryBySection($key);
+
         $meta = EntryMeta::where('entry_id', $entry->id)
             ->where('meta_key', $key)
             ->first();
+
         if (!$meta) {
             return [];
         }
-        return json_decode($meta->meta_value, true) ?? [];
+
+        $data = json_decode(
+            $meta->meta_value,
+            true
+        );
+
+        return is_array($data) ? $data : [];
     }
+
     public function updateSection(string $key, array $data): array
     {
         return DB::transaction(function () use ($key, $data) {
-            $entry = $this->getHomepageEntry();
+            $entry = $this->getEntryBySection($key);
+
             $meta = EntryMeta::where('entry_id', $entry->id)
                 ->where('meta_key', $key)
                 ->first();
+
             $oldData = [];
+
             if ($meta) {
                 $oldData = json_decode(
                     $meta->meta_value,
                     true
                 ) ?? [];
             }
+
             $newData = array_merge(
                 $oldData,
                 $data
@@ -80,10 +130,10 @@ class HomepageRepository extends BaseRepository implements HomepageRepositoryInt
                 ]
             );
 
-
             return $newData;
         });
     }
+
     public function deleteBusinessGrowthPackage(string $number)
     {
         $entry = $this->getHomepageEntry();
@@ -98,13 +148,20 @@ class HomepageRepository extends BaseRepository implements HomepageRepositoryInt
             ];
         }
 
-        $data = json_decode($meta->meta_value, true) ?? [];
+        $data = json_decode(
+            $meta->meta_value,
+            true
+        ) ?? [];
 
-        $data['packages'] = collect($data['packages'] ?? [])
-            ->reject(fn($item) => ($item['number'] ?? null) === $number)
+        $data['packages'] = collect(
+            $data['packages'] ?? []
+        )
+            ->reject(
+                fn($item) =>
+                ($item['number'] ?? null) === $number
+            )
             ->values()
             ->toArray();
-
 
         $meta->update([
             'meta_value' => json_encode(
@@ -115,6 +172,7 @@ class HomepageRepository extends BaseRepository implements HomepageRepositoryInt
 
         return $data;
     }
+
     public function deleteSuccessStory($id): array
     {
         $data = $this->getSection(
@@ -125,7 +183,8 @@ class HomepageRepository extends BaseRepository implements HomepageRepositoryInt
             $data['successStories'] ?? []
         )
             ->reject(
-                fn($item) => (string)$item['id'] === (string)$id
+                fn($item) =>
+                (string) $item['id'] === (string) $id
             )
             ->values()
             ->toArray();
@@ -135,6 +194,7 @@ class HomepageRepository extends BaseRepository implements HomepageRepositoryInt
             $data
         );
     }
+
     public function deleteBenefit($id): array
     {
         $data = $this->getSection(
@@ -145,7 +205,8 @@ class HomepageRepository extends BaseRepository implements HomepageRepositoryInt
             $data['benefits'] ?? []
         )
             ->reject(
-                fn($item) => (string)$item['id'] === (string)$id
+                fn($item) =>
+                (string) $item['id'] === (string) $id
             )
             ->values()
             ->toArray();
@@ -160,20 +221,21 @@ class HomepageRepository extends BaseRepository implements HomepageRepositoryInt
             'message' => 'Benefit deleted successfully'
         ];
     }
-public function getAllSections(): array
-{
-    $entry = $this->getHomepageEntry();
 
-    return EntryMeta::where('entry_id', $entry->id)
-        ->get()
-        ->mapWithKeys(function ($meta) {
-            return [
-                $meta->meta_key => json_decode(
-                    $meta->meta_value,
-                    true
-                ) ?? []
-            ];
-        })
-        ->toArray();
-}
+    public function getAllSections(): array
+    {
+        $entry = $this->getHomepageEntry();
+
+        return EntryMeta::where('entry_id', $entry->id)
+            ->get()
+            ->mapWithKeys(function ($meta) {
+                return [
+                    $meta->meta_key => json_decode(
+                        $meta->meta_value,
+                        true
+                    ) ?? []
+                ];
+            })
+            ->toArray();
+    }
 }

@@ -16,6 +16,7 @@ import PlanList from '@/views/plans/PlanList.vue';
 import PlanDetail from '@/views/plans/PlanDetail.vue';
 import HomePage from '../views/home/HomePage.vue';
 import NewsManagement from '../views/news/components/NewsManagement.vue';
+import CaseStudyManagement from '../views/case-studies/components/CaseStudyManagement.vue';
 
 const routes = [
     {
@@ -76,14 +77,12 @@ const routes = [
             {
                 path: 'plans',
                 name: 'plans.list',
-                component: () =>
-                    import('@/views/plans/PlanList.vue')
+                component: () => import('@/views/plans/PlanList.vue')
             },
             {
                 path: 'plans/:id',
                 name: 'plans.detail',
-                component: () =>
-                    import('@/views/plans/PlanDetail.vue'),
+                component: () => import('@/views/plans/PlanDetail.vue'),
                 props: true
             },
             {
@@ -100,6 +99,11 @@ const routes = [
                 path: 'news',
                 name: 'news.management',
                 component: NewsManagement
+            },
+            {
+                path: 'case-studies',
+                name: 'case-studies.management',
+                component: CaseStudyManagement
             }
         ]
     }
