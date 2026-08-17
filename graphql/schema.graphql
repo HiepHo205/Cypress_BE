@@ -452,7 +452,6 @@ input FooterBrandingInput {
 }
 extend type Query {
     footerBranding: FooterBranding
-        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@footerBranding"
         )
@@ -492,12 +491,11 @@ type FooterSocialResponse {
 
 extend type Query {
     footer: Footer
-        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@footer"
         )
+
     footerSocials: [FooterSocial]
-        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@socials"
         )
@@ -566,7 +564,6 @@ type FooterNewsletter {
 
 extend type Query {
     footerNewsletter: FooterNewsletter
-        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@footerNewsletter"
         )
@@ -608,7 +605,6 @@ input FooterLegalLinkInput {
 }
 extend type Query {
     footerBottomBar: FooterBottomBarResponse
-        @guard(with: ["api"])
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\FooterQuery@footerBottomBar"
         )
@@ -628,7 +624,53 @@ type CloudinaryImage {
     url: String
     public_id: String
 }
+# =========================
+# News page CMS
+# =========================
 
+type NewsPageItem {
+    id: ID!
+    title: String
+    description: String
+    category: String
+    date: String
+    status: String
+    featured: Boolean
+    image: CloudinaryImage
+}
+
+type NewsPostCategory {
+    id: ID!
+    title: String
+    description: String
+}
+
+type NewsPage {
+    banner: JSON
+    newsletter: JSON
+    latest: [NewsPageItem!]!
+    featured: [NewsPageItem!]!
+    postCategories: [NewsPostCategory!]!
+}
+
+extend type Query {
+    newsPage: NewsPage!
+        @field(resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\NewsPageQuery")
+}
+
+extend type Mutation {
+    updateNewsPage(collection: String!, input: JSON!, image: Upload): JSON!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\NewsPageMutation@update"
+        )
+
+    deleteNewsPageItem(collection: String!, id: ID!): Boolean!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\NewsPageMutation@deleteItem"
+        )
+}
 # =========================
 # Homepage Root
 # =========================
@@ -977,6 +1019,28 @@ extend type Query {
         )
 }
 
+type CaseStudyPageResponse {
+    banner: JSON!
+    categories: JSON!
+    caseStudies: [CaseStudyPageItem!]!
+}
+
+type CaseStudyPageItem {
+    id: ID!
+    title: String
+    description: String
+    categories: [String!]
+    active: Boolean
+    image: CloudinaryImage
+}
+
+extend type Query {
+    caseStudyPage: CaseStudyPageResponse!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\CaseStudyPageQuery"
+        )
+}
+
 extend type Mutation {
     createServiceRequest(input: CreateServiceRequestInput!): ServiceRequest!
         @field(
@@ -1073,3 +1137,55 @@ extend type Mutation {
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PackageRequestMutation@reject"
         )
 }
+
+extend type Mutation {
+    updateCaseStudy(
+        section: String!
+        input: JSON!
+        image: Upload
+        action: String
+        id: ID
+    ): JSON!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\CaseStudyPageMutation@updateCaseStudy"
+        )
+
+    deleteCaseStudy(section: String!, id: ID!): Boolean!
+        @guard(with: ["api"])
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\CaseStudyPageMutation@deleteCaseStudy"
+        )
+}
+
+type UserPackage {
+    id: ID!
+
+    email: String!
+
+    plan_id: ID
+    plan_name: String
+
+    duration_days: Int
+
+    started_at: String
+    expired_at: String
+
+    status: String
+}
+
+extend type Query {
+
+    userPackages: [UserPackage!]!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\UserPackageQuery@list"
+        )
+
+    userPackage(
+        id: ID!
+    ): UserPackage
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\UserPackageQuery@detail"
+        )
+}
+

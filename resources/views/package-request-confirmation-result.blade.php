@@ -118,7 +118,6 @@
 
         <div class="actions">
             <button onclick="window.close()" class="btn-close">Close This Window</button>
-            <a href="/login" class="btn-home">Go to Login</a>
         </div>
 
         <div class="footer">

@@ -1,7 +1,6 @@
 <script setup>
-import { computed } from 'vue';
-import { useMutation } from '@vue/apollo-composable';
-import { useQuery } from '@vue/apollo-composable';
+import { computed, ref } from 'vue';
+import { useMutation, useQuery } from '@vue/apollo-composable';
 
 import { GET_PACKAGE_REQUEST } from '@/graphql/queries/package-requests';
 
@@ -14,30 +13,71 @@ const props = defineProps({
     id: String
 });
 
-const { result, loading, refetch } = useQuery(GET_PACKAGE_REQUEST, () => ({
-    id: props.id
-}));
+const { result, loading } = useQuery(
+    GET_PACKAGE_REQUEST,
+    () => ({
+        id: props.id
+    })
+);
 
-const request = computed(() => result.value?.packageRequest);
+const localStatus = ref(null);
 
-const { mutate: approve } = useMutation(APPROVE_PACKAGE_REQUEST);
+const request = computed(() => {
+    const data = result.value?.packageRequest;
 
-const { mutate: reject } = useMutation(REJECT_PACKAGE_REQUEST);
+    if (!data) {
+        return null;
+    }
+
+    return {
+        ...data,
+        status:
+            localStatus.value ??
+            data.status
+    };
+});
+
+const isApproving = ref(false);
+const isRejecting = ref(false);
+
+const { mutate: approve } =
+    useMutation(
+        APPROVE_PACKAGE_REQUEST
+    );
+
+const { mutate: reject } =
+    useMutation(
+        REJECT_PACKAGE_REQUEST
+    );
 
 async function handleApprove() {
-    await approve({
-        id: props.id
-    });
+    try {
+        isApproving.value = true;
 
-    await refetch();
+        await approve({
+            id: props.id
+        });
+
+        localStatus.value =
+            'approved';
+    } finally {
+        isApproving.value = false;
+    }
 }
 
 async function handleReject() {
-    await reject({
-        id: props.id
-    });
+    try {
+        isRejecting.value = true;
 
-    await refetch();
+        await reject({
+            id: props.id
+        });
+
+        localStatus.value =
+            'rejected';
+    } finally {
+        isRejecting.value = false;
+    }
 }
 
 function getStatusClass(status) {
@@ -59,7 +99,7 @@ function getStatusClass(status) {
 
     <div v-else-if="request" class="space-y-6">
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex justify-between">
+            <div class="flex justify-between items-start">
                 <div>
                     <h1 class="text-2xl font-bold">
                         Package Request #{{ request.id }}
@@ -69,7 +109,7 @@ function getStatusClass(status) {
                 </div>
 
                 <span
-                    class="px-3 py-1 rounded-full text-sm"
+                    class="px-3 py-2 rounded-md text-sm"
                     :class="getStatusClass(request.status)"
                 >
                     {{ request.status }}
@@ -130,16 +170,32 @@ function getStatusClass(status) {
             <div class="flex gap-3">
                 <button
                     @click="handleApprove"
-                    class="px-4 py-2 bg-green-600 text-white rounded-lg"
+                    :disabled="
+                        isApproving ||
+                        isRejecting
+                    "
+                    class="px-4 py-2 bg-green-600 text-white rounded-lg disabled:opacity-50"
                 >
-                    Approve
+                    {{
+                        isApproving
+                            ? 'Approving...'
+                            : 'Approve'
+                    }}
                 </button>
 
                 <button
                     @click="handleReject"
-                    class="px-4 py-2 bg-red-600 text-white rounded-lg"
+                    :disabled="
+                        isApproving ||
+                        isRejecting
+                    "
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg disabled:opacity-50"
                 >
-                    Reject
+                    {{
+                        isRejecting
+                            ? 'Rejecting...'
+                            : 'Reject'
+                    }}
                 </button>
             </div>
         </div>

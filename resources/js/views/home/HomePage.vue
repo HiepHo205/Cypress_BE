@@ -12,7 +12,6 @@ import {
     HomepageCaseStudy,
     HomepagePricing,
     HomepageSuccessStories,
-    // SectionGeneralInformation,
     HomepageOffer,
     HomepageContact,
     HomepageNews
@@ -67,12 +66,6 @@ const tabs = [
         description: 'Manage success stories list.',
         component: HomepageSuccessStories
     },
-    // {
-    //     id: 'general-information',
-    //     title: 'General Information',
-    //     description: 'Reusable section information.',
-    //     component: SectionGeneralInformation
-    // },
     {
         id: 'offer',
         title: 'Launch Offer',
@@ -145,7 +138,6 @@ onMounted(async () => {
 
 <template>
     <div class="min-h-screen bg-gray-50 p-6">
-        <!-- Header -->
         <div class="mb-6 rounded-2xl bg-white p-6 shadow-sm">
             <h1 class="text-2xl font-bold text-gray-900">
                 Homepage Management
@@ -157,7 +149,6 @@ onMounted(async () => {
         </div>
 
         <div class="grid grid-cols-12 gap-6">
-            <!-- Tabs -->
             <div class="col-span-3">
                 <div class="space-y-3 rounded-2xl bg-white p-4 shadow-sm">
                     <button

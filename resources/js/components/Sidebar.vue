@@ -9,16 +9,18 @@ import {
     FolderTree,
     PanelTop,
     PanelBottom,
+    CreditCard,
+    Newspaper,
     ChevronDown,
     ChevronRight,
-    CreditCard,
     Inbox,
     ClipboardList,
-    Package
+    Package,
+    BriefcaseBusiness,
+    User
 } from 'lucide-vue-next';
 
 import { useLogout } from '@/composables/useLogout';
-
 const route = useRoute();
 
 const showLogoutModal = ref(false);
@@ -66,8 +68,8 @@ async function confirmLogout() {
             <h1 class="text-2xl font-bold">Cypress</h1>
         </div>
 
-        <nav class="flex-1 p-4 overflow-y-auto">
-            <ul class="space-y-2">
+        <nav class="sidebar-nav flex-1 p-3 overflow-y-auto">
+            <ul class="space-y-1.5">
                 <!-- Dashboard -->
                 <li>
                     <router-link
@@ -165,6 +167,17 @@ async function confirmLogout() {
                                     <span> Package Requests </span>
                                 </router-link>
                             </li>
+                            <li>
+                                <router-link
+                                    to="/admin/user-packages"
+                                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition hover:bg-slate-800"
+                                    active-class="bg-slate-800"
+                                >
+                                    <User :size="16" />
+
+                                    <span> User Packages </span>
+                                </router-link>
+                            </li>
                         </ul>
                     </transition>
                 </li>
@@ -230,6 +243,26 @@ async function confirmLogout() {
                         <span> Page </span>
                     </router-link>
                 </li>
+                <li>
+                    <router-link
+                        to="/admin/news"
+                        class="flex items-center gap-3 px-4 py-3 rounded-lg transition hover:bg-slate-800"
+                        exact-active-class="bg-slate-800"
+                    >
+                        <Newspaper :size="18" />
+                        <span>News</span>
+                    </router-link>
+                </li>
+                <li>
+                    <router-link
+                        to="/admin/case-studies"
+                        class="flex items-center gap-3 px-4 py-3 rounded-lg transition hover:bg-slate-800"
+                        exact-active-class="bg-slate-800"
+                    >
+                        <BriefcaseBusiness :size="18" />
+                        <span>CaseStudy</span>
+                    </router-link>
+                </li>
             </ul>
         </nav>
 
@@ -253,9 +286,7 @@ async function confirmLogout() {
     >
         <div class="w-[400px] rounded-xl bg-white p-6 shadow-xl">
             <h2 class="text-xl font-semibold text-gray-800">Logout</h2>
-
             <p class="mt-3 text-gray-600">Are you sure you want to log out?</p>
-
             <div class="mt-6 flex justify-end gap-3">
                 <button
                     @click="showLogoutModal = false"
@@ -263,7 +294,6 @@ async function confirmLogout() {
                 >
                     Cancel
                 </button>
-
                 <button
                     @click="confirmLogout"
                     class="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
@@ -274,3 +304,14 @@ async function confirmLogout() {
         </div>
     </div>
 </template>
+
+<style scoped>
+.sidebar-nav {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+    display: none;
+}
+</style>

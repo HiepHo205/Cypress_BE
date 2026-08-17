@@ -7,7 +7,7 @@
 </h2>
 
 <p>
-    Unfortunately, your package request has been rejected.
+    Unfortunately, your package request for <strong>{{ $requestData['plan_name'] ?? $requestData['requested_plan_name'] ?? 'your selected package' }}</strong> has been rejected.
 </p>
 
 <p>

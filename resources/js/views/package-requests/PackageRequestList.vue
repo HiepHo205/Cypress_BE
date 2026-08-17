@@ -5,13 +5,24 @@ import { useQuery } from '@vue/apollo-composable';
 
 import BaseTable from '@/components/BaseTable.vue';
 
-import { GET_PACKAGE_REQUESTS } from '@/graphql/queries/package-requests';
+import {
+    GET_PACKAGE_REQUESTS
+} from '@/graphql/queries/package-requests';
 
 const router = useRouter();
 
-const { result, loading } = useQuery(GET_PACKAGE_REQUESTS);
+const {
+    result,
+    loading
+} = useQuery(
+    GET_PACKAGE_REQUESTS
+);
 
-const items = computed(() => result.value?.packageRequests ?? []);
+const items = computed(
+    () =>
+        result.value
+            ?.packageRequests ?? []
+);
 
 const columns = [
     {
@@ -40,8 +51,11 @@ const columns = [
     }
 ];
 
-function getStatusClass(status) {
+function getStatusClass(
+    status
+) {
     switch (status) {
+
         case 'approved':
             return 'bg-green-100 text-green-700';
 
@@ -56,54 +70,170 @@ function getStatusClass(status) {
 
 <template>
     <div class="space-y-6">
-        <div>
-            <h1 class="text-2xl font-bold">Package Requests</h1>
+
+        <!-- Header -->
+        <div
+            class="bg-white rounded-lg shadow p-6"
+        >
+
+            <div
+                class="flex justify-between items-center"
+            >
+
+                <div>
+
+                    <h1
+                        class="text-2xl font-bold"
+                    >
+                        Package Requests
+                    </h1>
+
+                    <p
+                        class="text-gray-500 mt-1"
+                    >
+                        Manage package registration requests
+                    </p>
+
+                </div>
+
+                <div
+                    class="text-right"
+                >
+
+                    <p
+                        class="text-sm text-gray-500"
+                    >
+                        Total Requests
+                    </p>
+
+                    <p
+                        class="text-2xl font-bold"
+                    >
+                        {{
+                            items.length
+                        }}
+                    </p>
+
+                </div>
+
+            </div>
+
         </div>
 
-        <div v-if="loading">Loading...</div>
+        <!-- Table -->
+        <div
+            class="bg-white rounded-lg shadow overflow-hidden"
+        >
 
-        <BaseTable v-else :columns="columns" :items="items">
-            <template #row="{ item }">
-                <td class="px-6 py-4">
-                    {{ item.id }}
-                </td>
+            <div
+                v-if="loading"
+                class="p-10 text-center text-gray-500"
+            >
+                Loading package requests...
+            </div>
 
-                <td class="px-6 py-4">
-                    {{ item.plan_name || item.plan_id || '-' }}
-                </td>
+            <div
+                v-else-if="
+                    !items.length
+                "
+                class="p-10 text-center text-gray-500"
+            >
+                No package requests found.
+            </div>
 
-                <td class="px-6 py-4">
-                    {{ item.full_name }}
-                </td>
+            <BaseTable
+                v-else
+                :columns="
+                    columns
+                "
+                :items="
+                    items
+                "
+            >
 
-                <td class="px-6 py-4">
-                    {{
-                        item.email?.length > 23
-                            ? item.email.slice(0, 23) + '...'
-                            : item.email
-                    }}
-                </td>
+                <template
+                    #row="{ item }"
+                >
 
-                <td class="px-6 py-4">
-                    <span
-                        class="px-3 py-1 rounded-full text-sm"
-                        :class="getStatusClass(item.status)"
+                    <td
+                        class="px-6 py-4"
                     >
-                        {{ item.status }}
-                    </span>
-                </td>
+                        {{ item.id }}
+                    </td>
 
-                <td class="px-6 py-4">
-                    <button
-                        @click="
-                            router.push(`/admin/package-requests/${item.id}`)
-                        "
-                        class="text-blue-600 hover:underline"
+                    <td
+                        class="px-6 py-4"
                     >
-                        View
-                    </button>
-                </td>
-            </template>
-        </BaseTable>
+                        {{
+                            item.plan_name ||
+                            item.plan_id ||
+                            '-'
+                        }}
+                    </td>
+
+                    <td
+                        class="px-6 py-4"
+                    >
+                        {{
+                            item.full_name
+                        }}
+                    </td>
+
+                    <td
+                        class="px-6 py-4"
+                    >
+                        {{
+                            item.email
+                                ?.length >
+                            30
+                                ? item.email.slice(
+                                      0,
+                                      30
+                                  ) +
+                                  '...'
+                                : item.email
+                        }}
+                    </td>
+
+                    <td
+                        class="px-6 py-4"
+                    >
+                        <span
+                            class="px-3 py-1 rounded-full text-sm"
+                            :class="
+                                getStatusClass(
+                                    item.status
+                                )
+                            "
+                        >
+                            {{
+                                item.status
+                            }}
+                        </span>
+                    </td>
+
+                    <td
+                        class="px-6 py-4"
+                    >
+
+                        <button
+                            @click="
+                                router.push(
+                                    `/admin/package-requests/${item.id}`
+                                )
+                            "
+                            class="text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                            View
+                        </button>
+
+                    </td>
+
+                </template>
+
+            </BaseTable>
+
+        </div>
+
     </div>
 </template>

@@ -15,6 +15,10 @@ import { useToast } from 'vue-toastification';
 import PlanList from '@/views/plans/PlanList.vue';
 import PlanDetail from '@/views/plans/PlanDetail.vue';
 import HomePage from '../views/home/HomePage.vue';
+import NewsManagement from '../views/news/components/NewsManagement.vue';
+import CaseStudyManagement from '../views/case-studies/components/CaseStudyManagement.vue';
+import UserPackageList from '@/views/package-requests/UserPackageList.vue';
+import UserPackageDetail from '@/views/package-requests/UserPackageDetail.vue';
 
 const routes = [
     {
@@ -83,7 +87,6 @@ const routes = [
                 component: () => import('@/views/plans/PlanDetail.vue'),
                 props: true
             },
-            // Footer CMS
             {
                 path: 'footer',
                 name: 'cms.footer',
@@ -118,6 +121,27 @@ const routes = [
                 name: 'package-requests.detail',
                 component: () =>
                     import('@/views/package-requests/PackageRequestDetail.vue'),
+                props: true
+            },
+            {
+                path: 'news',
+                name: 'news.management',
+                component: NewsManagement
+            },
+            {
+                path: 'case-studies',
+                name: 'case-studies.management',
+                component: CaseStudyManagement
+            },
+            {
+                path: '/admin/user-packages',
+                name: 'UserPackageList',
+                component: UserPackageList
+            },
+            {
+                path: '/admin/user-packages/:id',
+                name: 'UserPackageDetail',
+                component: UserPackageDetail,
                 props: true
             }
         ]

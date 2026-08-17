@@ -92,12 +92,18 @@ class PackageRequestMutation
             ];
         }
 
+        $requestedPlanName =
+            DB::table('entry_meta')
+                ->where('entry_id', (int) $input['plan_id'])
+                ->where('meta_key', 'plan_name')
+                ->value('meta_value') ?? 'your selected plan';
+
         Mail::to($input['email'])->send(
             new PackageRequestConfirmationMail([
                 'full_name' => $input['full_name'],
                 'current_package' => $activePackage['plan_name'] ?? '',
                 'expired_at' => $activePackage['expired_at'] ?? '',
-                'requested_plan_id' => $input['plan_id'],
+                'requested_plan_name' => $requestedPlanName,
                 'requested_duration_days' => $input['duration_days'],
                 'confirm_url' =>
                     config('app.url') .
@@ -215,8 +221,19 @@ class PackageRequestMutation
             'updated_at' => now(),
         ]);
 
+        $planName =
+            $request['plan_name'] ??
+            (DB::table('entry_meta')
+                ->where('entry_id', (int) $request['plan_id'])
+                ->where('meta_key', 'plan_name')
+                ->value('meta_value') ??
+                'your selected package');
+
         Mail::to($request['email'])->send(
-            new PackageRequestRejectedMail($request),
+            new PackageRequestRejectedMail([
+                ...$request,
+                'plan_name' => $planName,
+            ]),
         );
 
         return app(PackageRequestQuery::class)->detail(null, [
@@ -242,8 +259,29 @@ class PackageRequestMutation
                 'updated_at' => now(),
             ]);
 
+        $planName =
+            $request['plan_name'] ??
+            (DB::table('entry_meta')
+                ->where('entry_id', (int) $request['plan_id'])
+                ->where('meta_key', 'plan_name')
+                ->value('meta_value') ??
+                'your selected package');
+
+        $currentPackage = $this->getCurrentPackageByEmail($request['email']);
+
         Mail::to($request['email'])->send(
-            new PackageRequestApprovedMail($request),
+            new PackageRequestApprovedMail([
+                ...$request,
+                'plan_name' => $planName,
+                'current_package_name' =>
+                    $currentPackage['plan_name'] ?? $planName,
+                'current_package_started_at' =>
+                    $currentPackage['started_at'] ?? null,
+                'current_package_expired_at' =>
+                    $currentPackage['expired_at'] ?? null,
+                'current_package_duration_days' =>
+                    $currentPackage['duration_days'] ?? null,
+            ]),
         );
 
         return app(PackageRequestQuery::class)->detail(null, [
@@ -265,8 +303,19 @@ class PackageRequestMutation
                 'updated_at' => now(),
             ]);
 
+        $planName =
+            $request['plan_name'] ??
+            (DB::table('entry_meta')
+                ->where('entry_id', (int) $request['plan_id'])
+                ->where('meta_key', 'plan_name')
+                ->value('meta_value') ??
+                'your selected package');
+
         Mail::to($request['email'])->send(
-            new PackageRequestRejectedMail($request),
+            new PackageRequestRejectedMail([
+                ...$request,
+                'plan_name' => $planName,
+            ]),
         );
 
         return app(PackageRequestQuery::class)->detail(null, [
@@ -359,10 +408,6 @@ class PackageRequestMutation
             ->where('entry_relations.relation_type', 'plan')
             ->exists();
 
-        if ($exists) {
-            throw new Exception('User already owns this package.');
-        }
-
         $userPackageId = DB::table('entries')->insertGetId([
             'collection_id' => $collectionId,
             'status' => 'published',
@@ -399,6 +444,63 @@ class PackageRequestMutation
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+    }
+
+    private function getCurrentPackageByEmail(string $email): ?array
+    {
+        $collectionId = $this->resolveCollectionId([
+            'user_package',
+            'user_packages',
+        ]);
+
+        if (!$collectionId) {
+            return null;
+        }
+
+        $entry = DB::table('entries')
+            ->join(
+                'entry_meta as email_meta',
+                'entries.id',
+                '=',
+                'email_meta.entry_id',
+            )
+            ->where('entries.collection_id', $collectionId)
+            ->where('email_meta.meta_key', 'email')
+            ->where('email_meta.meta_value', $email)
+            ->orderByDesc('entries.id')
+            ->select('entries.id')
+            ->first();
+
+        if (!$entry) {
+            return null;
+        }
+
+        $packageMeta = DB::table('entry_meta')
+            ->where('entry_id', $entry->id)
+            ->pluck('meta_value', 'meta_key')
+            ->toArray();
+
+        $planId = (int) ($packageMeta['plan_id'] ?? 0);
+        $planName = null;
+
+        if ($planId) {
+            $planName = DB::table('entry_meta')
+                ->where('entry_id', $planId)
+                ->where('meta_key', 'plan_name')
+                ->value('meta_value');
+        }
+
+        return [
+            'id' => $entry->id,
+            'plan_id' => $planId,
+            'plan_name' => $planName ?? ($packageMeta['plan_name'] ?? null),
+            'duration_days' => isset($packageMeta['duration_days'])
+                ? (int) $packageMeta['duration_days']
+                : null,
+            'started_at' => $packageMeta['started_at'] ?? null,
+            'expired_at' => $packageMeta['expired_at'] ?? null,
+            'status' => $packageMeta['status'] ?? null,
+        ];
     }
 
     private function findActivePackageByEmail(string $email): ?array

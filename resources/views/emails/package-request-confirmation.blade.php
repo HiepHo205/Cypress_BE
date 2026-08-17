@@ -39,7 +39,7 @@
     </p>
 
     <p>
-        You requested a change to package: <strong>{{ $requestData['requested_plan_id'] ?? 'your selected plan' }}</strong>.
+        You requested a change to package: <strong>{{ $requestData['requested_plan_name'] ?? 'your selected plan' }}</strong>.
     </p>
 
     <p>
