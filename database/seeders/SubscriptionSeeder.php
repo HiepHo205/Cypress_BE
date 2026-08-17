@@ -9,6 +9,14 @@ class SubscriptionSeeder extends Seeder
 {
     public function run(): void
     {
+        $createdBy = DB::table('users')->orderBy('id')->value('id');
+
+        if (!$createdBy) {
+            throw new \RuntimeException(
+                'No user found for subscription seeding.',
+            );
+        }
+
         $subscriptionCollectionId = DB::table('collections')
             ->where('collection_name', 'subscriptions')
             ->value('id');
@@ -18,7 +26,7 @@ class SubscriptionSeeder extends Seeder
                 'collections',
                 'collections.id',
                 '=',
-                'entries.collection_id'
+                'entries.collection_id',
             )
             ->where('collections.collection_name', 'companies')
             ->value('entries.id');
@@ -31,7 +39,7 @@ class SubscriptionSeeder extends Seeder
         $subscriptionId = DB::table('entries')->insertGetId([
             'collection_id' => $subscriptionCollectionId,
             'status' => 'published',
-            'created_by' => 6,
+            'created_by' => $createdBy,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

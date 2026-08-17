@@ -10,13 +10,15 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('users')->insert([
-            'name' => 'Admin User',
-            'email' => 'admin@cypresshub.com',
-            'password' => Hash::make('12345678'),
-            'status' => 'active',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        DB::table('users')->updateOrInsert(
+            ['email' => 'admin@cypresshub.com'],
+            [
+                'name' => 'Admin User',
+                'password' => Hash::make('12345678'),
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        );
     }
 }

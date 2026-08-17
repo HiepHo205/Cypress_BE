@@ -75,14 +75,12 @@ const routes = [
             {
                 path: 'plans',
                 name: 'plans.list',
-                component: () =>
-                    import('@/views/plans/PlanList.vue')
+                component: () => import('@/views/plans/PlanList.vue')
             },
             {
                 path: 'plans/:id',
                 name: 'plans.detail',
-                component: () =>
-                    import('@/views/plans/PlanDetail.vue'),
+                component: () => import('@/views/plans/PlanDetail.vue'),
                 props: true
             },
             // Footer CMS
@@ -95,6 +93,32 @@ const routes = [
                 path: 'homepage',
                 name: 'cms.homepage',
                 component: HomePage
+            },
+            {
+                path: 'service-requests',
+                name: 'service-requests.list',
+                component: () =>
+                    import('@/views/service-requests/ServiceRequestList.vue')
+            },
+            {
+                path: 'service-requests/:id',
+                name: 'service-requests.detail',
+                component: () =>
+                    import('@/views/service-requests/ServiceRequestDetail.vue'),
+                props: true
+            },
+            {
+                path: 'package-requests',
+                name: 'package-requests.list',
+                component: () =>
+                    import('@/views/package-requests/PackageRequestList.vue')
+            },
+            {
+                path: 'package-requests/:id',
+                name: 'package-requests.detail',
+                component: () =>
+                    import('@/views/package-requests/PackageRequestDetail.vue'),
+                props: true
             }
         ]
     }

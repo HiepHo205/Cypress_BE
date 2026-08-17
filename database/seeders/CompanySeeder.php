@@ -9,6 +9,12 @@ class CompanySeeder extends Seeder
 {
     public function run(): void
     {
+        $createdBy = DB::table('users')->orderBy('id')->value('id');
+
+        if (!$createdBy) {
+            throw new \RuntimeException('No user found for company seeding.');
+        }
+
         $companyCollectionId = DB::table('collections')
             ->where('collection_name', 'companies')
             ->value('id');
@@ -16,7 +22,7 @@ class CompanySeeder extends Seeder
         $companyId = DB::table('entries')->insertGetId([
             'collection_id' => $companyCollectionId,
             'status' => 'published',
-            'created_by' => 6,
+            'created_by' => $createdBy,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

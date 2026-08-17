@@ -423,24 +423,17 @@ input UpdatePlanInput {
 }
 
 extend type Mutation {
-    createPlan(
-        input: CreatePlanInput!
-    ): Plan!
+    createPlan(input: CreatePlanInput!): Plan!
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PlanMutation@create"
         )
 
-    updatePlan(
-        id: ID!
-        input: UpdatePlanInput!
-    ): Plan!
+    updatePlan(id: ID!, input: UpdatePlanInput!): Plan!
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PlanMutation@update"
         )
 
-    deletePlan(
-        id: ID!
-    ): Boolean!
+    deletePlan(id: ID!): Boolean!
         @field(
             resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PlanMutation@delete"
         )
@@ -934,4 +927,149 @@ type HomepageContactLabel {
 type HomepageContactOption {
     id: ID
     value: String
+}
+
+type ServiceRequest {
+    id: ID!
+
+    request_type: String!
+
+    full_name: String
+    email: String
+    phone: String
+
+    company_name: String
+    address: String
+
+    service_interest: String
+    message: String
+
+    extra_data: String
+
+    status: String!
+}
+
+input CreateServiceRequestInput {
+    request_type: String!
+
+    full_name: String
+    email: String
+    phone: String
+
+    company_name: String
+    address: String
+
+    service_interest: String
+    message: String
+
+    extra_data: String
+}
+
+extend type Query {
+    serviceRequests: [ServiceRequest!]!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\ServiceRequestQuery@list"
+        )
+
+    serviceRequest(id: ID!): ServiceRequest
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\ServiceRequestQuery@detail"
+        )
+}
+
+extend type Mutation {
+    createServiceRequest(input: CreateServiceRequestInput!): ServiceRequest!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\ServiceRequestMutation@create"
+        )
+
+    approveServiceRequest(id: ID!): ServiceRequest!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\ServiceRequestMutation@approve"
+        )
+
+    rejectServiceRequest(id: ID!): ServiceRequest!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\ServiceRequestMutation@reject"
+        )
+}
+
+type PackageRequest {
+    id: ID!
+
+    plan_id: String
+    plan_name: String
+    duration_days: Int
+
+    full_name: String
+    email: String
+    phone: String
+
+    company_name: String
+
+    request_data: String
+    started_at: String
+    expired_at: String
+
+    status: String!
+}
+
+input CreatePackageRequestInput {
+    plan_id: String!
+    duration_days: Int!
+
+    full_name: String!
+    email: String!
+    phone: String!
+
+    company_name: String
+
+    request_data: String
+}
+
+extend type Query {
+    packageRequests: [PackageRequest!]!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\PackageRequestQuery@list"
+        )
+
+    packageRequest(id: ID!): PackageRequest
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\PackageRequestQuery@detail"
+        )
+}
+
+type PackageRequestResponse {
+    success: Boolean!
+    requires_confirmation: Boolean!
+    message: String!
+}
+
+extend type Mutation {
+    createPackageRequest(
+        input: CreatePackageRequestInput!
+    ): PackageRequestResponse!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PackageRequestMutation@create"
+        )
+
+    confirmPackageRequest(token: String!): PackageRequest!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PackageRequestMutation@confirm"
+        )
+
+    keepCurrentPackageRequest(token: String!): PackageRequest!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PackageRequestMutation@keepCurrentPackage"
+        )
+
+    approvePackageRequest(id: ID!): PackageRequest!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PackageRequestMutation@approve"
+        )
+
+    rejectPackageRequest(id: ID!): PackageRequest!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\PackageRequestMutation@reject"
+        )
 }

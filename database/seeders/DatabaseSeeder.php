@@ -15,19 +15,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-
         $this->call([
-            // UserSeeder::class,
+            UserSeeder::class,
             CollectionSeeder::class,
             PlanSeeder::class,
+            FeatureSeeder::class,
+            BenefitSeeder::class,
             CompanySeeder::class,
             SubscriptionSeeder::class,
             HomepageSeeder::class,
+            PermissionSeeder::class,
         ]);
 
-        $this->call([
-            PermissionSeeder::class,
-            UserSeeder::class,
-        ]);
+        $this->call([PermissionSeeder::class]);
     }
 }

@@ -8,10 +8,16 @@ use RuntimeException;
 
 class HomepageSeeder extends Seeder
 {
-    private int $createdBy = 6;
+    private int $createdBy;
 
     public function run(): void
     {
+        $this->createdBy = DB::table('users')->orderBy('id')->value('id');
+
+        if (!$this->createdBy) {
+            throw new RuntimeException('No user found for homepage seeding.');
+        }
+
         DB::transaction(function () {
             $this->seedBanner();
             $this->seedBusinessGrowth();
@@ -37,7 +43,7 @@ class HomepageSeeder extends Seeder
 
         if (!$id) {
             throw new RuntimeException(
-                "Collection [{$collectionName}] was not found."
+                "Collection [{$collectionName}] was not found.",
             );
         }
 
@@ -55,15 +61,12 @@ class HomepageSeeder extends Seeder
         ]);
     }
 
-    private function addMeta(
-        int $entryId,
-        string $key,
-        mixed $value
-    ): void {
+    private function addMeta(int $entryId, string $key, mixed $value): void
+    {
         if (is_array($value)) {
             $value = json_encode(
                 $value,
-                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
             );
         }
 
@@ -87,7 +90,7 @@ class HomepageSeeder extends Seeder
     private function addRelation(
         int $parentId,
         int $childId,
-        string $relationType
+        string $relationType,
     ): void {
         DB::table('entry_relations')->insert([
             'parent_entry_id' => $parentId,
@@ -101,22 +104,18 @@ class HomepageSeeder extends Seeder
     private function addImageMeta(
         int $entryId,
         string $prefix,
-        ?array $image
+        ?array $image,
     ): void {
         if (!$image) {
             return;
         }
 
-        $this->addMeta(
-            $entryId,
-            "{$prefix}_url",
-            $image['url'] ?? null
-        );
+        $this->addMeta($entryId, "{$prefix}_url", $image['url'] ?? null);
 
         $this->addMeta(
             $entryId,
             "{$prefix}_public_id",
-            $image['public_id'] ?? null
+            $image['public_id'] ?? null,
         );
     }
 
@@ -126,76 +125,47 @@ class HomepageSeeder extends Seeder
 
         $bannerId = $this->createEntry($collectionId);
 
-        $this->addMeta(
-            $bannerId,
-            'title',
-            'Work from anywhere, anytime.'
-        );
+        $this->addMeta($bannerId, 'title', 'Work from anywhere, anytime.');
 
         $this->addMeta(
             $bannerId,
             'description',
-            'Access over 600 locations worldwide with just one membership card.'
+            'Access over 600 locations worldwide with just one membership card.',
         );
 
-        $this->addMeta(
-            $bannerId,
-            'primary_button_text',
-            'Book a Service'
-        );
+        $this->addMeta($bannerId, 'primary_button_text', 'Book a Service');
 
-        $this->addMeta(
-            $bannerId,
-            'primary_button_url',
-            '/book-banner'
-        );
+        $this->addMeta($bannerId, 'primary_button_url', '/book-banner');
 
-        $this->addMeta(
-            $bannerId,
-            'secondary_button_text',
-            'See how it works'
-        );
+        $this->addMeta($bannerId, 'secondary_button_text', 'See how it works');
 
-        $this->addMeta(
-            $bannerId,
-            'secondary_button_url',
-            '/see-banner'
-        );
+        $this->addMeta($bannerId, 'secondary_button_url', '/see-banner');
 
         $this->addImageMeta($bannerId, 'image', [
-            'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1786203687/homepage/banner/qvqttdfw0fypciqbjryw.jpg',
+            'url' =>
+                'https://res.cloudinary.com/droybexbj/image/upload/v1786203687/homepage/banner/qvqttdfw0fypciqbjryw.jpg',
             'public_id' => 'homepage/banner/qvqttdfw0fypciqbjryw',
         ]);
     }
 
     private function seedBusinessGrowth(): void
     {
-        $collectionId = $this->collectionId(
-            'homepage_business_growth'
-        );
+        $collectionId = $this->collectionId('homepage_business_growth');
 
         $packageCollectionId = $this->collectionId(
-            'homepage_business_growth_package'
+            'homepage_business_growth_package',
         );
 
         $sectionId = $this->createEntry($collectionId);
 
-        $this->addMeta(
-            $sectionId,
-            'label',
-            'OUR SERVICES'
-        );
+        $this->addMeta($sectionId, 'label', 'OUR SERVICES');
 
-        $this->addMeta(
-            $sectionId,
-            'title',
-            'Accelerate Your Business Growth'
-        );
+        $this->addMeta($sectionId, 'title', 'Accelerate Your Business Growth');
 
         $this->addMeta(
             $sectionId,
             'description',
-            'We provide everything you need to build, launch, and scale—so you can focus on what matters most: your vision.'
+            'We provide everything you need to build, launch, and scale—so you can focus on what matters most: your vision.',
         );
 
         $packages = [
@@ -204,7 +174,8 @@ class HomepageSeeder extends Seeder
                 'title' => 'IDEA',
                 'package_name' => 'Package 1',
                 'headline' => 'IDEA – Maximum flexibility',
-                'description' => 'Flexible hourly or part-time workspace solutions. The ideal professional touchpoint for independent founders needing high mobility and cost optimization.',
+                'description' =>
+                    'Flexible hourly or part-time workspace solutions. The ideal professional touchpoint for independent founders needing high mobility and cost optimization.',
                 'color' => '#2563eb',
                 'active' => true,
             ],
@@ -213,7 +184,8 @@ class HomepageSeeder extends Seeder
                 'title' => 'STARTUP',
                 'package_name' => 'Package 2',
                 'headline' => 'STARTUP – Laying a solid foundation',
-                'description' => 'Establish your brand with a prestigious business address. Includes Bonus Marketing Support: Free Fanpage setup and 1 professional post/month to kickstart your presence.',
+                'description' =>
+                    'Establish your brand with a prestigious business address. Includes Bonus Marketing Support: Free Fanpage setup and 1 professional post/month to kickstart your presence.',
                 'color' => '#2563eb',
                 'active' => true,
             ],
@@ -222,7 +194,8 @@ class HomepageSeeder extends Seeder
                 'title' => 'SCALE UP',
                 'package_name' => 'Package 3',
                 'headline' => 'SCALE UP – Growth Ecosystem (6 USPs)',
-                'description' => 'Full operational takeover. Enjoy our complete ecosystem: Digital Signature, E-tax, Accounting, Web/App Software, and AI Gemini Pro. You focus on growth; we handle the rest.',
+                'description' =>
+                    'Full operational takeover. Enjoy our complete ecosystem: Digital Signature, E-tax, Accounting, Web/App Software, and AI Gemini Pro. You focus on growth; we handle the rest.',
                 'color' => '#2563eb',
                 'active' => true,
             ],
@@ -231,7 +204,8 @@ class HomepageSeeder extends Seeder
                 'title' => 'IPO',
                 'package_name' => 'Package 4',
                 'headline' => 'IPO – Unique & Breakthrough',
-                'description' => 'Bespoke software and AI workflows tailored to your unique vision. Direct connection to Venture Capital networks and elite mentors to scale your business to the top.',
+                'description' =>
+                    'Bespoke software and AI workflows tailored to your unique vision. Direct connection to Venture Capital networks and elite mentors to scale your business to the top.',
                 'color' => '#2563eb',
                 'active' => true,
             ],
@@ -241,79 +215,52 @@ class HomepageSeeder extends Seeder
             $packageId = $this->createEntry($packageCollectionId);
 
             foreach ($package as $key => $value) {
-                $this->addMeta(
-                    $packageId,
-                    $key,
-                    $value
-                );
+                $this->addMeta($packageId, $key, $value);
             }
 
             $this->addRelation(
                 $sectionId,
                 $packageId,
-                'business_growth_package'
+                'business_growth_package',
             );
         }
     }
 
     private function seedIntroduction(): void
     {
-        $collectionId = $this->collectionId(
-            'homepage_introduction'
-        );
+        $collectionId = $this->collectionId('homepage_introduction');
 
         $entryId = $this->createEntry($collectionId);
 
-        $this->addMeta(
-            $entryId,
-            'title',
-            'L'
-        );
+        $this->addMeta($entryId, 'title', 'L');
 
         $this->addMeta(
             $entryId,
             'description',
-            "Lorem ipsum dolor sit amet consectetur. Dui leo massa nec sit a vitae vulputate varius. Vehicula tellus diam metus aliquam pretium. Morbi tincidunt mattis ullamcorper ornare vulputate at. Aliquet sed ac pretium fusce .\n\nEget integer commodo varius nisi dolor. Purus aliquet vestibulum faucibus magna pellentesque nisi massa sed. Eleifend accumsan aenean nisl mi vitae laoreet aliquam platea gravida. Vel tristique sed risus vitae tristique quis. Maecenas morbi amet gravida egestas sem est amet. Urna elit turpis enim a gravida. Enim feugiat vulputate porta interdum at."
+            "Lorem ipsum dolor sit amet consectetur. Dui leo massa nec sit a vitae vulputate varius. Vehicula tellus diam metus aliquam pretium. Morbi tincidunt mattis ullamcorper ornare vulputate at. Aliquet sed ac pretium fusce .\n\nEget integer commodo varius nisi dolor. Purus aliquet vestibulum faucibus magna pellentesque nisi massa sed. Eleifend accumsan aenean nisl mi vitae laoreet aliquam platea gravida. Vel tristique sed risus vitae tristique quis. Maecenas morbi amet gravida egestas sem est amet. Urna elit turpis enim a gravida. Enim feugiat vulputate porta interdum at.",
         );
 
-        $this->addMeta(
-            $entryId,
-            'author',
-            'Lê Thành Nhân'
-        );
+        $this->addMeta($entryId, 'author', 'Lê Thành Nhân');
 
-        $this->addMeta(
-            $entryId,
-            'position',
-            "''"
-        );
+        $this->addMeta($entryId, 'position', "''");
 
-        $this->addMeta(
-            $entryId,
-            'show_quote_icon',
-            true
-        );
+        $this->addMeta($entryId, 'show_quote_icon', true);
 
-        $this->addMeta(
-            $entryId,
-            'show_author',
-            true
-        );
+        $this->addMeta($entryId, 'show_author', true);
 
         $this->addImageMeta($entryId, 'image', [
-            'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1786204219/homepage/introduction/azztbwvizow7tq5gegg1.jpg',
+            'url' =>
+                'https://res.cloudinary.com/droybexbj/image/upload/v1786204219/homepage/introduction/azztbwvizow7tq5gegg1.jpg',
             'public_id' => 'homepage/introduction/azztbwvizow7tq5gegg1',
         ]);
     }
 
     private function seedWhyChooseCypress(): void
     {
-        $collectionId = $this->collectionId(
-            'homepage_why_choose_cypress'
-        );
+        $collectionId = $this->collectionId('homepage_why_choose_cypress');
 
         $benefitCollectionId = $this->collectionId(
-            'homepage_why_choose_cypress_benefit'
+            'homepage_why_choose_cypress_benefit',
         );
 
         $sectionId = $this->createEntry($collectionId);
@@ -321,29 +268,28 @@ class HomepageSeeder extends Seeder
         $this->addMeta(
             $sectionId,
             'badge',
-            'Why Choose Cypress InformationHomepage Banner'
+            'Why Choose Cypress InformationHomepage Banner',
         );
 
-        $this->addMeta(
-            $sectionId,
-            'title',
-            'Why Choose Cypress Information'
-        );
+        $this->addMeta($sectionId, 'title', 'Why Choose Cypress Information');
 
         $this->addMeta(
             $sectionId,
             'description',
-            'Why Choose Cypress Information'
+            'Why Choose Cypress Information',
         );
 
         $benefits = [
             [
                 'title' => 'Global Network',
-                'description' => 'Reaching over 600 locations in more than 150 cities.',
+                'description' =>
+                    'Reaching over 600 locations in more than 150 cities.',
                 'active' => true,
                 'icon' => [
-                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1785839498/homepage/why_choose_cypress/fwrvq4corcvcaws1wwtd.png',
-                    'public_id' => 'homepage/why_choose_cypress/fwrvq4corcvcaws1wwtd',
+                    'url' =>
+                        'https://res.cloudinary.com/droybexbj/image/upload/v1785839498/homepage/why_choose_cypress/fwrvq4corcvcaws1wwtd.png',
+                    'public_id' =>
+                        'homepage/why_choose_cypress/fwrvq4corcvcaws1wwtd',
                 ],
             ],
             [
@@ -351,17 +297,22 @@ class HomepageSeeder extends Seeder
                 'description' => 'Monthly membership or long-term commitment.',
                 'active' => true,
                 'icon' => [
-                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1785839582/homepage/why_choose_cypress/i6n7iqick2kf5njjbrhr.png',
-                    'public_id' => 'homepage/why_choose_cypress/i6n7iqick2kf5njjbrhr',
+                    'url' =>
+                        'https://res.cloudinary.com/droybexbj/image/upload/v1785839582/homepage/why_choose_cypress/i6n7iqick2kf5njjbrhr.png',
+                    'public_id' =>
+                        'homepage/why_choose_cypress/i6n7iqick2kf5njjbrhr',
                 ],
             ],
             [
                 'title' => 'Premium amenities',
-                'description' => 'High-speed Wi-Fi, coffee, and modern meeting rooms.',
+                'description' =>
+                    'High-speed Wi-Fi, coffee, and modern meeting rooms.',
                 'active' => true,
                 'icon' => [
-                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1785839696/homepage/why_choose_cypress/lgwzryvjy7g120ptopgv.webp',
-                    'public_id' => 'homepage/why_choose_cypress/lgwzryvjy7g120ptopgv',
+                    'url' =>
+                        'https://res.cloudinary.com/droybexbj/image/upload/v1785839696/homepage/why_choose_cypress/lgwzryvjy7g120ptopgv.webp',
+                    'public_id' =>
+                        'homepage/why_choose_cypress/lgwzryvjy7g120ptopgv',
                 ],
             ],
             [
@@ -369,79 +320,68 @@ class HomepageSeeder extends Seeder
                 'description' => 'Enhanced cleaning and 24/7 security.',
                 'active' => true,
                 'icon' => [
-                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1785839739/homepage/why_choose_cypress/nkftpqt4dfrwmaeawe2f.png',
-                    'public_id' => 'homepage/why_choose_cypress/nkftpqt4dfrwmaeawe2f',
+                    'url' =>
+                        'https://res.cloudinary.com/droybexbj/image/upload/v1785839739/homepage/why_choose_cypress/nkftpqt4dfrwmaeawe2f.png',
+                    'public_id' =>
+                        'homepage/why_choose_cypress/nkftpqt4dfrwmaeawe2f',
                 ],
             ],
             [
                 'title' => 'Community event',
-                'description' => 'Networking, workshops, and social gatherings.',
+                'description' =>
+                    'Networking, workshops, and social gatherings.',
                 'active' => true,
                 'icon' => [
-                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1785840765/homepage/why_choose_cypress/ckaqo4a0vmeg5ffx73qk.png',
-                    'public_id' => 'homepage/why_choose_cypress/ckaqo4a0vmeg5ffx73qk',
+                    'url' =>
+                        'https://res.cloudinary.com/droybexbj/image/upload/v1785840765/homepage/why_choose_cypress/ckaqo4a0vmeg5ffx73qk.png',
+                    'public_id' =>
+                        'homepage/why_choose_cypress/ckaqo4a0vmeg5ffx73qk',
                 ],
             ],
             [
                 'title' => 'Business support',
-                'description' => 'Handling mail, printing, and hospitality services.',
+                'description' =>
+                    'Handling mail, printing, and hospitality services.',
                 'active' => true,
                 'icon' => [
-                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1786331080/homepage/introduction/xvqiphormskizeysibvv.webp',
-                    'public_id' => 'homepage/why_choose_cypress/xvqiphormskizeysibvv',
+                    'url' =>
+                        'https://res.cloudinary.com/droybexbj/image/upload/v1786331080/homepage/introduction/xvqiphormskizeysibvv.webp',
+                    'public_id' =>
+                        'homepage/why_choose_cypress/xvqiphormskizeysibvv',
                 ],
             ],
         ];
 
         foreach ($benefits as $benefit) {
-            $benefitId = $this->createEntry(
-                $benefitCollectionId
-            );
+            $benefitId = $this->createEntry($benefitCollectionId);
 
-            $this->addMeta(
-                $benefitId,
-                'title',
-                $benefit['title']
-            );
+            $this->addMeta($benefitId, 'title', $benefit['title']);
 
-            $this->addMeta(
-                $benefitId,
-                'description',
-                $benefit['description']
-            );
+            $this->addMeta($benefitId, 'description', $benefit['description']);
 
-            $this->addMeta(
-                $benefitId,
-                'active',
-                $benefit['active']
-            );
+            $this->addMeta($benefitId, 'active', $benefit['active']);
 
-            $this->addImageMeta(
-                $benefitId,
-                'icon',
-                $benefit['icon']
-            );
+            $this->addImageMeta($benefitId, 'icon', $benefit['icon']);
 
             $this->addRelation(
                 $sectionId,
                 $benefitId,
-                'why_choose_cypress_benefit'
+                'why_choose_cypress_benefit',
             );
         }
     }
 
     private function seedCaseStudies(): void
     {
-        $collectionId = $this->collectionId(
-            'homepage_case_study'
-        );
+        $collectionId = $this->collectionId('homepage_case_study');
 
         $caseStudies = [
             [
                 'label' => 'DEBUG LABEL:',
                 'title' => 'Case study 1',
                 'subtitle' => null,
-                'summary' => 'Lorem ipsum dolor sit amet consectetur. In dui commodo elit nulla. Pellentesque purus amet gravida ut egestasleo sagittis vulputate. Convallis vitae in lectus semper ultrices donec enim molestie id. Consequat accumsan pulvinar quis etiam at non quis. Elit sed in volutpat facilisis ac. Volutpat donec enim',
+                'summary' =>
+                    'Lorem ipsum dolor sit amet consectetur. In dui commodo elit nulla. Pellentesque purus amet gravida ut egestasleo sagittis vulputate. Convallis vitae in lectus semper ultrices donec enim molestie id. Consequat accumsan pulvinar quis etiam at non quis. Elit sed in volutpat facilisis ac. Volutpat donec enim',
                 'company' => 'CASE STUDY',
                 'plan_title' => 'SERIES A PLAN',
                 'series_tags' => 'Marketing, Lifestyle, AI Agent, Software',
@@ -449,11 +389,14 @@ class HomepageSeeder extends Seeder
                 'learn_more_url' => '/learn-more',
                 'active' => true,
                 'logo' => [
-                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1785834513/homepage/case_studies/logo/g30a5kuk7eckqbcvzn7s.jpg',
-                    'public_id' => 'homepage/case_studies/logo/g30a5kuk7eckqbcvzn7s',
+                    'url' =>
+                        'https://res.cloudinary.com/droybexbj/image/upload/v1785834513/homepage/case_studies/logo/g30a5kuk7eckqbcvzn7s.jpg',
+                    'public_id' =>
+                        'homepage/case_studies/logo/g30a5kuk7eckqbcvzn7s',
                 ],
                 'image' => [
-                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1785832923/homepage/case_studies/delf3mp2jkbyrdz9lyxr.jpg',
+                    'url' =>
+                        'https://res.cloudinary.com/droybexbj/image/upload/v1785832923/homepage/case_studies/delf3mp2jkbyrdz9lyxr.jpg',
                     'public_id' => 'homepage/case_studies/delf3mp2jkbyrdz9lyxr',
                 ],
             ],
@@ -461,7 +404,8 @@ class HomepageSeeder extends Seeder
                 'label' => 'Case Study ',
                 'title' => 'Case study 1',
                 'subtitle' => null,
-                'summary' => 'Lorem ipsum dolor sit amet consectetur. In dui commodo elit nulla. Pellentesque purus amet gravida ut egestas leo sagittis vulputate. Convallis vitae semper ultrices donec molestie id. Consequat accumsan pulvinar quis etiam at non quis. Elit sed in volutpat facilisis ac. Volutpat donec enim.',
+                'summary' =>
+                    'Lorem ipsum dolor sit amet consectetur. In dui commodo elit nulla. Pellentesque purus amet gravida ut egestas leo sagittis vulputate. Convallis vitae semper ultrices donec molestie id. Consequat accumsan pulvinar quis etiam at non quis. Elit sed in volutpat facilisis ac. Volutpat donec enim.',
                 'company' => null,
                 'plan_title' => 'SERIES A PLAN',
                 'series_tags' => 'Marketing, Lifestyle, AI Agent, Software',
@@ -469,12 +413,16 @@ class HomepageSeeder extends Seeder
                 'learn_more_url' => '/learn-more',
                 'active' => true,
                 'logo' => [
-                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1785834781/homepage/case_studies/logo/rtsim73k5bphlhazxas8.jpg',
-                    'public_id' => 'homepage/case_studies/logo/rtsim73k5bphlhazxas8',
+                    'url' =>
+                        'https://res.cloudinary.com/droybexbj/image/upload/v1785834781/homepage/case_studies/logo/rtsim73k5bphlhazxas8.jpg',
+                    'public_id' =>
+                        'homepage/case_studies/logo/rtsim73k5bphlhazxas8',
                 ],
                 'image' => [
-                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1785834782/homepage/case_studies/image/uujhfngc8wavvwpnkglt.jpg',
-                    'public_id' => 'homepage/case_studies/image/uujhfngc8wavvwpnkglt',
+                    'url' =>
+                        'https://res.cloudinary.com/droybexbj/image/upload/v1785834782/homepage/case_studies/image/uujhfngc8wavvwpnkglt.jpg',
+                    'public_id' =>
+                        'homepage/case_studies/image/uujhfngc8wavvwpnkglt',
                 ],
             ],
         ];
@@ -494,147 +442,109 @@ class HomepageSeeder extends Seeder
                     'learn_more_text',
                     'learn_more_url',
                     'active',
-                ] as $key
+                ]
+                as $key
             ) {
-                $this->addMeta(
-                    $entryId,
-                    $key,
-                    $caseStudy[$key]
-                );
+                $this->addMeta($entryId, $key, $caseStudy[$key]);
             }
 
-            $this->addImageMeta(
-                $entryId,
-                'logo',
-                $caseStudy['logo']
-            );
+            $this->addImageMeta($entryId, 'logo', $caseStudy['logo']);
 
-            $this->addImageMeta(
-                $entryId,
-                'image',
-                $caseStudy['image']
-            );
+            $this->addImageMeta($entryId, 'image', $caseStudy['image']);
         }
     }
 
     private function seedPricing(): void
     {
-        $collectionId = $this->collectionId(
-            'homepage_pricing'
-        );
+        $collectionId = $this->collectionId('homepage_pricing');
 
         $entryId = $this->createEntry($collectionId);
 
-        $this->addMeta(
-            $entryId,
-            'title',
-            'Transparent Pricing For Every Need'
-        );
+        $this->addMeta($entryId, 'title', 'Transparent Pricing For Every Need');
 
         $this->addMeta(
             $entryId,
             'description',
-            'From daily passes to enterprise suites, explore our membership options.'
+            'From daily passes to enterprise suites, explore our membership options.',
         );
 
-        $this->addMeta(
-            $entryId,
-            'button_text',
-            'View Pricing'
-        );
+        $this->addMeta($entryId, 'button_text', 'View Pricing');
 
-        $this->addMeta(
-            $entryId,
-            'button_link',
-            '/view-pricing'
-        );
+        $this->addMeta($entryId, 'button_link', '/view-pricing');
     }
-
 
     private function seedSuccessStories(): void
     {
-        $collectionId = $this->collectionId(
-            'homepage_success_story'
-        );
+        $collectionId = $this->collectionId('homepage_success_story');
 
         $stories = [
             [
                 'name' => 'Courtney Henry',
-                'categories' => [
-                    'Marketing',
-                    'Lifestyle',
-                    'AI Agent',
-                ],
+                'categories' => ['Marketing', 'Lifestyle', 'AI Agent'],
                 'role' => 'CEO',
                 'company' => 'Inox Quang Minh',
-                'quote' => 'The network connections alone were worth 10x our membership.',
+                'quote' =>
+                    'The network connections alone were worth 10x our membership.',
                 'avatar' => [
-                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1786034827/homepage/success-stories/rhbgpmsit98kczn4gqxw.jpg',
-                    'public_id' => 'homepage/success-stories/rhbgpmsit98kczn4gqxw',
+                    'url' =>
+                        'https://res.cloudinary.com/droybexbj/image/upload/v1786034827/homepage/success-stories/rhbgpmsit98kczn4gqxw.jpg',
+                    'public_id' =>
+                        'homepage/success-stories/rhbgpmsit98kczn4gqxw',
                 ],
             ],
             [
                 'name' => 'Marvin McKinney',
-                'categories' => [
-                    'Marketing',
-                    'Lifestyle',
-                ],
+                'categories' => ['Marketing', 'Lifestyle'],
                 'role' => 'CEO',
                 'company' => 'Inox Quang Minh',
-                'quote' => 'The network connections alone were worth 10x our membership.',
+                'quote' =>
+                    'The network connections alone were worth 10x our membership.',
                 'avatar' => [
-                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1786034866/homepage/success-stories/hire9vjxfuhdnfqvlny0.jpg',
-                    'public_id' => 'homepage/success-stories/hire9vjxfuhdnfqvlny0',
+                    'url' =>
+                        'https://res.cloudinary.com/droybexbj/image/upload/v1786034866/homepage/success-stories/hire9vjxfuhdnfqvlny0.jpg',
+                    'public_id' =>
+                        'homepage/success-stories/hire9vjxfuhdnfqvlny0',
                 ],
             ],
             [
                 'name' => 'Arlene McCoy',
-                'categories' => [
-                    'Marketing',
-                    'AI Agent',
-                    'Lifestyle',
-                ],
+                'categories' => ['Marketing', 'AI Agent', 'Lifestyle'],
                 'role' => 'CEO',
                 'company' => 'Inox Quang Minh',
-                'quote' => 'The network connections alone were worth 10x our membership.',
+                'quote' =>
+                    'The network connections alone were worth 10x our membership.',
                 'avatar' => [
-                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1786035470/homepage/success-stories/jsmma3rklvhnrskezglz.jpg',
-                    'public_id' => 'homepage/success-stories/jsmma3rklvhnrskezglz',
+                    'url' =>
+                        'https://res.cloudinary.com/droybexbj/image/upload/v1786035470/homepage/success-stories/jsmma3rklvhnrskezglz.jpg',
+                    'public_id' =>
+                        'homepage/success-stories/jsmma3rklvhnrskezglz',
                 ],
             ],
             [
                 'name' => 'Wade Warren',
-                'categories' => [
-                    'Marketing',
-                    'AI Agent',
-                    'Lifestyle',
-                ],
+                'categories' => ['Marketing', 'AI Agent', 'Lifestyle'],
                 'role' => 'CEO',
                 'company' => 'Inox Quang Minh',
-                'quote' => 'The network connections alone were worth 10x our membership.',
+                'quote' =>
+                    'The network connections alone were worth 10x our membership.',
                 'avatar' => null,
             ],
             [
                 'name' => 'Arlene McCoy',
-                'categories' => [
-                    'Marketing',
-                    'Lifestyle',
-                    'AI Agent',
-                ],
+                'categories' => ['Marketing', 'Lifestyle', 'AI Agent'],
                 'role' => 'CEO',
                 'company' => 'Inox Quang Minh',
-                'quote' => 'The network connections alone were worth 10x our membership.',
+                'quote' =>
+                    'The network connections alone were worth 10x our membership.',
                 'avatar' => null,
             ],
             [
                 'name' => 'Guy Hawkins',
-                'categories' => [
-                    'Marketing',
-                    'Software',
-                ],
+                'categories' => ['Marketing', 'Software'],
                 'role' => 'CEO',
                 'company' => 'Inox Quang Minh',
-                'quote' => 'The network connections alone were worth 10x our membership.',
+                'quote' =>
+                    'The network connections alone were worth 10x our membership.',
                 'avatar' => null,
             ],
         ];
@@ -642,50 +552,23 @@ class HomepageSeeder extends Seeder
         foreach ($stories as $story) {
             $entryId = $this->createEntry($collectionId);
 
-            $this->addMeta(
-                $entryId,
-                'name',
-                $story['name']
-            );
+            $this->addMeta($entryId, 'name', $story['name']);
 
-            $this->addMeta(
-                $entryId,
-                'categories',
-                $story['categories']
-            );
+            $this->addMeta($entryId, 'categories', $story['categories']);
 
-            $this->addMeta(
-                $entryId,
-                'role',
-                $story['role']
-            );
+            $this->addMeta($entryId, 'role', $story['role']);
 
-            $this->addMeta(
-                $entryId,
-                'company',
-                $story['company']
-            );
+            $this->addMeta($entryId, 'company', $story['company']);
 
-            $this->addMeta(
-                $entryId,
-                'quote',
-                $story['quote']
-            );
+            $this->addMeta($entryId, 'quote', $story['quote']);
 
-            $this->addImageMeta(
-                $entryId,
-                'avatar',
-                $story['avatar']
-            );
+            $this->addImageMeta($entryId, 'avatar', $story['avatar']);
         }
     }
 
-
     private function seedGeneralInformation(): void
     {
-        $collectionId = $this->collectionId(
-            'homepage_general_information'
-        );
+        $collectionId = $this->collectionId('homepage_general_information');
 
         $items = [
             [
@@ -704,48 +587,35 @@ class HomepageSeeder extends Seeder
             $entryId = $this->createEntry($collectionId);
 
             foreach ($item as $key => $value) {
-                $this->addMeta(
-                    $entryId,
-                    $key,
-                    $value
-                );
+                $this->addMeta($entryId, $key, $value);
             }
         }
     }
 
     private function seedNews(): void
     {
-        $collectionId = $this->collectionId(
-            'homepage_news'
-        );
+        $collectionId = $this->collectionId('homepage_news');
 
         $sectionId = $this->createEntry($collectionId);
 
-        $this->addMeta(
-            $sectionId,
-            'label',
-            'NEWS'
-        );
+        $this->addMeta($sectionId, 'label', 'NEWS');
 
-        $this->addMeta(
-            $sectionId,
-            'title',
-            'News Today'
-        );
+        $this->addMeta($sectionId, 'title', 'News Today');
 
-        $newsCollectionId = $this->collectionId(
-            'homepage_news_item'
-        );
+        $newsCollectionId = $this->collectionId('homepage_news_item');
 
         $news = [
             [
                 'category' => 'Co-Working Space',
                 'date' => '2026-08-08',
-                'title' => 'GTM Strategies for 2024: How the Best Founders Find Their First 100 Customers',
-                'description' => 'In the automotive industry, stainless steel is not just a common material; it has become a decisive factor in the durability, safety, and aesthetics of modern vehicles. With its corrosion resistance, heat resistance, and lightweight properties, stainless steel is the preferred choice for global car manufacturers. However, not everyone fully understands the differe',
+                'title' =>
+                    'GTM Strategies for 2024: How the Best Founders Find Their First 100 Customers',
+                'description' =>
+                    'In the automotive industry, stainless steel is not just a common material; it has become a decisive factor in the durability, safety, and aesthetics of modern vehicles. With its corrosion resistance, heat resistance, and lightweight properties, stainless steel is the preferred choice for global car manufacturers. However, not everyone fully understands the differe',
                 'active' => null,
                 'image' => [
-                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1786204889/homepage/news/krgffjz5f4vwpwumvcgp.jpg',
+                    'url' =>
+                        'https://res.cloudinary.com/droybexbj/image/upload/v1786204889/homepage/news/krgffjz5f4vwpwumvcgp.jpg',
                     'public_id' => 'homepage/news/krgffjz5f4vwpwumvcgp',
                 ],
             ],
@@ -755,60 +625,44 @@ class HomepageSeeder extends Seeder
             $newsId = $this->createEntry($newsCollectionId);
 
             foreach (
-                [
-                    'category',
-                    'date',
-                    'title',
-                    'description',
-                    'active',
-                ] as $key
+                ['category', 'date', 'title', 'description', 'active']
+                as $key
             ) {
-                $this->addMeta(
-                    $newsId,
-                    $key,
-                    $item[$key]
-                );
+                $this->addMeta($newsId, $key, $item[$key]);
             }
 
-            $this->addImageMeta(
-                $newsId,
-                'image',
-                $item['image']
-            );
+            $this->addImageMeta($newsId, 'image', $item['image']);
 
-            $this->addRelation(
-                $sectionId,
-                $newsId,
-                'homepage_news_item'
-            );
+            $this->addRelation($sectionId, $newsId, 'homepage_news_item');
         }
     }
 
     private function seedSideNews(): void
     {
-        $collectionId = $this->collectionId(
-            'homepage_side_news'
-        );
+        $collectionId = $this->collectionId('homepage_side_news');
 
         $items = [
             [
                 'description' => 'Discover the role of stainless steel in',
                 'image' => [
-                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1785924303/homepage/side_news/lx9r00ra2hbkoeok9fl2.jpg',
+                    'url' =>
+                        'https://res.cloudinary.com/droybexbj/image/upload/v1785924303/homepage/side_news/lx9r00ra2hbkoeok9fl2.jpg',
                     'public_id' => 'homepage/side_news/lx9r00ra2hbkoeok9fl2',
                 ],
             ],
             [
                 'description' => 'Discover the role of stainless steel in',
                 'image' => [
-                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1785924319/homepage/side_news/nkzlvn8mwridvpkyowpi.jpg',
+                    'url' =>
+                        'https://res.cloudinary.com/droybexbj/image/upload/v1785924319/homepage/side_news/nkzlvn8mwridvpkyowpi.jpg',
                     'public_id' => 'homepage/side_news/nkzlvn8mwridvpkyowpi',
                 ],
             ],
             [
                 'description' => 'Discover the role of stainless steel in',
                 'image' => [
-                    'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1786128424/homepage/side-news/htm7p6gqzz24jzsjkxob.jpg',
+                    'url' =>
+                        'https://res.cloudinary.com/droybexbj/image/upload/v1786128424/homepage/side-news/htm7p6gqzz24jzsjkxob.jpg',
                     'public_id' => 'homepage/side-news/htm7p6gqzz24jzsjkxob',
                 ],
             ],
@@ -817,72 +671,38 @@ class HomepageSeeder extends Seeder
         foreach ($items as $item) {
             $entryId = $this->createEntry($collectionId);
 
-            $this->addMeta(
-                $entryId,
-                'description',
-                $item['description']
-            );
+            $this->addMeta($entryId, 'description', $item['description']);
 
-            $this->addImageMeta(
-                $entryId,
-                'image',
-                $item['image']
-            );
+            $this->addImageMeta($entryId, 'image', $item['image']);
         }
     }
     private function seedLaunchOffer(): void
     {
-        $collectionId = $this->collectionId(
-            'homepage_launch_offer'
-        );
+        $collectionId = $this->collectionId('homepage_launch_offer');
 
         $entryId = $this->createEntry($collectionId);
 
-        $this->addMeta(
-            $entryId,
-            'title',
-            'Limited-Time Launch Offer'
-        );
+        $this->addMeta($entryId, 'title', 'Limited-Time Launch Offer');
 
         $this->addMeta(
             $entryId,
             'subtitle',
-            "Join Cypress Hub before May 30th and save up to 50% on membership fees.\n"
+            "Join Cypress Hub before May 30th and save up to 50% on membership fees.\n",
         );
 
-        $this->addMeta(
-            $entryId,
-            'button_text',
-            'Get the offer now!'
-        );
+        $this->addMeta($entryId, 'button_text', 'Get the offer now!');
 
-        $this->addMeta(
-            $entryId,
-            'button_url',
-            '/get-offer'
-        );
+        $this->addMeta($entryId, 'button_url', '/get-offer');
 
-        $this->addMeta(
-            $entryId,
-            'expiry_date',
-            '2026-05-30'
-        );
+        $this->addMeta($entryId, 'expiry_date', '2026-05-30');
 
-        $this->addMeta(
-            $entryId,
-            'seats',
-            'A total of 70 seats'
-        );
+        $this->addMeta($entryId, 'seats', 'A total of 70 seats');
     }
     private function seedNewsSections(): void
     {
-        $sectionCollectionId = $this->collectionId(
-            'homepage_news_section'
-        );
+        $sectionCollectionId = $this->collectionId('homepage_news_section');
 
-        $itemCollectionId = $this->collectionId(
-            'homepage_news_section_item'
-        );
+        $itemCollectionId = $this->collectionId('homepage_news_section_item');
 
         $sections = [
             [
@@ -913,126 +733,69 @@ class HomepageSeeder extends Seeder
         ];
 
         foreach ($sections as $section) {
-            $sectionId = $this->createEntry(
-                $sectionCollectionId
-            );
+            $sectionId = $this->createEntry($sectionCollectionId);
 
-            $this->addMeta(
-                $sectionId,
-                'key',
-                $section['key']
-            );
+            $this->addMeta($sectionId, 'key', $section['key']);
 
-            $this->addMeta(
-                $sectionId,
-                'title',
-                $section['title']
-            );
+            $this->addMeta($sectionId, 'title', $section['title']);
 
-            $this->addMeta(
-                $sectionId,
-                'button_text',
-                $section['button_text']
-            );
+            $this->addMeta($sectionId, 'button_text', $section['button_text']);
 
-            $this->addMeta(
-                $sectionId,
-                'button_url',
-                $section['button_url']
-            );
+            $this->addMeta($sectionId, 'button_url', $section['button_url']);
 
             foreach ($section['items'] as $title) {
-                $itemId = $this->createEntry(
-                    $itemCollectionId
-                );
+                $itemId = $this->createEntry($itemCollectionId);
 
-                $this->addMeta(
-                    $itemId,
-                    'title',
-                    $title
-                );
+                $this->addMeta($itemId, 'title', $title);
 
-                $this->addRelation(
-                    $sectionId,
-                    $itemId,
-                    'news_section_item'
-                );
+                $this->addRelation($sectionId, $itemId, 'news_section_item');
             }
         }
     }
     private function seedContact(): void
     {
-        $collectionId = $this->collectionId(
-            'homepage_contact'
-        );
+        $collectionId = $this->collectionId('homepage_contact');
 
-        $labelCollectionId = $this->collectionId(
-            'homepage_contact_label'
-        );
+        $labelCollectionId = $this->collectionId('homepage_contact_label');
 
-        $optionCollectionId = $this->collectionId(
-            'homepage_contact_option'
-        );
+        $optionCollectionId = $this->collectionId('homepage_contact_option');
 
         $contactId = $this->createEntry($collectionId);
 
-        $this->addMeta(
-            $contactId,
-            'title',
-            'Take a tour of our headquarters.'
-        );
+        $this->addMeta($contactId, 'title', 'Take a tour of our headquarters.');
 
         $this->addMeta(
             $contactId,
             'description',
-            'Experience the difference at Cypress. Book your tour today.'
+            'Experience the difference at Cypress. Book your tour today.',
         );
 
         $this->addImageMeta($contactId, 'image', [
-            'url' => 'https://res.cloudinary.com/droybexbj/image/upload/v1786205297/homepage/contact/nrhc9skgqnikqcroknjn.jpg',
+            'url' =>
+                'https://res.cloudinary.com/droybexbj/image/upload/v1786205297/homepage/contact/nrhc9skgqnikqcroknjn.jpg',
             'public_id' => 'homepage/contact/nrhc9skgqnikqcroknjn',
         ]);
 
         $this->addMeta(
             $contactId,
             'terms_text',
-            'By clicking the button below, you agree to our'
+            'By clicking the button below, you agree to our',
         );
 
-        $this->addMeta(
-            $contactId,
-            'terms_label',
-            'Submit'
-        );
+        $this->addMeta($contactId, 'terms_label', 'Submit');
 
-        $this->addMeta(
-            $contactId,
-            'terms_url',
-            '/submit'
-        );
+        $this->addMeta($contactId, 'terms_url', '/submit');
 
-        $this->addMeta(
-            $contactId,
-            'button_text',
-            'Terms of Service'
-        );
+        $this->addMeta($contactId, 'button_text', 'Terms of Service');
 
-        $this->addMeta(
-            $contactId,
-            'button_url',
-            '/term-of-service'
-        );
+        $this->addMeta($contactId, 'button_url', '/term-of-service');
 
         $labels = [
             [
                 'title' => 'Name *',
                 'placeholder' => 'Enter your full name',
                 'type' => 'input',
-                'options' => [
-                    'thanh',
-                    'Contact Management',
-                    'Button text',
-                ],
+                'options' => ['thanh', 'Contact Management', 'Button text'],
             ],
             [
                 'title' => 'Email *',
@@ -1050,18 +813,13 @@ class HomepageSeeder extends Seeder
                 'title' => 'Phone *',
                 'placeholder' => '+84',
                 'type' => 'select',
-                'options' => [
-                    '+84',
-                    '+83',
-                ],
+                'options' => ['+84', '+83'],
             ],
             [
                 'title' => 'A service of interest',
                 'placeholder' => 'Choose a service that interests you',
                 'type' => 'select',
-                'options' => [
-                    'Choose a service that interests you',
-                ],
+                'options' => ['Choose a service that interests you'],
             ],
             [
                 'title' => 'Message',
@@ -1072,50 +830,22 @@ class HomepageSeeder extends Seeder
         ];
 
         foreach ($labels as $label) {
-            $labelId = $this->createEntry(
-                $labelCollectionId
-            );
+            $labelId = $this->createEntry($labelCollectionId);
 
-            $this->addMeta(
-                $labelId,
-                'title',
-                $label['title']
-            );
+            $this->addMeta($labelId, 'title', $label['title']);
 
-            $this->addMeta(
-                $labelId,
-                'placeholder',
-                $label['placeholder']
-            );
+            $this->addMeta($labelId, 'placeholder', $label['placeholder']);
 
-            $this->addMeta(
-                $labelId,
-                'type',
-                $label['type']
-            );
+            $this->addMeta($labelId, 'type', $label['type']);
 
-            $this->addRelation(
-                $contactId,
-                $labelId,
-                'contact_label'
-            );
+            $this->addRelation($contactId, $labelId, 'contact_label');
 
             foreach ($label['options'] as $value) {
-                $optionId = $this->createEntry(
-                    $optionCollectionId
-                );
+                $optionId = $this->createEntry($optionCollectionId);
 
-                $this->addMeta(
-                    $optionId,
-                    'value',
-                    $value
-                );
+                $this->addMeta($optionId, 'value', $value);
 
-                $this->addRelation(
-                    $labelId,
-                    $optionId,
-                    'contact_label_option'
-                );
+                $this->addRelation($labelId, $optionId, 'contact_label_option');
             }
         }
     }
