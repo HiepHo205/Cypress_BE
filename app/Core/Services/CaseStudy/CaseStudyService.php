@@ -5,7 +5,6 @@ namespace App\Core\Services\CaseStudy;
 use App\Core\Repositories\Eloquent\HomepageRepository;
 use App\Core\Services\Upload\UploadService;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class CaseStudyService
@@ -17,7 +16,9 @@ class CaseStudyService
 
     public function getCaseStudyPage(): array
     {
-        $data = $this->homepageRepository->getSection('case_study_page');
+        $data = $this->homepageRepository->getSection(
+            'case_study_page'
+        );
 
         if (!is_array($data)) {
             $data = [];
@@ -32,6 +33,9 @@ class CaseStudyService
             ),
             'caseStudies' => $this->normalizeItems(
                 $data['caseStudies'] ?? []
+            ),
+            'caseStudyDetail' => $this->normalizeCaseStudyDetail(
+                $data['caseStudyDetail'] ?? []
             ),
         ];
     }
@@ -62,6 +66,71 @@ class CaseStudyService
                 (string) ($banner['description'] ?? '')
             ),
             'background_image' => $banner['background_image'] ?? null,
+        ];
+    }
+
+    private function normalizeCaseStudyDetail(mixed $detail): array
+    {
+        if (!is_array($detail)) {
+            $detail = [];
+        }
+
+        $socialMedia = $detail['social_media'] ?? [];
+
+        if (!is_array($socialMedia)) {
+            $socialMedia = [];
+        }
+
+        $socialMedia = collect($socialMedia)
+            ->filter(fn($item) => is_array($item))
+            ->map(function ($item) {
+                $icon = $item['icon'] ?? [];
+
+                if (is_string($icon)) {
+                    $decodedIcon = json_decode(
+                        $icon,
+                        true
+                    );
+
+                    $icon = is_array($decodedIcon)
+                        ? $decodedIcon
+                        : [
+                            'url' => $icon,
+                            'public_id' => '',
+                        ];
+                }
+
+                if (!is_array($icon)) {
+                    $icon = [];
+                }
+
+                return [
+                    'name' => trim(
+                        (string) ($item['name'] ?? '')
+                    ),
+                    'icon' => [
+                        'url' => $icon['url'] ?? null,
+                        'public_id' => $icon['public_id'] ?? null,
+                    ],
+                    'url' => trim(
+                        (string) ($item['url'] ?? '')
+                    ),
+                ];
+            })
+            ->filter(
+                fn($item) =>
+                $item['name'] !== '' ||
+                    $item['url'] !== '' ||
+                    !empty($item['icon']['url'])
+            )
+            ->values()
+            ->toArray();
+
+        return [
+            'id' => !empty($detail['id'])
+                ? (string) $detail['id']
+                : null,
+            'social_media' => $socialMedia,
         ];
     }
 
@@ -132,34 +201,155 @@ class CaseStudyService
                     ? (string) $item['id']
                     : (string) Str::uuid();
 
-                $item['title'] = $item['title'] ?? '';
-                $item['description'] = $item['description'] ?? '';
+                $item['title'] = trim(
+                    (string) ($item['title'] ?? '')
+                );
 
-                $item['categories'] = is_array(
-                    $item['categories'] ?? null
-                )
+                $item['description'] = trim(
+                    (string) ($item['description'] ?? '')
+                );
+
+                $item['categories'] = is_array($item['categories'] ?? null)
                     ? array_values($item['categories'])
                     : [];
 
                 $item['active'] = $item['active'] ?? true;
+
+                $item['date'] = $item['date'] ?? null;
+
+                $item['author'] = $item['author'] ?? null;
+
+                $item['seriesTags'] = is_array($item['seriesTags'] ?? null)
+                    ? array_values($item['seriesTags'])
+                    : [];
+
                 $item['image'] = $item['image'] ?? null;
+
                 $item['logo'] = $item['logo'] ?? null;
+
+                $tableOfContents = $item['tableOfContents']
+                    ?? $item['table_of_contents']
+                    ?? [];
+
+                if (is_string($tableOfContents)) {
+                    $decoded = json_decode(
+                        $tableOfContents,
+                        true
+                    );
+
+                    $tableOfContents = is_array($decoded)
+                        ? $decoded
+                        : [];
+                }
+
+                if (!is_array($tableOfContents)) {
+                    $tableOfContents = [];
+                }
+
+                $item['tableOfContents'] = collect($tableOfContents)
+                    ->filter(fn($toc) => is_array($toc))
+                    ->map(function ($toc, $index) {
+                        $children = $toc['children'] ?? [];
+
+                        if (!is_array($children)) {
+                            $children = [];
+                        }
+
+                        return [
+                            'id' => !empty($toc['id'])
+                                ? (string) $toc['id']
+                                : (string) Str::uuid(),
+
+                            'order' => $toc['order'] ?? $index + 1,
+
+                            'title' => trim(
+                                (string) ($toc['title'] ?? '')
+                            ),
+
+                            'children' => collect($children)
+                                ->map(
+                                    fn($child) => trim(
+                                        (string) $child
+                                    )
+                                )
+                                ->filter()
+                                ->values()
+                                ->toArray(),
+                        ];
+                    })
+                    ->filter(
+                        fn($toc) => $toc['title'] !== ''
+                    )
+                    ->values()
+                    ->toArray();
+
+                $sections = $item['sections'] ?? [];
+
+                if (is_string($sections)) {
+                    $decoded = json_decode(
+                        $sections,
+                        true
+                    );
+
+                    $sections = is_array($decoded)
+                        ? $decoded
+                        : [];
+                }
+
+                if (!is_array($sections)) {
+                    $sections = [];
+                }
+
+                $item['sections'] = collect($sections)
+                    ->filter(fn($section) => is_array($section))
+                    ->map(function ($section, $index) {
+                        $section['id'] = !empty($section['id'])
+                            ? (string) $section['id']
+                            : (string) Str::uuid();
+
+                        $section['type'] = $section['type'] ?? 'text';
+
+                        $section['title'] = trim(
+                            (string) (
+                                $section['title']
+                                ?? $section['heading']
+                                ?? ''
+                            )
+                        );
+
+                        $section['content'] = trim(
+                            (string) (
+                                $section['content']
+                                ?? $section['description']
+                                ?? ''
+                            )
+                        );
+
+                        $section['image'] = $section['image'] ?? null;
+
+                        return $section;
+                    })
+                    ->values()
+                    ->toArray();
 
                 return $item;
             })
             ->values()
             ->toArray();
     }
-
     public function updateItem(
         string $collection,
         array $input,
-        ?UploadedFile $image = null,
-        ?UploadedFile $logo = null
+        array $images = []
     ): array {
         if (!in_array(
             $collection,
-            ['banner', 'categories', 'caseStudies'],
+            [
+                'banner',
+                'categories',
+                'caseStudies',
+                'case-study-detail',
+            ],
             true
         )) {
             throw new \InvalidArgumentException(
@@ -175,11 +365,15 @@ class CaseStudyService
             $data = [];
         }
 
+        if (!is_array($images)) {
+            $images = [$images];
+        }
+
         return match ($collection) {
             'banner' => $this->updateBanner(
                 $data,
                 $input,
-                $image
+                $images[0] ?? null
             ),
 
             'categories' => $this->updateCategory(
@@ -190,8 +384,13 @@ class CaseStudyService
             'caseStudies' => $this->updateCaseStudy(
                 $data,
                 $input,
-                $image,
-                $logo
+                $images
+            ),
+
+            'case-study-detail' => $this->updateCaseStudyDetail(
+                $data,
+                $input,
+                $images
             ),
         };
     }
@@ -402,8 +601,7 @@ class CaseStudyService
     private function updateCaseStudy(
         array $data,
         array $input,
-        ?UploadedFile $image = null,
-        ?UploadedFile $logo = null
+        array $images = []
     ): array {
         $items = $data['caseStudies'] ?? [];
 
@@ -411,65 +609,7 @@ class CaseStudyService
             $items = [];
         }
 
-        $input['id'] = !empty($input['id'])
-            ? (string) $input['id']
-            : (string) Str::uuid();
-
-        $input['title'] = trim(
-            (string) ($input['title'] ?? '')
-        );
-
-        $input['description'] = trim(
-            (string) ($input['description'] ?? '')
-        );
-
-        $input['categories'] = is_array(
-            $input['categories'] ?? null
-        )
-            ? array_values(
-                array_filter(
-                    array_map(
-                        fn($category) => trim((string) $category),
-                        $input['categories']
-                    ),
-                    fn($category) => $category !== ''
-                )
-            )
-            : [];
-
-        if (count($input['categories']) > 2) {
-            throw new \InvalidArgumentException(
-                'A Case Study can have a maximum of 2 categories.'
-            );
-        }
-
-        $input['active'] = filter_var(
-            $input['active'] ?? true,
-            FILTER_VALIDATE_BOOLEAN,
-            FILTER_NULL_ON_FAILURE
-        );
-
-        if ($input['active'] === null) {
-            $input['active'] = true;
-        }
-
-        if ($input['title'] === '') {
-            throw new \InvalidArgumentException(
-                'Case Study title is required.'
-            );
-        }
-
-        if ($input['description'] === '') {
-            throw new \InvalidArgumentException(
-                'Case Study description is required.'
-            );
-        }
-
-        if (empty($input['categories'])) {
-            throw new \InvalidArgumentException(
-                'At least one Case Study category is required.'
-            );
-        }
+        $id = $input['id'] ?? null;
 
         $existingIndex = null;
         $oldItem = null;
@@ -477,9 +617,7 @@ class CaseStudyService
         foreach ($items as $index => $item) {
             if (
                 is_array($item) &&
-                isset($item['id']) &&
-                (string) $item['id'] ===
-                (string) $input['id']
+                (string) ($item['id'] ?? '') === (string) $id
             ) {
                 $existingIndex = $index;
                 $oldItem = $item;
@@ -487,9 +625,37 @@ class CaseStudyService
             }
         }
 
-        if ($image instanceof UploadedFile) {
+        if (!is_array($oldItem)) {
+            $oldItem = [];
+        }
+
+        if (!is_array($images)) {
+            $images = [$images];
+        }
+
+        $image = $input['image'] ?? null;
+
+        if (is_string($image)) {
+            $decodedImage = json_decode($image, true);
+
+            $image = is_array($decodedImage)
+                ? $decodedImage
+                : [];
+        }
+
+        if (!is_array($image)) {
+            $image = [];
+        }
+
+        $imageIndex = $image['_image_index'] ?? null;
+
+        if (
+            is_numeric($imageIndex) &&
+            isset($images[(int) $imageIndex]) &&
+            $images[(int) $imageIndex] instanceof UploadedFile
+        ) {
             $uploadedImage = $this->uploadService->uploadImage(
-                $image,
+                $images[(int) $imageIndex],
                 'case-study'
             );
 
@@ -497,15 +663,35 @@ class CaseStudyService
                 'url' => $uploadedImage['url'] ?? null,
                 'public_id' => $uploadedImage['public_id'] ?? null,
             ];
-        } elseif ($oldItem !== null) {
-            $input['image'] = $oldItem['image'] ?? null;
+        } elseif (!empty($oldItem['image'])) {
+            $input['image'] = $oldItem['image'];
         } else {
             $input['image'] = null;
         }
 
-        if ($logo instanceof UploadedFile) {
+        $logo = $input['logo'] ?? null;
+
+        if (is_string($logo)) {
+            $decodedLogo = json_decode($logo, true);
+
+            $logo = is_array($decodedLogo)
+                ? $decodedLogo
+                : [];
+        }
+
+        if (!is_array($logo)) {
+            $logo = [];
+        }
+
+        $logoIndex = $logo['_image_index'] ?? null;
+
+        if (
+            is_numeric($logoIndex) &&
+            isset($images[(int) $logoIndex]) &&
+            $images[(int) $logoIndex] instanceof UploadedFile
+        ) {
             $uploadedLogo = $this->uploadService->uploadImage(
-                $logo,
+                $images[(int) $logoIndex],
                 'case-study/logo'
             );
 
@@ -513,48 +699,331 @@ class CaseStudyService
                 'url' => $uploadedLogo['url'] ?? null,
                 'public_id' => $uploadedLogo['public_id'] ?? null,
             ];
-        } elseif ($oldItem !== null) {
-            $input['logo'] = $oldItem['logo'] ?? null;
+        } elseif (!empty($oldItem['logo'])) {
+            $input['logo'] = $oldItem['logo'];
         } else {
             $input['logo'] = null;
         }
 
-        if ($existingIndex === null) {
-            $items[] = $input;
+        if (isset($input['sections'])) {
+            $sections = $input['sections'];
+
+            if (is_string($sections)) {
+                $decodedSections = json_decode(
+                    $sections,
+                    true
+                );
+
+                $sections = is_array($decodedSections)
+                    ? $decodedSections
+                    : [];
+            }
+
+            if (!is_array($sections)) {
+                $sections = [];
+            }
+
+            $oldSections = $oldItem['sections'] ?? [];
+
+            if (is_string($oldSections)) {
+                $decodedOldSections = json_decode(
+                    $oldSections,
+                    true
+                );
+
+                $oldSections = is_array($decodedOldSections)
+                    ? $decodedOldSections
+                    : [];
+            }
+
+            if (!is_array($oldSections)) {
+                $oldSections = [];
+            }
+
+            $normalizedSections = [];
+
+            foreach ($sections as $section) {
+                if (!is_array($section)) {
+                    continue;
+                }
+
+                $sectionId = $section['id'] ?? null;
+
+                $oldSection = null;
+
+                foreach ($oldSections as $oldSectionItem) {
+                    if (
+                        !is_array($oldSectionItem)
+                    ) {
+                        continue;
+                    }
+
+                    if (
+                        $sectionId !== null &&
+                        (string) ($oldSectionItem['id'] ?? '') ===
+                        (string) $sectionId
+                    ) {
+                        $oldSection = $oldSectionItem;
+                        break;
+                    }
+                }
+
+                $sectionImage = $section['image'] ?? null;
+
+                if (is_string($sectionImage)) {
+                    $decodedSectionImage = json_decode(
+                        $sectionImage,
+                        true
+                    );
+
+                    $sectionImage = is_array(
+                        $decodedSectionImage
+                    )
+                        ? $decodedSectionImage
+                        : [];
+                }
+
+                if (!is_array($sectionImage)) {
+                    $sectionImage = [];
+                }
+
+                $sectionImageIndex =
+                    $sectionImage['_image_index'] ?? null;
+
+                if (
+                    is_numeric($sectionImageIndex) &&
+                    isset(
+                        $images[(int) $sectionImageIndex]
+                    ) &&
+                    $images[(int) $sectionImageIndex]
+                    instanceof UploadedFile
+                ) {
+                    $uploadedSectionImage =
+                        $this->uploadService->uploadImage(
+                            $images[(int) $sectionImageIndex],
+                            'case-study/content'
+                        );
+
+                    $section['image'] = [
+                        'url' =>
+                        $uploadedSectionImage['url'] ?? null,
+                        'public_id' =>
+                        $uploadedSectionImage['public_id'] ?? null,
+                    ];
+                } elseif (
+                    !empty($section['removeImage'])
+                ) {
+                    $section['image'] = null;
+                } elseif (
+                    $oldSection !== null
+                ) {
+                    $section['image'] =
+                        $oldSection['image'] ?? null;
+                } else {
+                    $section['image'] = null;
+                }
+
+                unset($section['removeImage']);
+
+                if (
+                    is_array($section['image'] ?? null)
+                ) {
+                    unset(
+                        $section['image']['_image_index']
+                    );
+                }
+
+                $normalizedSections[] = $section;
+            }
+
+            $input['sections'] = $normalizedSections;
+        } elseif (isset($oldItem['sections'])) {
+            $input['sections'] = $oldItem['sections'];
+        }
+
+        $input['id'] = $id
+            ?: ($oldItem['id'] ?? (string) \Illuminate\Support\Str::uuid());
+
+        $updatedItem = array_merge(
+            $oldItem,
+            $input
+        );
+
+        if ($existingIndex !== null) {
+            $items[$existingIndex] = $updatedItem;
         } else {
-            if (
-                isset($oldItem['image']['public_id']) &&
-                !empty($oldItem['image']['public_id']) &&
-                isset($input['image']['public_id']) &&
-                !empty($input['image']['public_id']) &&
-                $oldItem['image']['public_id'] !==
-                $input['image']['public_id']
-            ) {
-                $this->uploadService->deleteImage(
-                    $oldItem['image']['public_id']
-                );
-            }
-
-            if (
-                isset($oldItem['logo']['public_id']) &&
-                !empty($oldItem['logo']['public_id']) &&
-                isset($input['logo']['public_id']) &&
-                !empty($input['logo']['public_id']) &&
-                $oldItem['logo']['public_id'] !==
-                $input['logo']['public_id']
-            ) {
-                $this->uploadService->deleteImage(
-                    $oldItem['logo']['public_id']
-                );
-            }
-
-            $items[$existingIndex] = array_merge(
-                $oldItem,
-                $input
-            );
+            $items[] = $updatedItem;
         }
 
         $data['caseStudies'] = array_values($items);
+
+        $this->homepageRepository->updateSection(
+            'case_study_page',
+            $data
+        );
+
+        return $updatedItem;
+    }
+    private function updateCaseStudyDetail(
+        array $data,
+        array $input,
+        array $images = []
+    ): array {
+        $oldDetail = $data['caseStudyDetail'] ?? [];
+
+        if (!is_array($oldDetail)) {
+            $oldDetail = [];
+        }
+
+        $detailId = !empty($input['id'])
+            ? (string) $input['id']
+            : (
+                !empty($oldDetail['id'])
+                ? (string) $oldDetail['id']
+                : (string) Str::uuid()
+            );
+
+        $socialMedia = $input['social_media'] ?? [];
+
+        if (!is_array($socialMedia)) {
+            $socialMedia = [];
+        }
+
+        if (!is_array($images)) {
+            $images = [$images];
+        }
+
+        $oldSocialMedia = $oldDetail['social_media'] ?? [];
+
+        if (!is_array($oldSocialMedia)) {
+            $oldSocialMedia = [];
+        }
+
+        $normalizedSocialMedia = [];
+
+        foreach ($socialMedia as $socialIndex => $social) {
+            if (!is_array($social)) {
+                continue;
+            }
+
+            $name = trim((string) ($social['name'] ?? ''));
+            $url = trim((string) ($social['url'] ?? ''));
+
+            $icon = $social['icon'] ?? [];
+
+            if (is_string($icon)) {
+                $decodedIcon = json_decode($icon, true);
+
+                $icon = is_array($decodedIcon)
+                    ? $decodedIcon
+                    : [
+                        'url' => $icon,
+                        'public_id' => '',
+                    ];
+            }
+
+            if (!is_array($icon)) {
+                $icon = [];
+            }
+
+            $iconUrl = $icon['url'] ?? null;
+            $iconPublicId = $icon['public_id'] ?? null;
+
+            $oldSocial = $oldSocialMedia[$socialIndex] ?? [];
+
+            if (!is_array($oldSocial)) {
+                $oldSocial = [];
+            }
+
+            $oldIcon = $oldSocial['icon'] ?? [];
+
+            if (is_string($oldIcon)) {
+                $decodedOldIcon = json_decode($oldIcon, true);
+
+                $oldIcon = is_array($decodedOldIcon)
+                    ? $decodedOldIcon
+                    : [
+                        'url' => $oldIcon,
+                        'public_id' => '',
+                    ];
+            }
+
+            if (!is_array($oldIcon)) {
+                $oldIcon = [];
+            }
+
+            if (empty($iconUrl)) {
+                $iconUrl = $oldIcon['url'] ?? null;
+            }
+
+            if (empty($iconPublicId)) {
+                $iconPublicId = $oldIcon['public_id'] ?? null;
+            }
+
+            $imageIndex = $social['_image_index'] ?? null;
+
+            if ($imageIndex !== null && is_numeric($imageIndex)) {
+                $imageIndex = (int) $imageIndex;
+            } else {
+                $imageIndex = null;
+            }
+
+            if (
+                $imageIndex !== null &&
+                isset($images[$imageIndex]) &&
+                $images[$imageIndex] instanceof UploadedFile
+            ) {
+                $uploadedIcon = $this->uploadService->uploadImage(
+                    $images[$imageIndex],
+                    'case-study/social'
+                );
+
+                $newIconUrl = $uploadedIcon['url'] ?? null;
+                $newIconPublicId = $uploadedIcon['public_id'] ?? null;
+
+                if (
+                    !empty($iconPublicId) &&
+                    $iconPublicId !== $newIconPublicId
+                ) {
+                    $this->uploadService->deleteImage(
+                        $iconPublicId
+                    );
+                }
+
+                $iconUrl = $newIconUrl;
+                $iconPublicId = $newIconPublicId;
+            }
+
+            if (
+                $name === '' &&
+                $url === '' &&
+                empty($iconUrl)
+            ) {
+                continue;
+            }
+
+            $normalizedSocialMedia[] = [
+                'name' => $name,
+                'icon' => [
+                    'url' => $iconUrl,
+                    'public_id' => $iconPublicId,
+                ],
+                'url' => $url,
+            ];
+        }
+
+        $updatedDetail = array_merge(
+            $oldDetail,
+            $input,
+            [
+                'id' => $detailId,
+                'social_media' => $normalizedSocialMedia,
+            ]
+        );
+
+        unset($updatedDetail['_image_index']);
+
+        $data['caseStudyDetail'] = $updatedDetail;
 
         $this->homepageRepository->updateSection(
             'case_study_page',
@@ -569,21 +1038,9 @@ class CaseStudyService
             $savedData = $data;
         }
 
-        $savedItems = $this->normalizeItems(
-            $savedData['caseStudies'] ?? []
+        return $this->normalizeCaseStudyDetail(
+            $savedData['caseStudyDetail'] ?? $updatedDetail
         );
-
-        foreach ($savedItems as $savedItem) {
-            if (
-                isset($savedItem['id']) &&
-                (string) $savedItem['id'] ===
-                (string) $input['id']
-            ) {
-                return $savedItem;
-            }
-        }
-
-        return $input;
     }
 
     public function deleteItem(
@@ -640,6 +1097,7 @@ class CaseStudyService
                     (string) $id
                 ) {
                     $found = true;
+
                     return false;
                 }
 
@@ -744,7 +1202,9 @@ class CaseStudyService
                 $banner['background_image']['public_id'] ?? null;
 
             if ($publicId) {
-                $this->uploadService->deleteImage($publicId);
+                $this->uploadService->deleteImage(
+                    $publicId
+                );
             }
 
             $data['banner']['background_image'] = null;

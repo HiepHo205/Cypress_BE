@@ -17,6 +17,7 @@ import PlanDetail from '@/views/plans/PlanDetail.vue';
 import HomePage from '../views/home/HomePage.vue';
 import NewsManagement from '../views/news/components/NewsManagement.vue';
 import CaseStudyManagement from '../views/case-studies/components/CaseStudyManagement.vue';
+import CaseStudyDetailPage from '../views/case-studies/components/section/CaseStudyDetailPage.vue';
 
 const routes = [
     {
@@ -104,6 +105,12 @@ const routes = [
                 path: 'case-studies',
                 name: 'case-studies.management',
                 component: CaseStudyManagement
+            },
+            {
+                path: 'case-studies/:id',
+                name: 'case-study-detail',
+                component: CaseStudyDetailPage,
+                props: true
             }
         ]
     }

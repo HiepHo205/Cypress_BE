@@ -4,7 +4,7 @@ import { Save, Upload, X, Edit3, Trash2, Plus } from 'lucide-vue-next';
 import { useCaseStudy } from '@/composables/caseStudy/useCaseStudy';
 import { useToast } from 'vue-toastification';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
-
+import { useRouter } from 'vue-router';
 const props = defineProps({
     items: {
         type: Array,
@@ -19,7 +19,7 @@ const props = defineProps({
 const emit = defineEmits(['auth-error']);
 
 const toast = useToast();
-
+const router = useRouter();
 const { updateItem, removeItem, categoryChildren } =
     useCaseStudy('caseStudies');
 
@@ -233,7 +233,26 @@ const handleImageUpload = (event, index) => {
 
     event.target.value = '';
 };
+const openCaseStudyDetail = (id) => {
+    if (!id) {
+        return;
+    }
 
+    if (saving.value || deleting.value || adding.value) {
+        return;
+    }
+
+    if (editing.value.some(Boolean)) {
+        return;
+    }
+
+    router.push({
+        name: 'case-study-detail',
+        params: {
+            id: String(id)
+        }
+    });
+};
 const addCaseStudy = () => {
     if (saving.value || deleting.value || adding.value) {
         return;
@@ -554,7 +573,10 @@ const confirmDelete = async () => {
                 class="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white"
                 @submit.prevent="saveCaseStudyItem(item.index)"
             >
-                <div class="p-4">
+                <div
+                    class="cursor-pointer p-4 transition hover:bg-slate-50"
+                    @click="openCaseStudyDetail(item.form.id)"
+                >
                     <div class="flex gap-4">
                         <label
                             class="group relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100"
