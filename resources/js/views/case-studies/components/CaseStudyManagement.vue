@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import CaseStudyBanner from './CaseStudyBanner.vue';
@@ -8,13 +8,21 @@ import CaseStudies from './CaseStudies.vue';
 
 import { useCaseStudy } from '../../../composables/caseStudy/useCaseStudy';
 
+defineOptions({
+    name: 'CaseStudyManagement'
+});
+
 const route = useRoute();
 const router = useRouter();
 
 const loading = ref(false);
 const isAuthError = ref(false);
 
-const { banner, categories, caseStudies } = useCaseStudy();
+const {
+    banner,
+    categories,
+    caseStudies
+} = useCaseStudy();
 
 const tabs = [
     {
@@ -40,11 +48,16 @@ const tabs = [
 const activeTab = computed(() => {
     const tab = String(route.query.tab || 'banner');
 
-    return tabs.some((item) => item.id === tab) ? tab : 'banner';
+    return tabs.some((item) => item.id === tab)
+        ? tab
+        : 'banner';
 });
 
 const currentTab = computed(() => {
-    return tabs.find((tab) => tab.id === activeTab.value) || tabs[0];
+    return (
+        tabs.find((tab) => tab.id === activeTab.value) ||
+        tabs[0]
+    );
 });
 
 const currentComponent = computed(() => {
@@ -98,19 +111,6 @@ const handleAuthError = () => {
     loading.value = false;
     isAuthError.value = true;
 };
-
-onMounted(async () => {
-    const tab = String(route.query.tab || '');
-
-    if (!tabs.some((item) => item.id === tab)) {
-        await router.replace({
-            query: {
-                ...route.query,
-                tab: 'banner'
-            }
-        });
-    }
-});
 </script>
 
 <template>

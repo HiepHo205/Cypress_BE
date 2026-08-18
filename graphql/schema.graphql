@@ -942,19 +942,14 @@ type HomepageNewsSectionItem {
 
 type HomepageContactSection {
     id: ID
-
     title: String
     description: String
-
     image: CloudinaryImage
-
     termsText: String
     termsLabel: String
     termsUrl: String
-
     buttonText: String
     buttonUrl: String
-
     labels: [HomepageContactLabel]
 }
 
@@ -970,19 +965,37 @@ type HomepageContactOption {
     id: ID
     value: String
 }
+# =========================
+# Case Study Page
+# =========================
+
 type CaseStudyPageResponse {
     banner: JSON!
     categories: JSON!
+    caseStudyDetail: JSON!
     caseStudies: [CaseStudyPageItem!]!
 }
-
+type CaseStudySocialMedia {
+    name: String!
+    icon: CloudinaryImage
+    url: String!
+}
 type CaseStudyPageItem {
     id: ID!
     title: String
     description: String
     categories: [String!]
     active: Boolean
+
+    date: String
+    author: String
+    seriesTags: [String!]
+    tableOfContents: JSON
+    sections: JSON
+
     image: CloudinaryImage
+    logo: CloudinaryImage
+    social_media: [CaseStudySocialMedia!]
 }
 
 extend type Query {
@@ -996,7 +1009,7 @@ extend type Mutation {
     updateCaseStudy(
         section: String!
         input: JSON!
-        image: Upload
+        images: [Upload!]
         action: String
         id: ID
     ): JSON!
