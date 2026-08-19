@@ -882,17 +882,6 @@ const saveCaseStudy = async () => {
 
                         {{ isPreview ? 'Edit' : 'Preview' }}
                     </button>
-
-                    <button
-                        type="button"
-                        class="flex h-9 items-center gap-2 rounded-lg bg-[#2874d0] px-4 text-[12px] font-medium text-white transition hover:bg-[#2167bd] disabled:cursor-not-allowed disabled:opacity-50"
-                        :disabled="isSaving || !caseStudyId"
-                        @click="saveCaseStudy"
-                    >
-                        <Save :size="15" />
-
-                        {{ isSaving ? 'Saving...' : 'Save changes' }}
-                    </button>
                 </div>
             </div>
             <div

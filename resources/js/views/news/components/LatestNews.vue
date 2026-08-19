@@ -4,6 +4,7 @@ import { Upload, Save, X, Edit3, Trash2, Plus } from 'lucide-vue-next';
 import { useNews } from '../../../composables/news/useNews';
 import { useToast } from 'vue-toastification';
 import ConfirmModal from '../../../components/common/ConfirmModal.vue';
+import { useRouter } from 'vue-router';
 
 const props = defineProps({
     items: {
@@ -12,8 +13,8 @@ const props = defineProps({
     }
 });
 
+const router = useRouter();
 const { updateItem, removeItem, news } = useNews('latest');
-
 const toast = useToast();
 
 const forms = ref([]);
@@ -29,6 +30,68 @@ const showDeleteModal = ref(false);
 const deleteTarget = ref(null);
 const deleteTargetIndex = ref(null);
 
+const goToDetail = async (id) => {
+    if (!id || editing.value.some(Boolean)) {
+        return;
+    }
+
+    await router.push({
+        name: 'news.detail',
+        params: {
+            id
+        },
+        query: {
+            tab: 'news'
+        }
+    });
+};
+
+const handleCardClick = (form) => {
+    if (!form?.id || form.isNew) {
+        return;
+    }
+
+    if (editing.value.some(Boolean)) {
+        return;
+    }
+
+    goToDetail(form.id);
+};
+
+const normalizeImagePreview = (image) => {
+    if (!image) {
+        return '';
+    }
+
+    if (typeof image === 'string') {
+        return image;
+    }
+
+    if (typeof image === 'object') {
+        return String(
+            image.url ??
+                image.secure_url ??
+                image.src ??
+                ''
+        );
+    }
+
+    return '';
+};
+
+const isBlobUrl = (value) => {
+    return (
+        typeof value === 'string' &&
+        value.startsWith('blob:')
+    );
+};
+
+const revokeBlobUrl = (value) => {
+    if (isBlobUrl(value)) {
+        URL.revokeObjectURL(value);
+    }
+};
+
 const createForm = (item = {}) => ({
     id: item.id ?? null,
     title: item.title ?? '',
@@ -36,19 +99,15 @@ const createForm = (item = {}) => ({
     date: item.date ?? '',
     category: item.category ?? '',
     imageFile: null,
-    imagePreview: item.image?.url ?? item.image ?? '',
-    featured: item.featured ?? false,
+    imagePreview: normalizeImagePreview(item.image),
+    featured: Boolean(item.featured),
     isNew: item.id == null
 });
 
 const categories = computed(() => {
     const value = news.value?.postCategories;
 
-    console.log('News page:', news.value);
-    console.log('Raw postCategories:', value);
-
     if (!Array.isArray(value)) {
-        console.log('postCategories is not an array:', value);
         return [];
     }
 
@@ -63,16 +122,16 @@ const categoryOptions = computed(() => {
             }
 
             return (
-                category?.title ?? category?.name ?? category?.category ?? ''
+                category?.title ??
+                category?.name ??
+                category?.category ??
+                ''
             );
         })
+        .map((value) => String(value).trim())
         .filter(Boolean);
 
-    const uniqueOptions = [...new Set(options)];
-
-    console.log('Category options:', uniqueOptions);
-
-    return uniqueOptions;
+    return [...new Set(options)];
 });
 
 const totalPages = computed(() => {
@@ -85,15 +144,12 @@ const paginatedForms = computed(() => {
     const start = (currentPage.value - 1) * perPage;
     const end = start + perPage;
 
-    const result = forms.value.slice(start, end).map((form, index) => ({
-        form,
-        index: start + index
-    }));
-
-    console.log('Current page:', currentPage.value);
-    console.log('Paginated forms:', result);
-
-    return result;
+    return forms.value
+        .slice(start, end)
+        .map((form, index) => ({
+            form,
+            index: start + index
+        }));
 });
 
 const pageNumbers = computed(() => {
@@ -101,7 +157,10 @@ const pageNumbers = computed(() => {
     const current = currentPage.value;
 
     if (total <= 5) {
-        return Array.from({ length: total }, (_, index) => index + 1);
+        return Array.from(
+            { length: total },
+            (_, index) => index + 1
+        );
     }
 
     if (current <= 3) {
@@ -109,61 +168,67 @@ const pageNumbers = computed(() => {
     }
 
     if (current >= total - 2) {
-        return [total - 4, total - 3, total - 2, total - 1, total];
+        return [
+            total - 4,
+            total - 3,
+            total - 2,
+            total - 1,
+            total
+        ];
     }
 
-    return [current - 2, current - 1, current, current + 1, current + 2];
+    return [
+        current - 2,
+        current - 1,
+        current,
+        current + 1,
+        current + 2
+    ];
 });
 
 const saveButtonText = computed(() => 'Save');
 
 watch(
-    () => news.value?.postCategories,
-    (value) => {
-        console.log('================ CATEGORY DEBUG ================');
-        console.log('News page:', news.value);
-        console.log('postCategories changed:', value);
-        console.log('Is array:', Array.isArray(value));
-        console.log('Category options:', categoryOptions.value);
-        console.log('=================================================');
-    },
-    {
-        immediate: true,
-        deep: true
-    }
-);
-
-watch(
     () => props.items,
     (items) => {
-        console.log('================ NEWS ITEMS DEBUG ================');
-        console.log('Latest news items:', items);
-        console.log(
-            'Categories from newsPage.postCategories:',
-            news.value?.postCategories
-        );
-        console.log('Available category options:', categoryOptions.value);
-        console.log('===================================================');
+        const safeItems = Array.isArray(items)
+            ? items
+            : [];
 
         const oldForms = forms.value;
         const oldEditing = editing.value;
 
-        forms.value = items.map((item) => {
-            const oldIndex = oldForms.findIndex((form) => form.id === item.id);
+        forms.value = safeItems.map((item) => {
+            const oldIndex = oldForms.findIndex(
+                (form) => form.id === item.id
+            );
 
-            const existingForm = oldIndex >= 0 ? oldForms[oldIndex] : null;
+            const existingForm =
+                oldIndex >= 0
+                    ? oldForms[oldIndex]
+                    : null;
 
             if (!existingForm) {
                 return createForm(item);
             }
 
+            const serverImage = normalizeImagePreview(
+                item.image
+            );
+
+            const currentImagePreview =
+                existingForm.imageFile
+                    ? normalizeImagePreview(
+                          existingForm.imagePreview
+                      )
+                    : serverImage;
+
             return {
                 ...existingForm,
                 ...createForm(item),
                 imageFile: existingForm.imageFile,
-                imagePreview: existingForm.imageFile
-                    ? existingForm.imagePreview
-                    : (item.image?.url ?? item.image ?? '')
+                imagePreview: currentImagePreview,
+                isNew: existingForm.isNew
             };
         });
 
@@ -177,8 +242,12 @@ watch(
                 : Boolean(form.isNew);
         });
 
-        if (currentPage.value > totalPages.value) {
-            currentPage.value = totalPages.value;
+        if (
+            currentPage.value >
+            totalPages.value
+        ) {
+            currentPage.value =
+                totalPages.value;
         }
     },
     {
@@ -187,36 +256,30 @@ watch(
     }
 );
 
-watch(
-    categoryOptions,
-    (value) => {
-        console.log('Category options changed:', value);
-        console.log('Category count:', value.length);
-    },
-    {
-        immediate: true,
-        deep: true
-    }
-);
-
 const goToPage = (page) => {
-    if (saving.value || deleting.value || adding.value) {
+    if (
+        saving.value ||
+        deleting.value ||
+        adding.value
+    ) {
         return;
     }
 
-    if (page < 1 || page > totalPages.value) {
+    if (
+        page < 1 ||
+        page > totalPages.value
+    ) {
         return;
     }
 
-    const editingIndex = editing.value.findIndex(Boolean);
+    const editingIndex =
+        editing.value.findIndex(Boolean);
 
     if (editingIndex !== -1) {
         cancel(editingIndex);
     }
 
     currentPage.value = page;
-
-    console.log('Go to page:', page);
 
     window.scrollTo({
         top: 0,
@@ -231,56 +294,89 @@ const previousPage = () => {
 };
 
 const nextPage = () => {
-    if (currentPage.value < totalPages.value) {
+    if (
+        currentPage.value <
+        totalPages.value
+    ) {
         goToPage(currentPage.value + 1);
     }
 };
 
-const handleImageUpload = (event, index) => {
-    const file = event.target.files?.[0];
+const handleImageUpload = (
+    event,
+    index
+) => {
+    const file =
+        event?.target?.files?.[0];
 
-    if (!file || !forms.value[index]) {
+    if (event?.target) {
+        event.target.value = '';
+    }
+
+    if (
+        !file ||
+        !forms.value[index]
+    ) {
         return;
     }
 
-    if (forms.value[index].imagePreview?.startsWith('blob:')) {
-        URL.revokeObjectURL(forms.value[index].imagePreview);
+    if (
+        ![
+            'image/png',
+            'image/jpeg',
+            'image/webp',
+            'image/gif'
+        ].includes(file.type)
+    ) {
+        toast.error(
+            'Please select a valid image file.'
+        );
+        return;
     }
 
-    forms.value[index].imageFile = file;
+    if (file.size > 5 * 1024 * 1024) {
+        toast.error(
+            'Image size must be less than 5MB.'
+        );
+        return;
+    }
 
-    forms.value[index].imagePreview = URL.createObjectURL(file);
+    const form = forms.value[index];
 
-    console.log('Selected image:', file);
+    revokeBlobUrl(form.imagePreview);
+
+    form.imageFile = file;
+    form.imagePreview =
+        URL.createObjectURL(file);
 };
 
 const addNews = () => {
-    if (saving.value || deleting.value || adding.value) {
+    if (
+        saving.value ||
+        deleting.value ||
+        adding.value
+    ) {
         return;
     }
 
-    const editingIndex = editing.value.findIndex(Boolean);
+    const editingIndex =
+        editing.value.findIndex(Boolean);
 
     if (editingIndex !== -1) {
         cancel(editingIndex);
     }
 
-    console.log('Categories before creating news:', categories.value);
-
-    console.log(
-        'Category options before creating news:',
-        categoryOptions.value
-    );
-
     const defaultCategory =
-        categoryOptions.value.length > 0 ? categoryOptions.value[0] : '';
-
-    console.log('Default category:', defaultCategory);
+        categoryOptions.value.length > 0
+            ? categoryOptions.value[0]
+            : '';
 
     const newForm = createForm({
         title: '',
         description: '',
-        date: new Date().toISOString().slice(0, 10),
+        date: new Date()
+            .toISOString()
+            .slice(0, 10),
         category: defaultCategory,
         featured: false
     });
@@ -295,28 +391,28 @@ const addNews = () => {
     requestAnimationFrame(() => {
         adding.value = false;
     });
-
-    console.log('New news form:', newForm);
 };
 
 const startEdit = (index) => {
-    if (saving.value || deleting.value || adding.value) {
+    if (
+        saving.value ||
+        deleting.value ||
+        adding.value
+    ) {
         return;
     }
 
-    const currentIndex = editing.value.findIndex(Boolean);
+    const currentIndex =
+        editing.value.findIndex(Boolean);
 
-    if (currentIndex !== -1 && currentIndex !== index) {
+    if (
+        currentIndex !== -1 &&
+        currentIndex !== index
+    ) {
         cancel(currentIndex);
     }
 
     editing.value[index] = true;
-
-    console.log('Editing item:', forms.value[index]);
-
-    console.log('Current category options:', categoryOptions.value);
-
-    console.log('Current selected category:', forms.value[index]?.category);
 };
 
 const cancel = (index) => {
@@ -327,25 +423,36 @@ const cancel = (index) => {
     }
 
     if (form.isNew) {
-        if (form.imagePreview?.startsWith('blob:')) {
-            URL.revokeObjectURL(form.imagePreview);
-        }
+        revokeBlobUrl(form.imagePreview);
 
         forms.value.splice(index, 1);
         editing.value.splice(index, 1);
 
-        if (currentPage.value > totalPages.value) {
-            currentPage.value = totalPages.value;
+        if (
+            currentPage.value >
+            totalPages.value
+        ) {
+            currentPage.value =
+                totalPages.value;
         }
 
         return;
     }
 
     if (form.id) {
-        const original = props.items.find((item) => item.id === form.id);
+        const original =
+            props.items.find(
+                (item) =>
+                    item.id === form.id
+            );
 
         if (original) {
-            forms.value[index] = createForm(original);
+            revokeBlobUrl(
+                form.imagePreview
+            );
+
+            forms.value[index] =
+                createForm(original);
         }
     }
 
@@ -360,74 +467,92 @@ const saveNews = async (index) => {
     }
 
     if (!form.title?.trim()) {
-        toast.error('Please enter a title.');
+        toast.error(
+            'Please enter a title.'
+        );
         return;
     }
 
     if (!form.date) {
-        toast.error('Please select a date.');
+        toast.error(
+            'Please select a date.'
+        );
         return;
     }
 
     if (!form.category) {
-        toast.error('Please select a category.');
+        toast.error(
+            'Please select a category.'
+        );
         return;
     }
 
     const payload = {
         id: form.id,
         title: form.title.trim(),
-        description: form.description?.trim() || '',
+        description:
+            form.description?.trim() || '',
         date: form.date,
         category: form.category,
-        featured: Boolean(form.featured)
+        featured: Boolean(
+            form.featured
+        )
     };
-
-    console.log('================ SAVE NEWS ================');
-
-    console.log('Saving news payload:', payload);
-
-    console.log('Selected category:', form.category);
-
-    console.log('Available categories:', categoryOptions.value);
-
-    console.log('Category objects:', categories.value);
-
-    console.log('============================================');
 
     saving.value = true;
 
+    const previewBeforeSave =
+        normalizeImagePreview(
+            form.imagePreview
+        );
+
     try {
-        await updateItem(payload, form.imageFile);
+        await updateItem(
+            payload,
+            form.imageFile
+        );
 
         editing.value[index] = false;
 
-        if (form.imagePreview?.startsWith('blob:')) {
-            URL.revokeObjectURL(form.imagePreview);
-        }
+        revokeBlobUrl(previewBeforeSave);
 
         form.imageFile = null;
     } catch (error) {
-        console.error('Save news error:', error);
+        console.error(
+            'Save news error:',
+            error
+        );
+
+        toast.error(
+            'Failed to save news item.'
+        );
     } finally {
         saving.value = false;
     }
 };
 
-const openDeleteModal = (item, index) => {
-    if (!item || item.isNew || !item.id) {
+const openDeleteModal = (
+    item,
+    index
+) => {
+    if (
+        !item ||
+        item.isNew ||
+        !item.id
+    ) {
         return;
     }
 
-    if (saving.value || deleting.value) {
+    if (
+        saving.value ||
+        deleting.value
+    ) {
         return;
     }
 
     deleteTarget.value = item;
     deleteTargetIndex.value = index;
     showDeleteModal.value = true;
-
-    console.log('Delete target:', item);
 };
 
 const cancelDelete = () => {
@@ -441,7 +566,8 @@ const cancelDelete = () => {
 };
 
 const confirmDelete = async () => {
-    const item = deleteTarget.value;
+    const item =
+        deleteTarget.value;
 
     if (!item?.id) {
         cancelDelete();
@@ -456,16 +582,25 @@ const confirmDelete = async () => {
 
     deleting.value = true;
 
-    console.log('Deleting news ID:', itemId);
-
     try {
         await removeItem(itemId);
 
-        if (currentPage.value > totalPages.value) {
-            currentPage.value = totalPages.value;
+        if (
+            currentPage.value >
+            totalPages.value
+        ) {
+            currentPage.value =
+                totalPages.value;
         }
     } catch (error) {
-        console.error('Delete news error:', error);
+        console.error(
+            'Delete news error:',
+            error
+        );
+
+        toast.error(
+            'Failed to delete news item.'
+        );
     } finally {
         deleting.value = false;
     }
@@ -473,9 +608,9 @@ const confirmDelete = async () => {
 
 onBeforeUnmount(() => {
     forms.value.forEach((form) => {
-        if (form.imagePreview?.startsWith('blob:')) {
-            URL.revokeObjectURL(form.imagePreview);
-        }
+        revokeBlobUrl(
+            form?.imagePreview
+        );
     });
 });
 </script>
@@ -496,7 +631,11 @@ onBeforeUnmount(() => {
             <button
                 type="button"
                 class="inline-flex items-center gap-2 rounded-lg bg-[#3674d9] px-3 py-2 text-xs font-medium text-white transition hover:bg-[#2863c5] disabled:cursor-not-allowed disabled:opacity-50"
-                :disabled="saving || deleting || adding"
+                :disabled="
+                    saving ||
+                    deleting ||
+                    adding
+                "
                 @click="addNews"
             >
                 <Plus :size="15" />
@@ -510,80 +649,183 @@ onBeforeUnmount(() => {
         >
             <form
                 v-for="item in paginatedForms"
-                :key="item.form.id ?? `new-${item.index}`"
+                :key="
+                    item.form.id ??
+                    `new-${item.index}`
+                "
                 class="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white"
-                @submit.prevent="saveNews(item.index)"
+                @submit.prevent="
+                    saveNews(item.index)
+                "
             >
-                <div class="p-4">
+                <div
+                    class="p-4"
+                    :class="
+                        !editing[item.index] &&
+                        item.form.id
+                            ? 'cursor-pointer transition hover:bg-slate-50'
+                            : ''
+                    "
+                    @click="
+                        !editing[item.index] &&
+                        item.form.id &&
+                        handleCardClick(item.form)
+                    "
+                >
                     <div class="flex gap-4">
-                        <label
-                            class="group relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100"
+                        <div
+                            class="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-slate-100"
                             :class="
-                                editing[item.index]
+                                !editing[item.index] &&
+                                item.form.id
                                     ? 'cursor-pointer'
-                                    : 'cursor-default'
+                                    : ''
+                            "
+                            @click.stop="
+                                !editing[item.index] &&
+                                item.form.id &&
+                                handleCardClick(item.form)
                             "
                         >
-                            <img
-                                v-if="item.form.imagePreview"
-                                :src="item.form.imagePreview"
-                                alt="Preview"
-                                class="h-full w-full object-cover"
-                            />
+                            <label
+                                v-if="
+                                    editing[item.index]
+                                "
+                                class="group absolute inset-0 flex cursor-pointer items-center justify-center"
+                            >
+                                <img
+                                    v-if="
+                                        item.form
+                                            .imagePreview
+                                    "
+                                    :src="
+                                        item.form
+                                            .imagePreview
+                                    "
+                                    alt="Preview"
+                                    class="h-full w-full object-cover"
+                                />
+
+                                <div
+                                    v-else
+                                    class="flex h-full w-full flex-col items-center justify-center text-slate-400"
+                                >
+                                    <Upload
+                                        :size="22"
+                                    />
+
+                                    <span
+                                        class="mt-1 text-center text-[10px]"
+                                    >
+                                        Upload
+                                    </span>
+                                </div>
+
+                                <div
+                                    class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition group-hover:opacity-100"
+                                >
+                                    <Upload
+                                        :size="20"
+                                        class="text-white"
+                                    />
+                                </div>
+
+                                <input
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/webp,image/gif"
+                                    class="hidden"
+                                    @change="
+                                        handleImageUpload(
+                                            $event,
+                                            item.index
+                                        )
+                                    "
+                                />
+                            </label>
 
                             <div
                                 v-else
-                                class="flex h-full w-full flex-col items-center justify-center text-slate-400"
+                                class="absolute inset-0"
                             >
-                                <Upload :size="22" />
+                                <img
+                                    v-if="
+                                        item.form
+                                            .imagePreview
+                                    "
+                                    :src="
+                                        item.form
+                                            .imagePreview
+                                    "
+                                    alt="Preview"
+                                    class="h-full w-full object-cover"
+                                />
 
-                                <span class="mt-1 text-center text-[10px]">
-                                    Upload
-                                </span>
+                                <div
+                                    v-else
+                                    class="flex h-full w-full items-center justify-center text-slate-400"
+                                >
+                                    <Upload
+                                        :size="22"
+                                    />
+                                </div>
+
+                                <div
+                                    v-if="
+                                        item.form.id
+                                    "
+                                    class="absolute inset-0 flex items-center justify-center bg-black/0 transition hover:bg-black/10"
+                                ></div>
                             </div>
-
-                            <div
-                                v-if="editing[item.index]"
-                                class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition group-hover:opacity-100"
-                            >
-                                <Upload :size="20" class="text-white" />
-                            </div>
-
-                            <input
-                                v-if="editing[item.index]"
-                                type="file"
-                                accept="image/*"
-                                class="hidden"
-                                @change="handleImageUpload($event, item.index)"
-                            />
-                        </label>
+                        </div>
 
                         <div class="min-w-0 flex-1">
-                            <div class="flex items-start justify-between gap-3">
+                            <div
+                                class="flex items-start justify-between gap-3"
+                            >
                                 <div class="min-w-0 flex-1">
                                     <input
-                                        v-if="editing[item.index]"
-                                        v-model="item.form.title"
+                                        v-if="
+                                            editing[
+                                                item.index
+                                            ]
+                                        "
+                                        v-model="
+                                            item.form
+                                                .title
+                                        "
                                         type="text"
                                         required
                                         placeholder="Enter news title"
                                         class="w-full rounded-md border border-slate-200 px-2 py-1 text-sm font-semibold text-slate-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                                        @click.stop
                                     />
 
                                     <h3
                                         v-else
                                         class="truncate text-sm font-semibold text-slate-800"
                                     >
-                                        {{ item.form.title || 'Untitled' }}
+                                        {{
+                                            item.form
+                                                .title ||
+                                            'Untitled'
+                                        }}
                                     </h3>
 
                                     <textarea
-                                        v-if="editing[item.index]"
-                                        v-model="item.form.description"
+                                        v-if="
+                                            editing[
+                                                item.index
+                                            ]
+                                        "
+                                        v-model="
+                                            item.form
+                                                .description
+                                        "
                                         rows="2"
                                         maxlength="200"
                                         placeholder="Enter description"
                                         class="mt-2 w-full resize-none rounded-md border border-slate-200 px-2 py-1 text-xs leading-4 text-slate-500 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                                        @click.stop
                                     ></textarea>
 
                                     <p
@@ -591,33 +833,53 @@ onBeforeUnmount(() => {
                                         class="mt-2 line-clamp-2 text-xs leading-4 text-slate-500"
                                     >
                                         {{
-                                            item.form.description ||
+                                            item.form
+                                                .description ||
                                             'No description'
                                         }}
                                     </p>
                                 </div>
 
-                                <div class="flex shrink-0 items-center gap-1">
+                                <div
+                                    class="flex shrink-0 items-center gap-1"
+                                    @click.stop
+                                >
                                     <button
-                                        v-if="!item.form.isNew"
+                                        v-if="
+                                            !item.form
+                                                .isNew
+                                        "
                                         type="button"
                                         class="rounded-md p-1.5 text-blue-600 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40"
                                         :disabled="
-                                            editing[item.index] ||
+                                            editing[
+                                                item.index
+                                            ] ||
                                             saving ||
                                             deleting
                                         "
-                                        @click="startEdit(item.index)"
+                                        @click="
+                                            startEdit(
+                                                item.index
+                                            )
+                                        "
                                     >
-                                        <Edit3 :size="16" />
+                                        <Edit3
+                                            :size="16"
+                                        />
                                     </button>
 
                                     <button
-                                        v-if="!item.form.isNew"
+                                        v-if="
+                                            !item.form
+                                                .isNew
+                                        "
                                         type="button"
                                         class="rounded-md p-1.5 text-red-500 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
                                         :disabled="
-                                            editing[item.index] ||
+                                            editing[
+                                                item.index
+                                            ] ||
                                             saving ||
                                             deleting
                                         "
@@ -628,7 +890,9 @@ onBeforeUnmount(() => {
                                             )
                                         "
                                     >
-                                        <Trash2 :size="16" />
+                                        <Trash2
+                                            :size="16"
+                                        />
                                     </button>
                                 </div>
                             </div>
@@ -636,7 +900,14 @@ onBeforeUnmount(() => {
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 border-t border-slate-100">
+                <div
+                    class="grid grid-cols-2 border-t border-slate-100"
+                    @click.stop="
+                        !editing[item.index] &&
+                        item.form.id &&
+                        handleCardClick(item.form)
+                    "
+                >
                     <div class="px-4 py-3">
                         <label
                             class="mb-1 block text-[10px] font-medium uppercase tracking-wide text-slate-400"
@@ -645,16 +916,26 @@ onBeforeUnmount(() => {
                         </label>
 
                         <select
-                            v-if="editing[item.index]"
-                            v-model="item.form.category"
+                            v-if="
+                                editing[item.index]
+                            "
+                            v-model="
+                                item.form.category
+                            "
                             class="w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                             :class="
                                 item.form.category
                                     ? 'text-slate-600'
                                     : 'text-slate-400'
                             "
+                            @click.stop
                         >
-                            <option value="" disabled>Select category</option>
+                            <option
+                                value=""
+                                disabled
+                            >
+                                Select category
+                            </option>
 
                             <option
                                 v-for="category in categoryOptions"
@@ -666,22 +947,20 @@ onBeforeUnmount(() => {
                             </option>
                         </select>
 
-                        <p v-else class="text-xs text-slate-600">
-                            {{ item.form.category || 'No category' }}
-                        </p>
-
                         <p
-                            v-if="
-                                editing[item.index] &&
-                                categoryOptions.length === 0
-                            "
-                            class="mt-1 text-[10px] text-red-500"
+                            v-else
+                            class="cursor-pointer text-xs text-slate-600"
                         >
-                            No categories found
+                            {{
+                                item.form.category ||
+                                'No category'
+                            }}
                         </p>
                     </div>
 
-                    <div class="border-l border-slate-100 px-4 py-3">
+                    <div
+                        class="border-l border-slate-100 px-4 py-3"
+                    >
                         <label
                             class="mb-1 block text-[10px] font-medium uppercase tracking-wide text-slate-400"
                         >
@@ -689,27 +968,39 @@ onBeforeUnmount(() => {
                         </label>
 
                         <input
-                            v-if="editing[item.index]"
-                            v-model="item.form.date"
+                            v-if="
+                                editing[item.index]
+                            "
+                            v-model="
+                                item.form.date
+                            "
                             type="date"
                             class="w-full rounded-md border border-slate-200 px-2 py-1 text-xs text-slate-600 outline-none focus:border-blue-400"
+                            @click.stop
                         />
 
-                        <p v-else class="text-xs text-slate-600">
+                        <p
+                            v-else
+                            class="cursor-pointer text-xs text-slate-600"
+                        >
                             {{ item.form.date }}
                         </p>
                     </div>
                 </div>
 
                 <div
-                    v-if="editing[item.index]"
+                    v-if="
+                        editing[item.index]
+                    "
                     class="flex items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/50 px-4 py-3"
                 >
                     <button
                         type="button"
                         class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
                         :disabled="saving"
-                        @click="cancel(item.index)"
+                        @click="
+                            cancel(item.index)
+                        "
                     >
                         <X :size="14" />
                         Cancel
@@ -725,7 +1016,8 @@ onBeforeUnmount(() => {
                         {{
                             saving
                                 ? 'Saving...'
-                                : item.form.isNew
+                                : item.form
+                                      .isNew
                                   ? 'Create'
                                   : saveButtonText
                         }}
@@ -745,14 +1037,24 @@ onBeforeUnmount(() => {
             v-if="forms.length > 0"
             class="mt-6 flex items-center justify-center border-t border-slate-100 pt-4"
         >
-            <div class="flex items-center justify-center gap-1">
+            <div
+                class="flex items-center justify-center gap-1"
+            >
                 <button
                     type="button"
                     class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-                    :disabled="currentPage === 1 || saving || deleting"
-                    @click="previousPage"
+                    :disabled="
+                        currentPage === 1 ||
+                        saving ||
+                        deleting
+                    "
+                    @click="
+                        previousPage
+                    "
                 >
-                    <span class="text-sm">‹</span>
+                    <span class="text-sm">
+                        ‹
+                    </span>
                 </button>
 
                 <button
@@ -765,7 +1067,10 @@ onBeforeUnmount(() => {
                             ? 'bg-[#3674d9] text-white'
                             : 'border border-slate-200 text-slate-600 hover:bg-slate-50'
                     "
-                    :disabled="saving || deleting"
+                    :disabled="
+                        saving ||
+                        deleting
+                    "
                     @click="goToPage(page)"
                 >
                     {{ page }}
@@ -774,10 +1079,19 @@ onBeforeUnmount(() => {
                 <button
                     type="button"
                     class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-                    :disabled="currentPage === totalPages || saving || deleting"
-                    @click="nextPage"
+                    :disabled="
+                        currentPage ===
+                            totalPages ||
+                        saving ||
+                        deleting
+                    "
+                    @click="
+                        nextPage
+                    "
                 >
-                    <span class="text-sm">›</span>
+                    <span class="text-sm">
+                        ›
+                    </span>
                 </button>
             </div>
         </div>

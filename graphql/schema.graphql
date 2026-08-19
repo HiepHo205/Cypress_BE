@@ -627,6 +627,16 @@ type CloudinaryImage {
 # =========================
 # News page CMS
 # =========================
+type NewsSocialMediaIcon {
+    url: String
+    public_id: String
+}
+
+type NewsSocialMedia {
+    name: String
+    icon: NewsSocialMediaIcon
+    url: String
+}
 
 type NewsPageItem {
     id: ID!
@@ -634,11 +644,17 @@ type NewsPageItem {
     description: String
     category: String
     date: String
+    author: String
     status: String
     featured: Boolean
-    image: CloudinaryImage
-}
 
+    image: CloudinaryImage
+    logo: CloudinaryImage
+
+    tableOfContents: JSON
+    sections: JSON
+    social_media: [NewsSocialMedia!]
+}
 type NewsPostCategory {
     id: ID!
     title: String
