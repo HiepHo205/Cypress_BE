@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onBeforeUnmount } from 'vue';
+import { useRouter } from 'vue-router';
 import { Upload, Save, X, Edit3, Trash2, Plus } from 'lucide-vue-next';
 import { useNews } from '../../../composables/news/useNews';
 import { useToast } from 'vue-toastification';
@@ -11,6 +12,8 @@ import ConfirmModal from '../../../components/common/ConfirmModal.vue';
 const props = defineProps<{
     items: NewsItem[];
 }>();
+
+const router = useRouter();
 
 const { updateItem, removeItem, news } = useNews('featured');
 const toast = useToast();
@@ -77,6 +80,7 @@ watch(
     paginatedItems,
     (items) => {
         const safeItems = Array.isArray(items) ? items : [];
+
         const oldForms = forms.value;
         const oldEditing = editing.value;
 
@@ -122,8 +126,6 @@ watch(
     }
 );
 
-const saveButtonText = 'Save';
-
 const handlePageChange = (page: number): void => {
     if (saving.value || deleting.value || adding.value) {
         return;
@@ -146,8 +148,33 @@ const handlePageChange = (page: number): void => {
     goToPage(safePage);
 };
 
+const goToDetail = async (id: string | null): Promise<void> => {
+    if (!id) {
+        return;
+    }
+
+    if (saving.value || deleting.value || adding.value) {
+        return;
+    }
+
+    if (editing.value.some(Boolean)) {
+        return;
+    }
+
+    await router.push({
+        name: 'news.detail',
+        params: {
+            id
+        },
+        query: {
+            tab: 'news'
+        }
+    });
+};
+
 const handleImageUpload = (event: Event, index: number): void => {
     const target = event.target as HTMLInputElement;
+
     const file = target.files?.[0];
 
     if (!file) {
@@ -401,14 +428,23 @@ onBeforeUnmount(() => {
                 class="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white"
                 @submit.prevent="saveBlog(index)"
             >
-                <div class="p-4">
+                <div
+                    class="p-4"
+                    :class="!editing[index] ? 'cursor-pointer' : ''"
+                    @click="!editing[index] && goToDetail(form.id)"
+                >
                     <div class="flex gap-4">
                         <label
                             class="group relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100"
                             :class="
                                 editing[index]
                                     ? 'cursor-pointer'
-                                    : 'cursor-default'
+                                    : 'cursor-pointer'
+                            "
+                            @click="
+                                editing[index]
+                                    ? $event.stopPropagation()
+                                    : goToDetail(form.id)
                             "
                         >
                             <img
@@ -455,6 +491,7 @@ onBeforeUnmount(() => {
                                         required
                                         placeholder="Enter news title"
                                         class="w-full rounded-md border border-slate-200 px-2 py-1 text-sm font-semibold text-slate-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                                        @click.stop
                                     />
 
                                     <h3
@@ -471,6 +508,7 @@ onBeforeUnmount(() => {
                                         maxlength="200"
                                         placeholder="Enter description"
                                         class="mt-2 w-full resize-none rounded-md border border-slate-200 px-2 py-1 text-xs leading-4 text-slate-500 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                                        @click.stop
                                     ></textarea>
 
                                     <p
@@ -491,7 +529,7 @@ onBeforeUnmount(() => {
                                         :disabled="
                                             editing[index] || saving || deleting
                                         "
-                                        @click="startEdit(index)"
+                                        @click.stop="startEdit(index)"
                                     >
                                         <Edit3 :size="16" />
                                     </button>
@@ -503,7 +541,9 @@ onBeforeUnmount(() => {
                                         :disabled="
                                             editing[index] || saving || deleting
                                         "
-                                        @click="openDeleteModal(form, index)"
+                                        @click.stop="
+                                            openDeleteModal(form, index)
+                                        "
                                     >
                                         <Trash2 :size="16" />
                                     </button>
@@ -514,7 +554,10 @@ onBeforeUnmount(() => {
                 </div>
 
                 <div class="grid grid-cols-2 border-t border-slate-100">
-                    <div class="px-4 py-3">
+                    <div
+                        class="px-4 py-3"
+                        @click="!editing[index] && goToDetail(form.id)"
+                    >
                         <label
                             class="mb-1 block text-[10px] font-medium uppercase tracking-wide text-slate-400"
                         >
@@ -530,6 +573,7 @@ onBeforeUnmount(() => {
                                     ? 'text-slate-600'
                                     : 'text-slate-400'
                             "
+                            @click.stop
                         >
                             <option value="" disabled>Select category</option>
 
@@ -557,7 +601,10 @@ onBeforeUnmount(() => {
                         </p>
                     </div>
 
-                    <div class="border-l border-slate-100 px-4 py-3">
+                    <div
+                        class="border-l border-slate-100 px-4 py-3"
+                        @click="!editing[index] && goToDetail(form.id)"
+                    >
                         <label
                             class="mb-1 block text-[10px] font-medium uppercase tracking-wide text-slate-400"
                         >
@@ -569,6 +616,7 @@ onBeforeUnmount(() => {
                             v-model="form.date"
                             type="date"
                             class="w-full rounded-md border border-slate-200 px-2 py-1 text-xs text-slate-600 outline-none focus:border-blue-400"
+                            @click.stop
                         />
 
                         <p v-else class="text-xs text-slate-600">

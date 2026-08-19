@@ -25,6 +25,7 @@ import HomePage from '../views/home/HomePage.vue';
 import NewsManagement from '../views/news/components/NewsManagement.vue';
 import CaseStudyManagement from '../views/case-studies/components/CaseStudyManagement.vue';
 import CaseStudyDetailPage from '../views/case-studies/components/section/CaseStudyDetailPage.vue';
+import NewsDetailPage from '../views/news/components/section/NewsDetailPage.vue';
 
 
 function isTokenExpired(token) {
@@ -168,6 +169,12 @@ const routes = [
                 component: NewsManagement
             },
 
+            {
+                path: 'news/:id',
+                name: 'news.detail',
+                component: NewsDetailPage,
+                props: true
+            },
             {
                 path: 'case-studies',
                 name: 'case-studies.management',

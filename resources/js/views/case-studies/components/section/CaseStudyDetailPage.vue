@@ -25,15 +25,19 @@ const loading = computed(() => {
 });
 
 const currentCaseStudy = computed(() => {
-    const id = route.params.id;
+    const id = String(route.params.id || '').trim();
 
     if (!id) {
         return null;
     }
 
-    return (
-        caseStudies.value.find((item) => String(item.id) === String(id)) ?? null
-    );
+    const data = caseStudies.value;
+
+    if (!Array.isArray(data)) {
+        return null;
+    }
+
+    return data.find((item) => String(item?.id) === id) ?? null;
 });
 
 const tabs = [
@@ -55,14 +59,6 @@ const activeTab = computed(() => {
     const tab = String(route.query.tab || 'banner');
 
     return tabs.some((item) => item.id === tab) ? tab : 'banner';
-});
-
-const currentTab = computed(() => {
-    return tabs.find((tab) => tab.id === activeTab.value) ?? tabs[0];
-});
-
-const currentComponent = computed(() => {
-    return currentTab.value.component;
 });
 
 const changeTab = async (id) => {
@@ -101,24 +97,21 @@ const changeTab = async (id) => {
         </div>
 
         <div class="rounded-2xl bg-white p-6 shadow-sm">
-            <KeepAlive>
-                <SocialMedia
-                    v-if="activeTab === 'banner'"
-                    :key="'banner'"
-                    :data="socialMediaDetail"
-                    :homepage="homepage"
-                    :loading="loading"
-                />
+            <SocialMedia
+                v-if="activeTab === 'banner'"
+                :data="socialMediaDetail"
+                :homepage="homepage"
+                :loading="loading"
+            />
 
-                <CaseStudyDetail
-                    v-else-if="activeTab === 'case-studies'"
-                    :key="`case-study-${currentCaseStudy?.id ?? 'empty'}`"
-                    :case-study="currentCaseStudy"
-                    :categories="categories"
-                    :homepage="homepage"
-                    :loading="loading"
-                />
-            </KeepAlive>
+            <CaseStudyDetail
+                v-else-if="activeTab === 'case-studies'"
+                :case-study="currentCaseStudy"
+                :categories="categories"
+                :homepage="homepage"
+                :loading="loading"
+            />
+
             <div
                 v-if="activeTab === 'case-studies' && loading"
                 class="py-10 text-center text-sm text-gray-500"
