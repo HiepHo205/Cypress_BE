@@ -1,9 +1,6 @@
 <template>
   <div class="max-w-4xl mx-auto">
     <div class="mb-6">
-      <router-link to="/admin/users" class="text-sm text-blue-600 hover:text-blue-800">
-        &larr; Back to users
-      </router-link>
       <h1 class="text-2xl font-bold mt-2">Create User</h1>
     </div>
 
@@ -95,12 +92,15 @@ import { CREATE_USER } from '@/graphql/mutations/users';
 import { GET_USERS } from '@/graphql/queries/users';
 import { getGraphQLErrorMessages } from '@/utils/graphqlErrors';
 import { GET_ROLES } from '@/graphql/queries/role';
+import { useToast } from 'vue-toastification';
 
 const { result: roleResult } = useQuery(GET_ROLES);
 
 const roles = computed(() => roleResult.value?.roles ?? []);
 
 const router = useRouter();
+
+const toast = useToast();
 
 const form = reactive({
   name: '',
@@ -117,6 +117,7 @@ const errorMessages = computed(() => getGraphQLErrorMessages(error.value));
 
 async function submit() {
   try {
+
     await createUser({
       input: {
         name: form.name,
@@ -126,9 +127,20 @@ async function submit() {
       },
     });
 
-    router.push({ name: 'users.list' });
-  } catch {
-    // Validation errors are shown via errorMessages.
+    toast.success(
+      'User created successfully'
+    );
+
+    router.push({
+      name: 'users.list',
+    });
+
+  } catch (error) {
+
+    toast.error(
+      getGraphQLErrorMessages(error)?.[0] ||
+      'Failed to create user'
+    );
   }
 }
 </script>

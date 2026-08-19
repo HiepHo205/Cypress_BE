@@ -288,12 +288,16 @@ import {
     UNASSIGN_PERMISSION
 } from '@/graphql/mutations/permissions';
 
+import { useToast } from 'vue-toastification';
+
 const props = defineProps({
     id: {
         type: String,
         required: true
     }
 });
+
+const toast = useToast();
 
 const selectedPermissions =
     ref([]);
@@ -437,7 +441,7 @@ async function savePermissions() {
             });
         }
 
-        alert(
+        toast.success(
             'Permissions updated successfully'
         );
 

@@ -24,45 +24,54 @@ const authLink = setContext((_, { headers }) => {
 
 let isLoggingOut = false;
 
-const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
-    const toast = useToast();
+const errorLink = onError(
+    ({ graphQLErrors, networkError }) => {
 
-    const handleLogout = () => {
-        if (isLoggingOut) return;
+        const toast = useToast();
 
-        isLoggingOut = true;
+        const handleLogout = () => {
 
-        localStorage.removeItem('token');
+            if (isLoggingOut) {
+                return;
+            }
 
-        toast.warning('Your session has expired. Please log in again.');
+            isLoggingOut = true;
 
-        setTimeout(() => {
-            window.location.href = '/login';
-        }, 1000);
-    };
-    const isMutation = operation.query.definitions.some(
-        (def) =>
-            def.kind === 'OperationDefinition' && def.operation === 'mutation'
-    );
-    if (!isMutation) {
-        return;
-    }
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
 
-    graphQLErrors?.forEach((err) => {
-        if (err.message === 'Unauthenticated.') {
+            toast.warning(
+                'Your session has expired. Please log in again.'
+            );
+
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1000);
+        };
+
+        graphQLErrors?.forEach(err => {
+
+            if (
+                err.message === 'Unauthenticated.'
+            ) {
+                handleLogout();
+            }
+        });
+
+        if (
+            networkError &&
+            'statusCode' in networkError &&
+            networkError.statusCode === 401
+        ) {
             handleLogout();
         }
-    });
-
-    if (
-        networkError &&
-        'statusCode' in networkError &&
-        networkError.statusCode === 401
-    ) {
-        handleLogout();
     }
-});
-export const apolloClient = new ApolloClient({
-    link: errorLink.concat(authLink.concat(uploadLink)),
-    cache: new InMemoryCache()
-});
+);
+
+export const apolloClient =
+    new ApolloClient({
+        link: errorLink.concat(
+            authLink.concat(uploadLink)
+        ),
+        cache: new InMemoryCache()
+    });

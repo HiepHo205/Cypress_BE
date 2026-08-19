@@ -22,6 +22,18 @@ class PermissionSeeder extends Seeder
             ['code' => 'plan.create', 'description' => 'Create plans'],
             ['code' => 'plan.update', 'description' => 'Update plans'],
             ['code' => 'plan.delete', 'description' => 'Delete plans'],
+            ['code' => 'subscription.create', 'description' => 'Create subscriptions'],
+            ['code' => 'subscription.update', 'description' => 'Update subscriptions'],
+            ['code' => 'subscription.delete', 'description' => 'Delete subscriptions'],
+            ['code' => 'feature.create', 'description' => 'Create features'],
+            ['code' => 'feature.update', 'description' => 'Update features'],
+            ['code' => 'feature.delete', 'description' => 'Delete features'],
+            ['code' => 'benefit.create', 'description' => 'Create benefits'],
+            ['code' => 'benefit.update', 'description' => 'Update benefits'],
+            ['code' => 'benefit.delete', 'description' => 'Delete benefits'],
+            ['code' => 'permission.assign','description' => 'Assign permissions to roles'],
+            ['code' => 'permission.unassign','description' => 'Revoke permissions from roles'],
+
         ];
 
         foreach ($permissions as $permission) {
