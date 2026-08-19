@@ -29,6 +29,7 @@ import LocationList from '@/views/locations/LocationList.vue';
 import LocationCreate from '@/views/locations/LocationCreate.vue';
 import LocationDetail from '@/views/locations/LocationDetail.vue';
 
+import NewsDetailPage from '../views/news/components/section/NewsDetailPage.vue';
 
 
 function isTokenExpired(token) {
@@ -172,6 +173,12 @@ const routes = [
                 component: NewsManagement
             },
 
+            {
+                path: 'news/:id',
+                name: 'news.detail',
+                component: NewsDetailPage,
+                props: true
+            },
             {
                 path: 'case-studies',
                 name: 'case-studies.management',
