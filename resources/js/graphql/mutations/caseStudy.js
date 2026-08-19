@@ -4,14 +4,14 @@ export const UPDATE_CASE_STUDY = gql`
     mutation UpdateCaseStudy(
         $section: String!
         $input: JSON!
-        $image: Upload
+        $images: [Upload!]
         $action: String
         $id: ID
     ) {
         updateCaseStudy(
             section: $section
             input: $input
-            image: $image
+            images: $images
             action: $action
             id: $id
         )

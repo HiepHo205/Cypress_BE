@@ -12,15 +12,20 @@ import Header from '@/views/cms/header/Header.vue';
 import Footer from '@/views/cms/footer/Footer.vue';
 
 import { useToast } from 'vue-toastification';
+
 import { jwtDecode } from 'jwt-decode';
-
-import HomePage from '@/views/home/HomePage.vue';
-
-import NewsManagement from '@/views/news/components/NewsManagement.vue';
-import CaseStudyManagement from '@/views/case-studies/components/CaseStudyManagement.vue';
 
 import UserPackageList from '@/views/package-requests/UserPackageList.vue';
 import UserPackageDetail from '@/views/package-requests/UserPackageDetail.vue';
+
+
+import PlanList from '@/views/plans/PlanList.vue';
+import PlanDetail from '@/views/plans/PlanDetail.vue';
+import HomePage from '../views/home/HomePage.vue';
+import NewsManagement from '../views/news/components/NewsManagement.vue';
+import CaseStudyManagement from '../views/case-studies/components/CaseStudyManagement.vue';
+import CaseStudyDetailPage from '../views/case-studies/components/section/CaseStudyDetailPage.vue';
+
 
 function isTokenExpired(token) {
     try {
@@ -179,6 +184,13 @@ const routes = [
                 path: 'user-packages/:id',
                 name: 'UserPackageDetail',
                 component: UserPackageDetail,
+
+            },
+
+            {
+                path: 'case-studies/:id',
+                name: 'case-study-detail',
+                component: CaseStudyDetailPage,
                 props: true
             }
         ]
