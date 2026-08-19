@@ -9,12 +9,17 @@ class FeatureSeeder extends Seeder
 {
     public function run(): void
     {
+        $createdBy = DB::table('users')->orderBy('id')->value('id');
+
+        if (!$createdBy) {
+            throw new \RuntimeException('No user found for feature seeding.');
+        }
+
         $collectionId = DB::table('collections')
             ->where('collection_name', 'features')
             ->value('id');
 
         $features = [
-
             ['name' => 'Workspace', 'group' => 'core'],
             ['name' => 'Meeting Room', 'group' => 'core'],
             ['name' => 'Printing Service', 'group' => 'core'],
@@ -28,11 +33,10 @@ class FeatureSeeder extends Seeder
         ];
 
         foreach ($features as $feature) {
-
             $entryId = DB::table('entries')->insertGetId([
                 'collection_id' => $collectionId,
                 'status' => 'published',
-                'created_by' => 6,
+                'created_by' => $createdBy,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

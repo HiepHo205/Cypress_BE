@@ -184,7 +184,7 @@ async function deactivateUser(id) {
             :items="users"
         >
             <template #row="{ item }">
-                <td class="px-6 py-4">
+                <td class="px-4 py-4 w-14 whitespace-nowrap">
                     {{ item.id }}
                 </td>
 
@@ -220,9 +220,9 @@ async function deactivateUser(id) {
                     {{ formatDate(item.created_at) }}
                 </td>
 
-                <td class="px-6 py-4 text-right">
+                <td class="px-6 py-3 text-center">
                     <div
-                        class="flex justify-end gap-3"
+                        class="flex gap-3"
                     >
                         <router-link
                             v-if="hasPermission('user.view')"

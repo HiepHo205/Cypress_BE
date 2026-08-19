@@ -9,6 +9,14 @@ class PlanSeeder extends Seeder
 {
     public function run(): void
     {
+        $createdBy = DB::table('users')->orderBy('id')->value('id');
+
+        if (!$createdBy) {
+            throw new \RuntimeException(
+                'No user found to assign as plan creator.',
+            );
+        }
+
         $collectionId = DB::table('collections')
             ->where('collection_name', 'plans')
             ->value('id');
@@ -29,11 +37,10 @@ class PlanSeeder extends Seeder
         ];
 
         foreach ($plans as $plan) {
-
             $entryId = DB::table('entries')->insertGetId([
                 'collection_id' => $collectionId,
                 'status' => 'published',
-                'created_by' => 6,
+                'created_by' => $createdBy,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
