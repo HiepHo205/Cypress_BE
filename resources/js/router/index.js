@@ -25,6 +25,10 @@ import HomePage from '../views/home/HomePage.vue';
 import NewsManagement from '../views/news/components/NewsManagement.vue';
 import CaseStudyManagement from '../views/case-studies/components/CaseStudyManagement.vue';
 import CaseStudyDetailPage from '../views/case-studies/components/section/CaseStudyDetailPage.vue';
+import LocationList from '@/views/locations/LocationList.vue';
+import LocationCreate from '@/views/locations/LocationCreate.vue';
+import LocationDetail from '@/views/locations/LocationDetail.vue';
+
 
 
 function isTokenExpired(token) {
@@ -192,7 +196,27 @@ const routes = [
                 name: 'case-study-detail',
                 component: CaseStudyDetailPage,
                 props: true
-            }
+            },
+
+            {
+                path: 'locations',
+                name: 'locations.list',
+                component: LocationList
+            },
+
+            {
+                path: 'locations/create',
+                name: 'locations.create',
+                component: LocationCreate
+            },
+
+            {
+                path: 'locations/:id',
+                name: 'locations.detail',
+                component: LocationDetail,
+                props: true
+            },
+
         ]
     }
 ];
