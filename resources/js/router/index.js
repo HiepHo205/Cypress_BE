@@ -12,12 +12,30 @@ import Header from '@/views/cms/header/Header.vue';
 import Footer from '@/views/cms/footer/Footer.vue';
 
 import { useToast } from 'vue-toastification';
+
+import { jwtDecode } from 'jwt-decode';
+
+import UserPackageList from '@/views/package-requests/UserPackageList.vue';
+import UserPackageDetail from '@/views/package-requests/UserPackageDetail.vue';
+
+
 import PlanList from '@/views/plans/PlanList.vue';
 import PlanDetail from '@/views/plans/PlanDetail.vue';
 import HomePage from '../views/home/HomePage.vue';
 import NewsManagement from '../views/news/components/NewsManagement.vue';
 import CaseStudyManagement from '../views/case-studies/components/CaseStudyManagement.vue';
 import CaseStudyDetailPage from '../views/case-studies/components/section/CaseStudyDetailPage.vue';
+
+
+function isTokenExpired(token) {
+    try {
+        const decoded = jwtDecode(token);
+
+        return decoded.exp * 1000 < Date.now();
+    } catch {
+        return true;
+    }
+}
 
 const routes = [
     {
@@ -39,6 +57,7 @@ const routes = [
                 name: 'dashboard',
                 component: Dashboard
             },
+
             {
                 path: 'users',
                 name: 'users.list',
@@ -68,44 +87,106 @@ const routes = [
             {
                 path: 'roles',
                 name: 'role.management',
-                component: () => import('@/views/roles/RoleManagement.vue')
+                component: () =>
+                    import('@/views/roles/RoleManagement.vue')
             },
+
             {
                 path: 'header',
                 name: 'cms.header',
                 component: Header
             },
+
             {
                 path: 'plans',
                 name: 'plans.list',
-                component: () => import('@/views/plans/PlanList.vue')
+                component: () =>
+                    import('@/views/plans/PlanList.vue')
             },
+
             {
                 path: 'plans/:id',
                 name: 'plans.detail',
-                component: () => import('@/views/plans/PlanDetail.vue'),
+                component: () =>
+                    import('@/views/plans/PlanDetail.vue'),
                 props: true
             },
+
             {
                 path: 'footer',
                 name: 'cms.footer',
                 component: Footer
             },
+
             {
                 path: 'homepage',
                 name: 'cms.homepage',
                 component: HomePage
             },
+
+            {
+                path: 'service-requests',
+                name: 'service-requests.list',
+                component: () =>
+                    import(
+                        '@/views/service-requests/ServiceRequestList.vue'
+                    )
+            },
+
+            {
+                path: 'service-requests/:id',
+                name: 'service-requests.detail',
+                component: () =>
+                    import(
+                        '@/views/service-requests/ServiceRequestDetail.vue'
+                    ),
+                props: true
+            },
+
+            {
+                path: 'package-requests',
+                name: 'package-requests.list',
+                component: () =>
+                    import(
+                        '@/views/package-requests/PackageRequestList.vue'
+                    )
+            },
+
+            {
+                path: 'package-requests/:id',
+                name: 'package-requests.detail',
+                component: () =>
+                    import(
+                        '@/views/package-requests/PackageRequestDetail.vue'
+                    ),
+                props: true
+            },
+
             {
                 path: 'news',
                 name: 'news.management',
                 component: NewsManagement
             },
+
             {
                 path: 'case-studies',
                 name: 'case-studies.management',
                 component: CaseStudyManagement
             },
+
+            {
+                path: 'user-packages',
+                name: 'UserPackageList',
+                component: UserPackageList
+            },
+
+            {
+                path: 'user-packages/:id',
+                name: 'UserPackageDetail',
+                component: UserPackageDetail,
+
+            },
+
             {
                 path: 'case-studies/:id',
                 name: 'case-study-detail',
@@ -120,19 +201,34 @@ const router = createRouter({
     history: createWebHistory(),
     routes
 });
+
 router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('token');
 
-    const requiresAuth = to.matched.some((route) => route.meta.requiresAuth);
+    const requiresAuth = to.matched.some(
+        route => route.meta.requiresAuth
+    );
 
-    if (requiresAuth && !token) {
-        const toast = useToast();
+    if (requiresAuth) {
+        if (!token || isTokenExpired(token)) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
 
-        toast.warning('Please login to access this page.');
+            const toast = useToast();
 
-        return next('/login');
+            toast.warning(
+                'Session expired. Please login again.'
+            );
+
+            return next('/login');
+        }
     }
-    if (to.name === 'login' && token) {
+
+    if (
+        to.name === 'login' &&
+        token &&
+        !isTokenExpired(token)
+    ) {
         return next('/admin');
     }
 

@@ -8,10 +8,16 @@ use RuntimeException;
 
 class HomepageSeeder extends Seeder
 {
-    private int $homepageEntryId = 72;
+    private int $createdBy;
 
     public function run(): void
     {
+        $this->createdBy = DB::table('users')->orderBy('id')->value('id');
+
+        if (!$this->createdBy) {
+            throw new RuntimeException('No user found for homepage seeding.');
+        }
+
         DB::transaction(function () {
             $entryId = $this->getHomepageEntryId();
 

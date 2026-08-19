@@ -17,12 +17,6 @@
         <div
             class="flex justify-between items-center mb-6"
         >
-            <router-link
-                to="/admin/plans"
-                class="text-blue-600 hover:text-blue-800"
-            >
-                ← Back to Plans
-            </router-link>
 
             <button
                 @click="savePlan"

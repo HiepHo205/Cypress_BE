@@ -1,13 +1,6 @@
 <template>
   <div class="max-w-4xl mx-auto">
     <div class="mb-6">
-      <router-link
-        to="/admin/users"
-        class="text-sm text-blue-600 hover:text-blue-800"
-      >
-        &larr; Back to users
-      </router-link>
-
       <h1 class="text-2xl font-bold mt-2">
         Edit User
       </h1>
@@ -172,6 +165,10 @@ import { UPDATE_USER } from '@/graphql/mutations/users';
 
 import { getGraphQLErrorMessages } from '@/utils/graphqlErrors';
 
+import { useToast } from 'vue-toastification';
+
+const toast = useToast();
+
 const props = defineProps({
   id: {
     type: String,
@@ -270,11 +267,16 @@ async function submit() {
       input,
     });
 
+    toast.success('User updated successfully');
+
     router.push({
       name: 'users.list',
     });
-  } catch {
-    //
+  } catch (error) {
+    toast.error(
+      getGraphQLErrorMessages(error)?.[0] ||
+      'Failed to update user'
+    );
   }
 }
 </script>
