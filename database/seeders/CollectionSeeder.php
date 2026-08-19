@@ -145,6 +145,11 @@ class CollectionSeeder extends Seeder
                 'api_endpoint' => 'homepage_contact_option',
                 'is_system_type' => false,
             ],
+            [
+                'collection_name' => 'locations',
+                'api_endpoint' => 'locations',
+                'is_system_type' => false,
+            ],
         ];
 
         foreach ($collections as $collection) {

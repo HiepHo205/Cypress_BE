@@ -17,7 +17,8 @@ import {
     ClipboardList,
     Package,
     BriefcaseBusiness,
-    User
+    User,
+    MapPin
 } from 'lucide-vue-next';
 
 import { useLogout } from '@/composables/useLogout';
@@ -180,6 +181,17 @@ async function confirmLogout() {
                             </li>
                         </ul>
                     </transition>
+                </li>
+                <li>
+                    <router-link
+                        to="/admin/locations"
+                        class="flex items-center gap-3 px-4 py-3 rounded-lg transition hover:bg-slate-800"
+                        exact-active-class="bg-slate-800"
+                    >
+                        <MapPin :size="18" />
+
+                        <span> Locations </span>
+                    </router-link>
                 </li>
 
                 <!-- General Structure -->

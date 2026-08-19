@@ -1217,3 +1217,65 @@ extend type Query {
         )
 }
 
+extend type Query {
+    locations: [Location!]!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\LocationQuery@list"
+        )
+
+    location(
+        id: ID!
+    ): Location
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Queries\\LocationQuery@detail"
+        )
+}
+
+extend type Mutation {
+    createLocation(
+        input: CreateLocationInput!
+    ): Location!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\LocationMutation@create"
+        )
+
+    updateLocation(
+        id: ID!
+        input: UpdateLocationInput!
+    ): Location!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\LocationMutation@update"
+        )
+
+    deleteLocation(
+        id: ID!
+    ): Boolean!
+        @field(
+            resolver: "App\\Modules\\Admin\\GraphQL\\Mutations\\LocationMutation@delete"
+        )
+}
+
+type Location {
+    id: ID!
+    name: String
+    address: String
+    latitude: Float
+    longitude: Float
+    status: String
+}
+
+input CreateLocationInput {
+    name: String!
+    address: String!
+    status: String!
+    latitude: Float!
+    longitude: Float!
+}
+
+input UpdateLocationInput {
+    name: String!
+    address: String!
+    status: String!
+    latitude: Float!
+    longitude: Float!
+}
